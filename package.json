@@ -1,0 +1,7 @@
+{
+  "name": "tuwvan-nutritie",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Nutritie — App tư vấn & bán hàng PG (FE tĩnh + API serverless trên Vercel)",
+  "scripts": { "dev": "vercel dev" }
+}
