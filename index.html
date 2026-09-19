@@ -456,6 +456,22 @@
   .mo-step button{width:32px;height:32px;border-radius:50%;border:0;background:#fff;color:var(--navy);font-family:var(--fd);font-weight:700;font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--sh1);line-height:1}
   .mo-step button.plus{background:var(--navy);color:#fff}
   .mo-step .qty{font-family:var(--fd);font-weight:700;font-size:16px;min-width:26px;text-align:center}
+  /* Đặt bổ sung tồn kho */
+  .rs-step{display:flex;align-items:center;gap:3px;background:var(--sc-low);border:1px solid var(--line);border-radius:999px;padding:3px;flex-shrink:0}
+  .rs-step button{width:28px;height:28px;border-radius:50%;border:0;background:#fff;color:var(--navy);font-family:var(--fd);font-weight:700;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:var(--sh1);line-height:1;transition:transform var(--t) var(--ease)}
+  .rs-step button:active{transform:scale(.9)}
+  .rs-step button.plus{background:var(--navy);color:#fff}
+  .rs-step .q{font-family:var(--fd);font-weight:700;font-size:14px;min-width:18px;text-align:center}
+  .rec-mini.rs-on{border-color:var(--navy);box-shadow:0 8px 20px -12px var(--navy)}
+  .rs-add{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--navy);background:#fff;color:var(--navy);font-family:var(--fd);font-weight:700;font-size:11.5px;padding:6px 11px;border-radius:999px;cursor:pointer;flex-shrink:0;transition:transform var(--t) var(--ease)}
+  .rs-add:active{transform:scale(.95)}
+  .rs-cart{border:1.5px solid var(--navy)}
+  .rs-cart .rs-line{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:6px 0;border-bottom:1px dashed var(--line)}
+  .rs-cart .rs-line:last-of-type{border-bottom:0}
+  .rs-row{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+  .rs-row:last-child{border-bottom:0}
+  .rs-re{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--red);background:var(--red-s);color:var(--red-d);font-family:var(--fd);font-weight:700;font-size:11px;padding:5px 10px;border-radius:999px;cursor:pointer}
+  .rs-hint{font-size:10.5px;font-weight:700;color:var(--red-d);margin-top:2px}
   .mo-add{display:flex;flex-wrap:wrap;gap:7px}
   .mo-add .chip{padding:7px 12px;font-size:11.5px;display:inline-flex;align-items:center;gap:5px}
   .mo-sum .row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0}
@@ -559,6 +575,34 @@
   /* Doc reader (full-screen, giống Wintop, có Quay lại) */
   #docreader{position:fixed;inset:0;z-index:120;background:#0F1633;display:none;flex-direction:column}
   #docreader.open{display:flex}
+  /* ===== HƯỚNG DẪN SỬ DỤNG (GUIDE) + TOUR — thêm mới, offline ===== */
+  #guide{position:fixed;inset:0;z-index:130;display:none;align-items:flex-end;justify-content:center;background:rgba(15,22,32,.5)}
+  #guide.open{display:flex;animation:gdFade var(--t) var(--ease)}
+  @keyframes gdFade{from{opacity:0}to{opacity:1}}
+  .gd-card{width:100%;max-width:480px;max-height:86vh;overflow-y:auto;background:#fff;border-radius:20px 20px 0 0;box-shadow:var(--sh2);padding:18px 16px calc(20px + env(safe-area-inset-bottom));animation:gdUp .34s var(--ease)}
+  @keyframes gdUp{from{transform:translateY(26px);opacity:.5}to{transform:translateY(0);opacity:1}}
+  .gd-hd{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .gd-hd h3{font-family:var(--fh);font-weight:700;font-size:17px;flex:1;margin:0;color:var(--navy)}
+  .gd-x{width:34px;height:34px;border:0;border-radius:50%;background:var(--sc-low);color:var(--on-var);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+  .gd-x:active{transform:scale(.94)}
+  .gd-step{display:flex;gap:12px;padding:10px 8px;border-radius:var(--r-sm);transition:background var(--t) var(--ease)}
+  .gd-step:active{background:var(--sc-low)}
+  .gd-chip{width:40px;height:40px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:21px;background:var(--sec-fx);color:var(--navy)}
+  .gd-step .n{font-family:var(--fd);font-weight:700;font-size:14px;color:var(--on)}
+  .gd-step .d{font-size:12.5px;color:var(--on-var);line-height:1.55;margin-top:2px}
+  .gd-cta{margin-top:12px}
+  #tourbd{position:fixed;z-index:9996;border-radius:14px;pointer-events:none;box-shadow:0 0 0 9999px rgba(15,22,32,.58),0 0 0 3px rgba(255,255,255,.92),0 0 22px 5px rgba(38,50,122,.45);transition:top var(--t) var(--ease),left var(--t) var(--ease),width var(--t) var(--ease),height var(--t) var(--ease)}
+  #tourpop{position:fixed;left:12px;right:12px;z-index:9998;background:#fff;border-radius:18px;padding:16px;box-shadow:0 16px 40px rgba(0,0,0,.32);max-width:456px;margin:0 auto;animation:gdUp .3s var(--ease)}
+  .tour-dots{display:flex;gap:6px;margin-bottom:10px}
+  .tour-dots i{flex:1;height:4px;border-radius:2px;background:var(--sc)}
+  .tour-dots i.on{background:var(--navy)}
+  .tour-pop-t{font-family:var(--fh);font-weight:700;font-size:16px;color:var(--navy)}
+  .tour-pop-d{font-size:13px;color:var(--on-var);line-height:1.55;margin:6px 0 14px}
+  .tour-btns{display:flex;gap:9px}
+  .tour-skip{flex:1;border:0;background:var(--sc-low);color:var(--on-var);border-radius:11px;padding:11px;font-weight:600;font-family:var(--fd);cursor:pointer}
+  .tour-next{flex:2;border:0;background:var(--navy);color:#fff;border-radius:11px;padding:11px;font-weight:700;font-family:var(--fd);cursor:pointer}
+  .tour-skip:active,.tour-next:active{transform:scale(.98)}
+  @media (prefers-reduced-motion:reduce){#guide.open,.gd-card,#tourpop{animation:none!important}#tourbd{transition:none!important}}
   .dr-bar{display:flex;align-items:center;gap:10px;padding:11px 12px;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;flex-shrink:0;box-shadow:0 2px 12px rgba(0,0,0,.35)}
   .dr-back{display:inline-flex;align-items:center;gap:3px;border:0;background:rgba(255,255,255,.18);color:#fff;font-family:var(--fd);font-weight:700;font-size:13px;padding:9px 14px 9px 8px;border-radius:12px;cursor:pointer}
   .dr-back .ic{font-size:20px}
@@ -588,6 +632,41 @@
   .fab{position:fixed;right:16px;bottom:calc(82px + env(safe-area-inset-bottom));z-index:45;width:56px;height:56px;border:0;border-radius:50%;background:var(--navy);color:#fff;box-shadow:0 12px 30px -8px rgba(31,45,107,.45);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:26px;transition:transform var(--t) var(--ease),box-shadow var(--t) var(--ease)}
   .fab:active{transform:scale(.94)}
   .fab .rd{position:absolute;top:4px;right:4px;width:12px;height:12px;border-radius:50%;background:var(--red);border:2px solid #fff}
+  /* TRỢ LÝ AI (assistant chat) */
+  #asst{position:fixed;inset:0;z-index:130;display:none}
+  #asst.open{display:block}
+  .as-bg{position:absolute;inset:0;background:rgba(15,20,45,.44);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+  .as-panel{position:absolute;left:0;right:0;bottom:0;max-width:640px;margin:0 auto;background:var(--card);border-radius:22px 22px 0 0;display:flex;flex-direction:column;max-height:88vh;box-shadow:0 -8px 40px rgba(23,31,82,.32);animation:asUp .34s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes asUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  .as-head{display:flex;align-items:center;gap:11px;padding:14px 14px 12px;border-bottom:1px solid var(--line);flex-shrink:0}
+  .as-av{width:42px;height:42px;border-radius:13px;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+  .as-tt{flex:1;min-width:0}
+  .as-tt b{display:block;font-family:var(--fd);font-weight:700;font-size:15px;color:var(--on)}
+  .as-tt span{font-size:11px;color:var(--on-var)}
+  .as-x{width:38px;height:38px;border:0;background:var(--sc-low);color:var(--navy);border-radius:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .as-x:active{transform:scale(.94)}
+  .as-log{flex:1;min-height:180px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:9px;background:var(--bg)}
+  .as-bub{max-width:82%;padding:10px 13px;border-radius:15px;font-size:13.5px;line-height:1.55;word-wrap:break-word}
+  .as-bub.a{align-self:flex-start;background:var(--card);color:var(--on);border:1px solid var(--line);border-bottom-left-radius:5px}
+  .as-bub.u{align-self:flex-end;background:var(--navy);color:#fff;border-bottom-right-radius:5px}
+  .as-bub b{font-weight:700}
+  .as-bub.fadein{animation:asFade .3s ease both}
+  @keyframes asFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .as-typing{display:inline-flex!important;gap:4px;align-items:center}
+  .as-typing span{width:7px;height:7px;border-radius:50%;background:var(--on-var);opacity:.5;animation:asBlink 1s infinite}
+  .as-typing span:nth-child(2){animation-delay:.2s}.as-typing span:nth-child(3){animation-delay:.4s}
+  @keyframes asBlink{0%,60%,100%{opacity:.3;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}
+  .as-chips{display:flex;gap:7px;overflow-x:auto;padding:9px 12px 0;flex-shrink:0}
+  .as-chips.as-quick{padding:7px 12px 3px}
+  .as-chip{white-space:nowrap;flex:0 0 auto;background:var(--card);border:1.5px solid var(--line);color:var(--on);border-radius:999px;padding:7px 13px;font-size:12px;font-weight:600;cursor:pointer}
+  .as-chip.alt{background:var(--sc-low);border-color:transparent;color:var(--navy)}
+  .as-chip:active{transform:scale(.96)}
+  .as-input{display:flex;gap:8px;padding:11px 12px calc(11px + env(safe-area-inset-bottom));border-top:1px solid var(--line);flex-shrink:0;background:var(--card)}
+  .as-input input{flex:1;border:1.5px solid var(--line);border-radius:13px;padding:11px 14px;font-size:14px;font-family:var(--fh);outline:none;background:var(--sc-low);color:var(--on)}
+  .as-input input:focus{border-color:var(--navy);background:var(--card)}
+  .as-send{width:46px;border:0;border-radius:13px;background:var(--navy);color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .as-send:active{transform:scale(.94)}
+  @media (prefers-reduced-motion:reduce){.as-panel,.as-bub.fadein,.as-typing span{animation:none!important}}
   .nav{position:fixed;left:0;right:0;bottom:0;z-index:40;max-width:640px;margin:0 auto;min-height:64px;background:rgba(255,255,255,.94);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);border-top:1px solid rgba(31,45,107,.07);box-shadow:0 -2px 16px rgba(31,45,107,.05);display:flex;padding-bottom:env(safe-area-inset-bottom)}
   .nav button{position:relative;flex:1;background:none;border:0;font-family:var(--fd);font-size:10.5px;font-weight:600;color:var(--on-var);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 0;transition:color var(--t) var(--ease)}
   .nav button .ic{font-size:24px;transition:transform var(--t) var(--ease)}
@@ -859,7 +938,7 @@
   <div id="view"></div>
 </div>
 
-<button class="fab" onclick="toast('Trợ lý AI dinh dưỡng — bản kế tiếp')"><span class="ic" data-ic="neurology"></span><span class="rd"></span></button>
+<button class="fab" onclick="openAsst()" aria-label="Trợ lý Nutritie"><span class="ic" data-ic="neurology"></span><span class="rd"></span></button>
 <nav class="nav" id="nav">
   <button data-t="home" class="on"><span class="ic" data-ic="home"></span>Trang chủ</button>
   <button data-t="tuvan"><span class="ic" data-ic="stethoscope"></span>Tư vấn</button>
@@ -875,6 +954,8 @@
   <div class="lg-wrap" id="loginin"></div>
 </div>
 <div id="docreader"></div>
+<div id="guide"></div>
+<div id="asst"></div>
 
 <script>
 /* ===== ICON SVG (nhúng, không cần mạng) ===== */
@@ -938,6 +1019,7 @@ var ICONS={
  analytics:'<path d="M4 4v16h16"/><path d="M8 16v-4M12 16V8M16 16v-6"/>',
  schedule:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+ help:'<circle cx="12" cy="12" r="9"/><path d="M9.3 9.3a2.8 2.8 0 1 1 4 2.5c-.9.5-1.3 1-1.3 2M12 17h.01"/>',
  call:'<path d="M6 3h3l1.5 5-2 1.2a11 11 0 0 0 5 5l1.2-2 5 1.5v3a2 2 0 0 1-2.1 2A16 16 0 0 1 4 5.1 2 2 0 0 1 6 3z"/>',
  home_pin:'<path d="M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10z"/><path d="M9.5 12v-2.2L12 8l2.5 1.8V12"/>'
 };
@@ -1075,7 +1157,7 @@ document.addEventListener('pointerdown',function(ev){
  setTimeout(function(){if(sp.parentNode)sp.parentNode.removeChild(sp);},600);
 },true);
 
-var S={tab:"home",step:1,user:{obj:"",gender:"Nam",senior:false,postpartum:false,preterm:"",hist:[],cur:""},m:{},cls:null,needs:[],cart:{},orderVar:{},orderNote:"",orderPhone:"",orderCtkm:"",pg:"",
+var S={tab:"home",step:1,user:{obj:"",gender:"Nam",senior:false,postpartum:false,preterm:"",hist:[],cur:""},m:{},cls:null,needs:[],cart:{},rcart:{},orderVar:{},orderNote:"",orderPhone:"",orderCtkm:"",pg:"",
  growth:{baby:"",tab:"w",all5:false,edit:null,addingBaby:false,editBaby:null},gf:{},bf:{},orderName:"",orderAddr:"",orderDisc:"",quiz:null,docCat:"Tất cả",docType:"Tất cả"};
 var V=document.getElementById('view');
 
@@ -1659,17 +1741,79 @@ function syncStock(){ var url=stockUrl();
   }catch(e){ toast("Không kết nối được kho — giữ số liệu tại máy."); }
   return; }
  var s=stockData(); s.at=Date.now(); lsSet(STOCK_KEY,s); toast("Đã đồng bộ tồn kho (mô phỏng)."); draw(); }
+/* -- Đặt bổ sung tồn kho (Restock request) — port tinh thần Wintop; đầu chờ online, offline-safe --
+   RESTOCK_URL rỗng → MÔ PHỎNG (coi như đã gửi). Có giá trị (hoặc SYNC_URL bật) → POST thật lên server.
+   Giỏ bổ sung dùng S.rcart (KHÔNG đụng S.cart của bán hàng). Hàng đợi ở localStorage key nt_restock. */
+var RESTOCK_KEY="nt_restock";
+var RESTOCK_URL="";      // ← điền endpoint đặt bổ sung khi nối backend; rỗng = mô phỏng
+function restocks(){ return lsGet(RESTOCK_KEY,[]); }
+function saveRestocks(a){ lsSet(RESTOCK_KEY,a); }
+function restockUrl(){ return RESTOCK_URL||(SYNC_URL?(NT_DEF.base+"/restock"):""); }
+function rcartCount(){ var n=0,c=S.rcart||{}; for(var k in c)n+=c[k]||0; return n; }
+function rcartAdd(id,delta){ if(!S.rcart)S.rcart={}; if(!P(id))return; var nv=(S.rcart[id]||0)+delta; if(nv<0)nv=0; if(nv<=0)delete S.rcart[id]; else S.rcart[id]=nv; if(S.tab==="stock")draw(); }
+function rcartClear(){ S.rcart={}; if(S.tab==="stock")draw(); }
+function rcartSuggest(){ if(!S.rcart)S.rcart={}; var s=stockData(),added=0; PRODUCTS.forEach(function(p){ var q=s.items[p.id]; if(q==null)return; if(q<=STOCK_LOW){ if(!S.rcart[p.id])S.rcart[p.id]=6; added++; } }); toast(added?("Đã gợi ý bổ sung "+added+" sản phẩm — chỉnh số lượng rồi gửi."):"Không có sản phẩm nào sắp/hết hàng."); if(S.tab==="stock")draw(); }
+function rsTime(at){ if(!at)return""; var s=Math.floor((Date.now()-at)/1000); if(s<60)return"vừa xong"; if(s<3600)return Math.floor(s/60)+" phút trước"; if(s<86400)return Math.floor(s/3600)+" giờ trước"; if(s<7*86400)return Math.floor(s/86400)+" ngày trước"; return new Date(at).toLocaleDateString('vi-VN'); }
+function sendRestock(){
+  var c=S.rcart||{}, keys=Object.keys(c).filter(function(k){return c[k]>0;});
+  if(!keys.length){ toast("Chưa chọn sản phẩm để bổ sung."); return; }
+  var req={ id:"RS"+Date.now().toString(36).toUpperCase(), pg:S.pg||"", at:Date.now(),
+    items: keys.map(function(k){ var p=P(k); return {sku:k,name:p?p.name:k,qty:c[k]}; }), status:"cho_gui" };
+  var n=req.items.reduce(function(s,it){return s+(it.qty||0);},0), np=req.items.length, url=restockUrl();
+  function done(){ var a=restocks(); a.unshift(req); if(a.length>60)a=a.slice(0,60); saveRestocks(a);
+    if(typeof pushNotif==="function")pushNotif("add_shopping_cart","Đã gửi yêu cầu bổ sung",np+" SP · "+n+" đơn vị"+(req.status==="loi_gui"?" (lỗi gửi)":(req.status==="cho_gui"?" (chờ mạng)":"")));
+    S.rcart={};
+    toast(req.status==="da_gui"?("Đã gửi yêu cầu bổ sung "+np+" sản phẩm."):"Đã lưu yêu cầu bổ sung — sẽ gửi lại khi có mạng.");
+    draw(); }
+  if(url && navigator.onLine){ try{
+    fetch(url,{method:"POST",headers:ntHeaders(),body:JSON.stringify(req)})
+     .then(function(r){ req.status=(r&&r.ok)?"da_gui":"loi_gui"; })
+     .catch(function(){ req.status="loi_gui"; })
+     .then(function(){ done(); });
+  }catch(e){ req.status="loi_gui"; done(); } return; }
+  /* mô phỏng (không có endpoint) → coi như đã gửi; có endpoint nhưng offline → chờ gửi lại */
+  req.status=url?"cho_gui":"da_gui"; done();
+}
+function restockResend(id){ var a=restocks(),req=null; for(var i=0;i<a.length;i++)if(a[i].id===id){req=a[i];break;} if(!req)return;
+  var url=restockUrl();
+  if(url && navigator.onLine){ try{
+    fetch(url,{method:"POST",headers:ntHeaders(),body:JSON.stringify(req)})
+     .then(function(r){ req.status=(r&&r.ok)?"da_gui":"loi_gui"; })
+     .catch(function(){ req.status="loi_gui"; })
+     .then(function(){ saveRestocks(a); toast(req.status==="da_gui"?"Đã gửi lại yêu cầu bổ sung.":"Gửi lại lỗi — thử lại khi có mạng."); draw(); });
+  }catch(e){ toast("Không gửi được — kiểm tra mạng."); } return; }
+  if(!url){ req.status="da_gui"; saveRestocks(a); toast("Đã gửi lại (mô phỏng)."); draw(); return; }
+  toast("Đang offline — sẽ gửi lại khi có mạng.");
+}
 function renderStock(){ var s=stockData();
  var tot=PRODUCTS.length,low=0,out=0;
  PRODUCTS.forEach(function(p){ var q=s.items[p.id]; if(q==null)return; if(q<=0)out++; else if(q<=STOCK_LOW)low++; });
  var url=stockUrl(),conn=!!url;
+ var rc=S.rcart||{},rcKeys=Object.keys(rc).filter(function(k){return rc[k]>0;}),rcQty=0;rcKeys.forEach(function(k){rcQty+=rc[k];});
+ var rsList=restocks();
+ var rsCart=rcKeys.length?('<div class="card rs-cart" style="margin-top:12px"><div class="sec-l" style="margin-bottom:6px"><div class="sec-ic">'+ic('add_shopping_cart')+'</div><div style="flex:1"><h3 style="font-size:15px">Yêu cầu bổ sung</h3><div class="sub">'+rcKeys.length+' sản phẩm · '+rcQty+' đơn vị</div></div></div>'
+   +rcKeys.map(function(k){var p=P(k);return '<div class="rs-line"><span style="min-width:0">'+esc(p?p.name:k)+'</span><span style="font-family:var(--fd);font-weight:700;color:var(--navy);white-space:nowrap">'+rc[k]+' đơn vị</span></div>';}).join('')
+   +'<div style="display:flex;gap:8px;margin-top:12px"><button class="btn btnO" style="flex:1" onclick="rcartClear()">'+ic('delete')+'Xóa</button><button class="btn press" style="flex:2" onclick="sendRestock()">'+ic('check')+'Gửi yêu cầu bổ sung</button></div></div>'):'';
+ var rsRecent=rsList.length?('<div class="card" style="margin-top:12px"><div class="sec-l" style="margin-bottom:8px"><div class="sec-ic">'+ic('receipt_long')+'</div><h3 style="font-size:15px">Yêu cầu bổ sung gần đây</h3></div>'
+   +rsList.slice(0,6).map(function(r){ var st=OST[r.status]||OST.cho_gui; var its=(r.items||[]).map(function(it){return (it.qty||0)+'× '+esc(it.name);}).join(', '); var tq=(r.items||[]).reduce(function(a,it){return a+(it.qty||0);},0);
+     return '<div class="rs-row"><div style="flex:1;min-width:0"><div style="font-family:var(--fd);font-weight:700;font-size:12.5px;color:var(--navy)">'+esc(r.id)+' · '+rsTime(r.at)+'</div><div style="font-size:12px;color:var(--on-var);margin-top:3px;line-height:1.5">'+its+'</div><div style="font-size:11px;color:var(--on-var);margin-top:2px">'+tq+' đơn vị · '+((r.items||[]).length)+' SP</div></div><div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0"><span class="badge" style="background:'+st[2]+';color:'+st[1]+'">'+st[0]+'</span>'+(r.status==="loi_gui"?'<button class="rs-re" onclick="restockResend(\''+r.id+'\')">'+ic('refresh')+'Gửi lại</button>':'')+'</div></div>';
+   }).join('')+'</div>'):'';
+ var rsSuggest=(low+out)>0?('<button class="btn btnO" style="margin-top:12px" onclick="rcartSuggest()">'+ic('add_shopping_cart')+'Gợi ý bổ sung SP sắp/hết hàng</button>'):'';
  var rows=PRODUCTS.map(function(p){ var q=s.items[p.id],isNull=(q==null);
    var state=isNull?'':(q<=0?'out':(q<=STOCK_LOW?'low':'ok')),bd=(state==='out'||state==='low');
    var qcol=state==='out'?'var(--red-d)':(state==='low'?'var(--warn-d)':(isNull?'var(--on-var)':'var(--navy)'));
-   return '<div class="rec-mini" style="margin-bottom:8px'+(bd?';background:var(--sc-low);border-left:3px solid '+(state==='out'?'var(--red)':'var(--warn)'):'')+'"><div class="e" style="background:'+p.grad+';width:44px;height:44px;font-size:22px">'+p.e+'</div><div style="flex:1;min-width:0"><div style="font-family:var(--fd);font-weight:700;font-size:13px">'+esc(p.name)+'</div><div style="margin-top:3px">'+(isNull?'<span style="font-size:10.5px;color:var(--on-var)">chưa thiết lập</span>':stockBadge(p.id))+'</div></div><div style="text-align:right"><div style="font-family:var(--fd);font-weight:700;font-size:18px;color:'+qcol+'">'+(isNull?'—':q)+'</div><div style="font-size:10px;color:var(--on-var)">tồn</div></div></div>'; }).join('');
+   var rq=(S.rcart&&S.rcart[p.id])||0;
+   var hint=state==='out'?'<div class="rs-hint">Hết hàng — nên đặt bổ sung</div>':(state==='low'?'<div class="rs-hint">Sắp hết — nên đặt bổ sung</div>':'');
+   var step=rq>0
+     ? '<div class="rs-step"><button onclick="rcartAdd(\''+p.id+'\',-1)">&minus;</button><span class="q" id="rq_'+p.id+'">'+rq+'</span><button class="plus" onclick="rcartAdd(\''+p.id+'\',1)">+</button></div>'
+     : '<button class="rs-add press" onclick="rcartAdd(\''+p.id+'\',1)">'+ic('add')+'Bổ sung</button>';
+   return '<div class="rec-mini'+(rq>0?' rs-on':'')+'" style="margin-bottom:8px'+(bd?';background:var(--sc-low);border-left:3px solid '+(state==='out'?'var(--red)':'var(--warn)'):'')+'"><div class="e" style="background:'+p.grad+';width:44px;height:44px;font-size:22px">'+p.e+'</div><div style="flex:1;min-width:0"><div style="font-family:var(--fd);font-weight:700;font-size:13px">'+esc(p.name)+'</div><div style="margin-top:3px">'+(isNull?'<span style="font-size:10.5px;color:var(--on-var)">chưa thiết lập</span>':stockBadge(p.id))+'</div>'+hint+'</div><div style="text-align:right"><div style="font-family:var(--fd);font-weight:700;font-size:18px;color:'+qcol+'">'+(isNull?'—':q)+'</div><div style="font-size:10px;color:var(--on-var)">tồn</div></div>'+step+'</div>'; }).join('');
  return '<div class="sec" style="margin-bottom:12px"><div class="sec-l"><div class="sec-ic">'+ic('monitor_weight')+'</div><div><h3>Tồn kho tại quầy</h3><div class="sub">'+(conn?'Nối kho':'Mô phỏng')+' · cập nhật '+new Date(s.at).toLocaleString('vi-VN')+'</div></div></div></div>'
   +'<div class="ord-strip"><div class="ord-stat" style="--tc:var(--navy)"><div class="n">'+tot+'</div><div class="l">Tổng SKU</div></div><div class="ord-stat" style="--tc:var(--warn-d)"><div class="n">'+low+'</div><div class="l">Sắp hết</div></div><div class="ord-stat" style="--tc:var(--red-d)"><div class="n">'+out+'</div><div class="l">Hết hàng</div></div></div>'
+  +rsSuggest
   +'<div class="stack">'+rows+'</div>'
+  +rsCart
+  +rsRecent
   +'<button class="btn btnO" style="margin-top:12px" onclick="syncStock()">'+ic('refresh')+'Đồng bộ tồn kho</button>'
   +'<div class="card" style="margin-top:12px"><div class="sec-l" style="margin-bottom:8px"><div class="sec-ic">'+ic('hub')+'</div><h3 style="font-size:15px">Đầu chờ kết nối kho</h3></div><div style="font-size:12.5px;color:var(--on-var);line-height:1.7">Trạng thái: <b style="color:'+(conn?'var(--ok)':'var(--navy)')+'">'+(conn?'Đã nối server kho':'Mô phỏng — số liệu tại máy')+'</b><br>Endpoint: <b style="color:var(--navy)">'+esc(url||(NT_DEF.base+NT_DEF.stock))+'</b><br>Tenant: <b style="color:var(--navy)">'+esc(ntTenant())+'</b> · Ngưỡng sắp hết: <b style="color:var(--navy)">'+STOCK_LOW+'</b></div></div>'; }
 /* -- Bộ đếm KPI + Cấp bậc -- */
@@ -1927,8 +2071,66 @@ function toggleCare(phone){ var d=crmData(); if(!d[phone])d[phone]={}; d[phone].
 var DRAWER=[["trending_up","Biểu đồ tăng trưởng","growth"],["add_shopping_cart","Lên đơn","makeorder"],["receipt_long","Đơn của tôi","orders"],["person","Khách hàng (CRM)","crm"],["query_stats","Thống kê & báo cáo","stats"],["account_circle","Hồ sơ","profile"],["leaderboard","Xếp hạng","rank"],["quiz","Quiz nghiệp vụ","quiz"],["sell","Ưu đãi & CTKM","promo"],["article","Tài liệu đào tạo","docs"],["monitor_weight","Tồn kho","stock"],["rate_review","Cảm nhận khách hàng","feedback"],["volunteer_activism","Thiện nguyện","csr"],["shield","Quản trị","admin"]];
 function buildDrawer(){var pgline=S.pg?'<div style="padding:4px 12px 10px;font-size:12px;color:var(--on-var)">Đang trực: <b style="color:var(--navy);font-family:var(--fd)">'+esc(S.pg)+'</b></div>':'';
  var items=DRAWER.map(function(d){var on=d[2]&&d[2]===S.tab;var act=d[2]?"document.getElementById('dtog').checked=false;go('"+d[2]+"')":"document.getElementById('dtog').checked=false;toast('"+d[1]+" — bản kế tiếp')";var suf=d[2]?(on?'<span class="dcur"></span>':''):'<span class="soon">Sắp có</span>';return '<a'+(on?' class="dact"':'')+' onclick="'+act+'">'+ic(d[0])+'<span style="flex:1">'+d[1]+'</span>'+suf+'</a>';}).join('');
- var logout='<a onclick="doLogout()" style="border-top:1px solid var(--line);margin-top:6px;color:var(--red)">'+ic('refresh')+'<span style="flex:1">Đổi ca / Đăng xuất</span></a>';
- document.getElementById('drawernav').innerHTML=pgline+items+logout;}
+ var guide='<a onclick="document.getElementById(\'dtog\').checked=false;openGuide()" style="border-top:1px solid var(--line);margin-top:6px">'+ic('help')+'<span style="flex:1">Hướng dẫn sử dụng</span></a>';
+ var logout='<a onclick="doLogout()" style="color:var(--red)">'+ic('refresh')+'<span style="flex:1">Đổi ca / Đăng xuất</span></a>';
+ document.getElementById('drawernav').innerHTML=pgline+items+guide+logout;}
+
+/* ===== HƯỚNG DẪN SỬ DỤNG (GUIDE) + TOUR ONBOARDING — thêm mới, offline, không đụng engine ===== */
+function openGuide(){
+ var g=document.getElementById('guide'); if(!g)return;
+ var steps=[
+  ['stethoscope','Bắt đầu tư vấn','Tab <b>Tư vấn</b> → nhập đối tượng, đo chỉ số (BMI/Z-score chuẩn WHO) → app gợi ý sản phẩm phù hợp trong ~2–3 phút.'],
+  ['add_shopping_cart','Lên đơn','Chọn sản phẩm + số lượng (app tự kiểm tồn tại quầy) → Chốt đơn → theo dõi ở <b>Đơn của tôi</b>.'],
+  ['nutrition','Tra cứu sản phẩm','Tab <b>Sản phẩm</b>: xem công dụng, thành phần, HSCB và phiếu kiểm nghiệm từng SKU.'],
+  ['quiz','Ôn nghiệp vụ','Làm <b>Quiz</b> và đọc <b>Tài liệu đào tạo</b> để nâng cao nghiệp vụ và lên hạng.'],
+  ['neurology','Trợ lý AI','Chạm nút trợ lý (góc phải dưới) để hỏi nhanh về sản phẩm, đơn, tồn kho, dinh dưỡng.']
+ ];
+ var rows=steps.map(function(s,i){return '<div class="gd-step"><span class="gd-chip">'+ic(s[0])+'</span><div><div class="n">'+(i+1)+'. '+s[1]+'</div><div class="d">'+s[2]+'</div></div></div>';}).join('');
+ g.innerHTML='<div class="gd-card" onclick="event.stopPropagation()"><div class="gd-hd"><span class="gd-chip">'+ic('help')+'</span><h3>Hướng dẫn sử dụng</h3><button class="gd-x" onclick="closeGuide()" aria-label="Đóng">'+ic('close')+'</button></div>'+rows+'<button class="btn btnN gd-cta press" onclick="startTour()">'+ic('neurology')+'Xem hướng dẫn tương tác</button></div>';
+ g.setAttribute('onclick','if(event.target===this)closeGuide()');
+ g.classList.add('open'); document.body.style.overflow='hidden';
+}
+function closeGuide(){ var g=document.getElementById('guide'); if(g){ g.classList.remove('open'); g.innerHTML=''; g.removeAttribute('onclick'); } document.body.style.overflow=''; }
+
+var NT_TOUR=[
+ {t:'Bắt đầu tư vấn',d:'Chạm tab Tư vấn để mở phiên tư vấn: nhập đối tượng, đo chỉ số rồi để app gợi ý sản phẩm phù hợp.',sel:function(){return document.querySelector('#nav button[data-t="tuvan"]');}},
+ {t:'Lên đơn nhanh',d:'Từ Trang chủ, chạm ô Lên đơn để chọn sản phẩm, kiểm tồn tại quầy và chốt đơn.',tab:'home',sel:function(){var q=document.querySelectorAll('.qtile');for(var i=0;i<q.length;i++){if((q[i].getAttribute('onclick')||'').indexOf('makeorder')>-1)return q[i];}return null;}},
+ {t:'Tra cứu sản phẩm',d:'Tab Sản phẩm cho bạn công dụng, thành phần, HSCB và phiếu kiểm nghiệm từng SKU.',sel:function(){return document.querySelector('#nav button[data-t="sp"]');}},
+ {t:'Trợ lý AI',d:'Chạm nút trợ lý để hỏi nhanh về sản phẩm, đơn hàng, tồn kho hay dinh dưỡng.',sel:function(){return document.querySelector('.fab');}}
+];
+var _ntTourI=0;
+function _ntTourResolve(s){ try{ return typeof s.sel==='function'?s.sel():document.querySelector(s.sel); }catch(e){ return null; } }
+function _ntTourClear(){ try{ var p=document.getElementById('tourpop'); if(p)p.remove(); var b=document.getElementById('tourbd'); if(b)b.remove(); }catch(e){} }
+function endTour(){ _ntTourClear(); document.body.style.overflow=''; try{lsSet('nt_guided',1);}catch(e){} }
+function startTour(){ _ntTourI=0; closeGuide(); try{document.getElementById('dtog').checked=false;}catch(e){} setTimeout(_ntTourStep,180); }
+function tourNext(){ _ntTourI++; if(_ntTourI>=NT_TOUR.length){ endTour(); toast('Xong hướng dẫn! Chúc bán hàng vui.'); return; } _ntTourStep(); }
+function _ntTourStep(){
+ _ntTourClear();
+ var s=NT_TOUR[_ntTourI]; if(!s){ endTour(); return; }
+ var switched=s.tab&&S.tab!==s.tab;
+ if(switched){ try{go(s.tab);}catch(e){} }
+ setTimeout(function(){
+  var tgt=_ntTourResolve(s);
+  if(!tgt){ _ntTourI++; if(_ntTourI>=NT_TOUR.length){ endTour(); toast('Xong hướng dẫn!'); return; } _ntTourStep(); return; }
+  try{tgt.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){}
+  setTimeout(function(){ _ntTourPaint(s,tgt); }, 220);
+ }, switched?340:40);
+}
+function _ntTourPaint(s,tgt){
+ var r=tgt.getBoundingClientRect(), pad=6;
+ var bd=document.createElement('div'); bd.id='tourbd';
+ bd.style.top=Math.max(0,r.top-pad)+'px'; bd.style.left=Math.max(0,r.left-pad)+'px';
+ bd.style.width=(r.width+pad*2)+'px'; bd.style.height=(r.height+pad*2)+'px';
+ document.body.appendChild(bd);
+ var last=_ntTourI+1>=NT_TOUR.length;
+ var dots=NT_TOUR.map(function(_,i){return '<i class="'+(i<=_ntTourI?'on':'')+'"></i>';}).join('');
+ var pop=document.createElement('div'); pop.id='tourpop';
+ pop.innerHTML='<div class="tour-dots">'+dots+'</div><div class="tour-pop-t">'+esc(s.t)+'</div><div class="tour-pop-d">'+esc(s.d)+'</div><div class="tour-btns"><button class="tour-skip" onclick="endTour()">Bỏ qua</button><button class="tour-next" onclick="tourNext()">'+(last?'Xong':'Tiếp')+'</button></div>';
+ document.body.appendChild(pop);
+ var ph=pop.offsetHeight||190;
+ if(r.top>window.innerHeight*0.5){ pop.style.top=Math.max(12,r.top-ph-16)+'px'; }
+ else{ pop.style.top=Math.min(window.innerHeight-ph-16,r.bottom+16)+'px'; }
+}
 
 /* ===== KHU QUẢN TRỊ (ADMIN) — nhẹ, offline, localStorage =====
    Cổng PIN cho quản lý điểm bán: xem toàn bộ đơn/khách + xuất CSV.
@@ -2055,6 +2257,113 @@ window.addEventListener('online',syncOrders);setInterval(syncOrders,30000);/* re
 /* Nhắc cân đo cho bé qua chuông thông báo (tận dụng biểu đồ tăng trưởng) */
 function growthReminderCheck(){ try{ var due=(typeof dueBabies==="function")?dueBabies():[]; if(!due.length){updateBell();return;} var has=dynNotifs().some(function(n){return n.t==="Đến hẹn cân đo cho bé"&&n.at&&(Date.now()-n.at)<20*3600000;}); if(!has)pushNotif('notifications','Đến hẹn cân đo cho bé',due.map(function(b){return b.ten||"Bé";}).join(", ")+' — đã hơn 30 ngày chưa cập nhật số đo cho bé.'); updateBell(); }catch(e){} }
 growthReminderCheck();updateBell();
+
+/* ===== TRỢ LÝ NUTRITIE (AI Assistant · offline-first) ===== */
+/* Đầu chờ online: đặt ASST_URL để gọi API /assistant. Để trống = chạy offline thuần bằng asstReply(). */
+var ASST_URL="";
+var asstOpen=false;
+var asstLog=(function(){ try{ var a=lsGet('nt_asst',[]); return Array.isArray(a)?a.slice(-40):[]; }catch(e){ return []; } })();
+function saveAsst(){ try{ lsSet('nt_asst', asstLog.slice(-40)); }catch(e){} }
+function asstNorm(s){ try{ return String(s==null?'':s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d'); }catch(e){ return String(s==null?'':s).toLowerCase(); } }
+function asstMd(t){ var h=esc(t); h=h.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>'); h=h.replace(/\n/g,'<br>'); return h; }
+function asstGreet(){ var hr=new Date().getHours(), g=hr<11?'Chào buổi sáng':hr<18?'Chào buổi chiều':'Chào buổi tối'; return g+'! Mình là **Trợ lý Nutritie**. Mình giúp bạn tra cứu nhanh sản phẩm, đơn hàng, tồn kho và gợi ý dinh dưỡng. Bạn cần hỏi gì nào?'; }
+function openAsst(){ asstOpen=true; if(!asstLog.length){ asstLog.push({r:'a',t:asstGreet()}); saveAsst(); } var o=document.getElementById('asst'); if(o)o.className='open'; document.body.style.overflow='hidden'; renderAsst(); }
+function closeAsst(){ asstOpen=false; var o=document.getElementById('asst'); if(o){ o.className=''; o.innerHTML=''; } document.body.style.overflow=''; }
+function clearAsst(){ asstLog=[]; asstLog.push({r:'a',t:asstGreet()}); saveAsst(); renderAsst(); }
+function renderAsst(){ var o=document.getElementById('asst'); if(!o)return; if(!asstOpen){ o.className=''; o.innerHTML=''; return; }
+ var sugg=[{t:'💡 Mẹo bán hàng',c:'tip'},{t:'📦 Tình trạng đơn',c:'orders'},{t:'📊 Kiểm tồn kho',c:'stock'},{t:'❓ Hỏi thường gặp',c:'qa'},{t:'🔗 Chia sẻ',c:'share'}];
+ var quick=['Trẻ biếng ăn dùng gì?','Mẹ bầu nên uống gì?','Nutritie Pedia A+ là gì?','Còn hàng Grow IQ không?','Trẻ táo bón xử lý sao?'];
+ o.innerHTML='<div class="as-bg" onclick="closeAsst()"></div><div class="as-panel">'
+  +'<div class="as-head"><div class="as-av">'+ic('neurology')+'</div><div class="as-tt"><b>Trợ lý Nutritie</b><span>Sản phẩm · đơn hàng · tồn kho · dinh dưỡng</span></div><button class="as-x" onclick="clearAsst()" title="Làm mới hội thoại">'+ic('refresh')+'</button><button class="as-x" onclick="closeAsst()" title="Đóng">'+ic('close')+'</button></div>'
+  +'<div class="as-log" id="asstlog">'+asstLog.map(function(m){ return '<div class="as-bub '+(m.r==='u'?'u':'a')+'">'+((m.r==='a')?asstMd(m.t):esc(m.t).replace(/\n/g,'<br>'))+'</div>'; }).join('')+'</div>'
+  +'<div class="as-chips">'+sugg.map(function(s){ return '<button class="as-chip" onclick="asstChip(\''+s.c+'\')">'+s.t+'</button>'; }).join('')+'</div>'
+  +'<div class="as-chips as-quick">'+quick.map(function(q){ return '<button class="as-chip alt" onclick="asstSend(\''+q.replace(/'/g,"\\'")+'\')">'+esc(q)+'</button>'; }).join('')+'</div>'
+  +'<div class="as-input"><input id="asstin" placeholder="Nhập câu hỏi…" autocomplete="off" onkeydown="if(event.key===\'Enter\'){asstSend(this.value);this.value=\'\';}"><button class="as-send" onclick="var i=document.getElementById(\'asstin\');asstSend(i.value);i.value=\'\'" aria-label="Gửi">'+ic('chevron_right')+'</button></div>'
+  +'</div>';
+ var l=document.getElementById('asstlog'); if(l)l.scrollTop=l.scrollHeight; var inp=document.getElementById('asstin'); if(inp)inp.focus();
+}
+function asstAppend(r,t){ var l=document.getElementById('asstlog'); if(!l)return; var d=document.createElement('div'); d.className='as-bub '+(r==='u'?'u':'a')+(r==='a'?' fadein':''); d.innerHTML=(r==='a')?asstMd(t):esc(t).replace(/\n/g,'<br>'); l.appendChild(d); l.scrollTop=l.scrollHeight; }
+function asstTyping(){ var l=document.getElementById('asstlog'); if(!l)return null; var d=document.createElement('div'); d.className='as-bub a as-typing'; d.innerHTML='<span></span><span></span><span></span>'; l.appendChild(d); l.scrollTop=l.scrollHeight; return d; }
+function asstSend(t){ t=(t||'').trim(); if(!t)return; asstLog.push({r:'u',t:t}); asstAppend('u',t); saveAsst();
+ var inp=document.getElementById('asstin'); if(inp)inp.value='';
+ var typ=asstTyping();
+ function finish(ans){ if(typ&&typ.parentNode)typ.parentNode.removeChild(typ); asstLog.push({r:'a',t:ans}); asstAppend('a',ans); saveAsst(); var l=document.getElementById('asstlog'); if(l)l.scrollTop=l.scrollHeight; }
+ if(ASST_URL && navigator.onLine){
+   var done=false, to=setTimeout(function(){ if(done)return; done=true; finish(asstReply(t)); },12000);
+   try{
+     fetch(ASST_URL,{method:'POST',headers:ntHeaders(),body:JSON.stringify({q:t,context:{pg:S.pg,tab:S.tab}})})
+      .then(function(r){ return r.ok?r.json():Promise.reject(new Error('http')); })
+      .then(function(d){ if(done)return; done=true; clearTimeout(to); finish((d&&(d.answer||d.reply))?(d.answer||d.reply):asstReply(t)); })
+      .catch(function(){ if(done)return; done=true; clearTimeout(to); finish(asstReply(t)); });
+   }catch(e){ if(!done){ done=true; clearTimeout(to); finish(asstReply(t)); } }
+ } else {
+   var ans=asstReply(t), delay=480+Math.min(1100,ans.length*6); setTimeout(function(){ finish(ans); },delay);
+ }
+ if(inp)inp.focus();
+}
+function asstChip(c){
+ if(c==='qa'){ closeAsst(); go('qa'); return; }
+ if(c==='orders'){ asstSend('tình trạng đơn hàng'); return; }
+ if(c==='stock'){ asstSend('kiểm tồn kho'); return; }
+ if(c==='tip'){ var TIPS=['Đo Z-score/BMI trước khi gợi ý sản phẩm — đúng chỉ số, đúng sản phẩm.','Bé nhẹ cân là ưu tiên số 1: chọn dòng đậm độ cao (Pedia A+).','Khách hay ốm → nhấn mạnh Sữa non/IgG + 2\'-FL HMO.','Chốt nhanh: cho khách xem số lon/tháng + thành tiền.','Trẻ <24 tháng: luôn kèm câu "Sữa mẹ là tốt nhất cho trẻ sơ sinh & trẻ nhỏ".','Mẹ nghi tiểu đường thai kỳ → ngưng tư vấn, mời đi khám bác sĩ.']; var m='💡 '+TIPS[Math.floor(Math.random()*TIPS.length)]; asstLog.push({r:'a',t:m}); asstAppend('a',m); saveAsst(); return; }
+ if(c==='share'){ var txt='Nutritie — Dinh dưỡng chuẩn công bố cho cả nhà. Tư vấn cùng '+(S.pg||'Nutritie')+' nhé!'; var did=false; try{ if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(txt); did=true; } }catch(e){} var m2=(did?'✂️ Đã sao chép nội dung để chia sẻ lên Zalo/Facebook:\n"':'📋 Nội dung chia sẻ (copy thủ công):\n"')+txt+'"'; asstLog.push({r:'a',t:m2}); asstAppend('a',m2); saveAsst(); return; }
+}
+var ASST_PK={baby:['baby'],bio:['bio a','bioa','bio'],pedia:['pedia'],growiq:['grow iq','growiq','grow','iq'],colostrum:['colostrum','pha san'],canxipro:['canxi pro','canxipro','xuong khop'],mama:['mama']};
+function asstFindProd(nq){ var i,p,key;
+ for(i=0;i<PRODUCTS.length;i++){ p=PRODUCTS[i]; key=asstNorm(p.name.replace(/nutritie/ig,'')).trim(); if(key&&key.length>=3&&nq.indexOf(key)>=0)return p; }
+ for(var id in ASST_PK){ var arr=ASST_PK[id]; for(i=0;i<arr.length;i++){ if(nq.indexOf(arr[i])>=0){ p=P(id); if(p)return p; } } }
+ return null; }
+function asstOverlap(d,qn){ var toks=qn.split(/[^a-z0-9]+/).filter(function(w){return w.length>=4;}); if(!toks.length)return false; var hit=0; for(var i=0;i<toks.length;i++)if(d.indexOf(toks[i])>=0)hit++; return hit>=Math.min(2,toks.length); }
+function asstStockTx(id){ var lv=(typeof stockLevel==='function')?stockLevel(id):null; if(lv==null)return null; var low=(typeof STOCK_LOW!=='undefined')?STOCK_LOW:5; return lv<=0?'đã hết hàng':(lv<=low?('sắp hết (còn '+lv+')'):('còn hàng — '+lv+' sản phẩm')); }
+function asstNutri(d){
+ if(/(bieng an|khong chiu an|luoi an|nhe can|suy dinh duong|tang can|thap coi|cham lon|cham tang can|coi coc)/.test(d)) return '🍚 Trẻ biếng ăn / nhẹ cân: '+SCI.energy+'\n👉 Ưu tiên **Nutritie Pedia A+** (1.2 kcal/ml + 5 Enzyme + MCT). Nhớ đo Z-score/BMI trước khi tư vấn.';
+ if(/(chieu cao|tang chieu cao|cao lon|phat trien chieu cao|cao them)/.test(d)) return '📏 Tăng chiều cao: '+SCI.height+'\n👉 **Nutritie Grow IQ A+** (Canxi + D3 + MK-7) — chỉ tư vấn khi cân nặng đã đạt chuẩn.';
+ if(/(tao bon|tieu hoa|kho tieu|day hoi|doi sua|chuyen sua|di ngoai|hap thu kem)/.test(d)) return '🌿 Tiêu hóa / táo bón / đổi sữa: '+SCI.digest+'\n👉 **Nutritie BioA+** (FOS/Inulin 4g/100g) hỗ trợ tiêu hóa & chuyển sữa nhẹ nhàng. Cho bé uống đủ nước và tăng chất xơ.';
+ if(/(tri nao|thong minh|dha|hoc tap|ghi nho|tap trung)/.test(d)) return '🧠 Phát triển trí não: '+SCI.brain+'\n👉 Chọn dòng giàu DHA như **Grow IQ A+** hoặc **Colostrum DHA**.';
+ if(/(mien dich|hay om|de khang|om vat|kem mien dich|hay benh)/.test(d)) return '🛡️ Tăng đề kháng: '+SCI.immune+'\n👉 Ưu tiên sản phẩm có Sữa non/IgG + 2\'-FL HMO (Baby A+, Colostrum DHA).';
+ if(/(loang xuong|xuong khop|nguoi lon|nguoi gia|cao tuoi)/.test(d)) return '🦴 Xương khớp / người lớn: '+SCI.bone+'\n👉 **Nutritie Canxi Pro A+** (Canxi Nano 688mg + MK-7 + Glucosamine).';
+ if(/(me bau|mang thai|thai ky|cho con bu|sau sinh|bau bi)/.test(d)) return '🤰 Mẹ bầu & sau sinh: '+SCI.pregnant+'\n👉 **Nutritie Mama A+** (DHA + Axit Folic + Sắt + Canxi/MK-7 + Lactium).\n\n💛 Lưu ý: Sữa mẹ là thức ăn tốt nhất cho sức khỏe của trẻ sơ sinh và trẻ nhỏ.';
+ if(/(so sinh|tre 0|0.?12 thang|em be moi sinh|tre duoi 1)/.test(d)) return '👶 Trẻ 0–12 tháng: '+SCI.infant+'\n👉 **Nutritie Baby A+** là nền tảng dinh dưỡng đầu đời.\n\n💛 Lưu ý: Sữa mẹ là thức ăn tốt nhất cho sức khỏe của trẻ sơ sinh và trẻ nhỏ.';
+ if(/(tieu duong|duong huyet|gi thap)/.test(d)) return '⚕️ Về tiểu đường: '+SCI.diabetNo;
+ if(/(mk.?7|vitamin k2|k2)/.test(d)) return '💡 MK-7 (Vitamin K2) giúp đưa Canxi vào xương thay vì lắng ở mạch máu — nên đi cùng Canxi + Vitamin D3. Có trong Grow IQ A+, Canxi Pro A+, Mama A+.';
+ if(/(hmo|2.?fl)/.test(d)) return '💡 2\'-FL HMO là dưỡng chất quý trong sữa mẹ, nuôi lợi khuẩn đường ruột & hỗ trợ miễn dịch. Có trong Baby A+, BioA+, Pedia A+, Grow IQ A+.';
+ if(/(z.?score|bmi|chi so|do chi so|nguyen tac)/.test(d)) return '📐 Nguyên tắc vàng: **đo Z-score/BMI trước** rồi mới gợi ý. Nếu dưới chuẩn → ưu tiên tăng cân (Pedia A+). Khi đã đạt chuẩn → mới đẩy chiều cao (Grow IQ A+).';
+ return null;
+}
+function asstReply(raw){ var d=asstNorm(raw);
+ /* Cảnh báo an toàn / cần thăm khám — giữ nguyên thông điệp tuân thủ */
+ if(/(di ung dam bo|di ung dam sua|dam bo|bat dung nap lactose|khong dung nap lactose|tieu chay|viem ruot|da day|ta trang|ruot kich thich|\bibs\b|tieu duong thai ky)/.test(d)) return '⚠️ Trường hợp này (dị ứng đạm bò/sữa, bất dung nạp lactose, tiêu chảy/viêm ruột cấp, viêm loét dạ dày–tá tràng, IBS, hoặc tiểu đường thai kỳ) cần THĂM KHÁM bác sĩ chuyên khoa trước. Hãy tạm dừng tư vấn sữa để đảm bảo an toàn — cả 7 SKU Nutritie đều chứa sữa bột.';
+ /* Đơn hàng */
+ if(/(don hang|don cua toi|kiem tra don|tra cuu don|bao nhieu don|tinh trang don|\border\b)/.test(d)){
+   var os=(typeof orders==='function')?orders():[]; if(!os.length) return '📦 Hiện chưa có đơn nào. Bấm nút giỏ hàng trên đầu hoặc "Lên đơn" để tạo đơn mới nhé.';
+   var c=(typeof ntCounters==='function')?ntCounters():null; var pend=(typeof pendingOrders==='function')?pendingOrders().length:0;
+   var done=c?c.done:os.filter(function(o){return o.status==='hoan_tat';}).length;
+   var last=os.slice(-3).reverse().map(function(o){ var q=(o.items||[]).reduce(function(s,it){return s+(it.qty||0);},0); var st=(typeof OST!=='undefined'&&OST[o.status])?OST[o.status][0]:(o.status||'—'); return '• '+o.id+' · '+q+' SP · '+st; }).join('\n');
+   return '📦 Bạn có **'+os.length+'** đơn'+(c?(' · '+c.skus+' SP'):'')+' · **'+pend+'** chờ gửi · **'+done+'** hoàn tất.\nGần nhất:\n'+last;
+ }
+ var stockAsk=/(ton kho|con hang|con bao nhieu|het hang|con may|con lon|kiem ton|kiem tra ton)/.test(d);
+ var prod=asstFindProd(d);
+ /* Tồn kho */
+ if(stockAsk){
+   if(prod){ var tx=asstStockTx(prod.id); return '📊 '+prod.name+': '+(tx==null?'chưa thiết lập tồn kho tại quầy — vào mục Tồn kho để cập nhật.':(tx+' tại quầy.')); }
+   var lines=PRODUCTS.map(function(p){ var tx=asstStockTx(p.id); return tx==null?null:('• '+p.name+': '+tx); }).filter(Boolean).join('\n');
+   return lines?('📊 Tồn kho tại quầy:\n'+lines):'Bạn muốn kiểm tồn sản phẩm nào? Ví dụ: "còn hàng Pedia không".';
+ }
+ /* Sản phẩm */
+ if(prod){ var claims=(prod.claims||[]).slice(0,3).map(function(x){return '• '+x;}).join('\n'); var stx=asstStockTx(prod.id);
+   var msg='🥛 **'+prod.name+'** — '+prod.tl+'\n👶 Đối tượng: '+prod.audience+'\n✨ Nổi bật:\n'+claims+'\n📦 Quy cách: '+prod.pack+(stx!=null?('\n📊 Tồn kho: '+stx):'')+'\n👉 Mở tab Sản phẩm để xem thành phần, cách dùng & điểm chốt sale.';
+   if(prod.id==='baby'||prod.id==='bio'||/0.?12 thang|6.?36 thang|so sinh|duoi 24|<\s*24/.test(asstNorm(prod.audience))) msg+='\n\n💛 Lưu ý: Sữa mẹ là thức ăn tốt nhất cho sức khỏe của trẻ sơ sinh và trẻ nhỏ.';
+   return msg;
+ }
+ /* Hỏi-Đáp có sẵn */
+ for(var i=0;i<QA.length;i++){ if(asstOverlap(d,asstNorm(QA[i].q))) return '💬 '+QA[i].a; }
+ /* Dinh dưỡng / tư vấn theo chủ đề (dùng engine SCI) */
+ var nut=asstNutri(d); if(nut)return nut;
+ /* Động viên */
+ if(/(met|chan|ap luc|kho chot|nan long|buon)/.test(d)) return 'Bạn đang làm rất tốt! Mỗi lần tư vấn đúng là một gia đình khỏe hơn. Cứ bình tĩnh đo chỉ số rồi gợi ý sản phẩm phù hợp — mình luôn ở đây hỗ trợ bạn. 💪';
+ /* Fallback */
+ return 'Mình chưa rõ ý này 🤔. Bạn thử hỏi:\n• Tên sản phẩm (vd "Pedia A+", "Grow IQ")\n• "đơn hàng" · "còn hàng Colostrum"\n• Chủ đề dinh dưỡng: biếng ăn, tăng cân, chiều cao, táo bón, miễn dịch…\nHoặc chạm các gợi ý bên dưới nhé!';
+}
 </script>
 </body>
 </html>
