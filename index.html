@@ -675,6 +675,26 @@
   .nav button.on .ic{transform:translateY(-1px)}
   .nav button.on:before{transform:translateX(-50%) scaleX(1)}
   .nav button:active .ic{transform:scale(.9)}
+  .nav-plus{width:62px;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .nav-plus .pbtn{width:54px;height:54px;border-radius:50%;margin-top:-22px;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;display:flex;align-items:center;justify-content:center;border:4px solid var(--card);box-shadow:0 8px 18px rgba(31,45,107,.42);transition:transform var(--t) var(--ease),box-shadow var(--t) var(--ease)}
+  .nav-plus .pbtn .ic{font-size:26px}
+  .nav-plus:active .pbtn{transform:scale(.92)}
+  /* MISSIONS */
+  .ms-streak{font-family:var(--fd);font-weight:800;font-size:12px;color:var(--red);background:var(--red-s);padding:4px 9px;border-radius:999px;white-space:nowrap}
+  .ms-prog{height:7px;border-radius:999px;background:var(--sc-low);overflow:hidden;margin-bottom:11px}
+  .ms-prog>span{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--navy),#3A56C8);transition:width var(--t) var(--ease)}
+  .ms-list{display:flex;flex-direction:column;gap:8px}
+  .ms-row{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:var(--r-sm);background:var(--sc-low);font-size:13px;font-weight:600;color:var(--on)}
+  .ms-row.ok{background:var(--ok-s)}
+  .ms-row .ms-ic{font-size:19px;color:var(--navy);flex-shrink:0;display:flex}
+  .ms-row.ok .ms-ic{color:var(--ok)}
+  .ms-l{flex:1;min-width:0}
+  .ms-row.ok .ms-l{text-decoration:line-through;color:var(--on-var)}
+  .ms-ck{color:var(--ok);font-size:20px;display:flex}
+  .ms-wprog{display:flex;align-items:center;gap:7px;flex-shrink:0}
+  .ms-wbar{width:52px;height:6px;border-radius:999px;background:rgba(31,45,107,.12);overflow:hidden}
+  .ms-wbar>i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--navy),#3A56C8)}
+  .ms-wprog b{font-family:var(--fd);font-size:11.5px;color:var(--navy);min-width:30px;text-align:right}
   /* SPLASH */
   #splash{position:fixed;inset:0;z-index:200;background:linear-gradient(150deg,#1F2D6B,#101A40);display:flex;align-items:center;justify-content:center;transition:opacity .5s}
   #splash.hide{opacity:0;pointer-events:none}
@@ -745,7 +765,7 @@
     #view{animation:none}
     .hero .shine-x,.bnr-sh,.bnr-spark,.bnr-med,.bnr-gift,.bnr-leaf,.live .dot,.sp-ring,.sp-ring2,.sc-ring,.sc-orbit,.sc-line,.sc-sweep,.sc-blip,.sc-core,.step div.cur,.dcur,#drawernav a{animation:none!important}
     .bnr-med{transform:translateY(-50%) rotate(-5deg)!important}
-    .press:active,.btn:active,.icobtn:active,.fab:active,.nav button:active .ic,.drawer a:hover{transform:none}
+    .press:active,.btn:active,.icobtn:active,.fab:active,.nav button:active .ic,.nav-plus:active .pbtn,.drawer a:hover{transform:none}
   }
   .glegend{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:11px;color:var(--on-var)}
   .glegend span{display:inline-flex;align-items:center;gap:5px}
@@ -942,6 +962,7 @@
 <nav class="nav" id="nav">
   <button data-t="home" class="on"><span class="ic" data-ic="home"></span>Trang chủ</button>
   <button data-t="tuvan"><span class="ic" data-ic="stethoscope"></span>Tư vấn</button>
+  <div class="nav-plus" role="button" tabindex="0" aria-label="Tư vấn khách mới" onclick="startTV()"><span class="pbtn"><span class="ic" data-ic="add"></span></span></div>
   <button data-t="sp"><span class="ic" data-ic="nutrition"></span>Sản phẩm</button>
   <button data-t="qa"><span class="ic" data-ic="forum"></span>Hỏi-Đáp</button>
 </nav>
@@ -1304,6 +1325,67 @@ var TRUST=[["military","Top 10 Thương hiệu Việt Nam 2024","Giải thưởn
  ["public","100% sữa nhập khẩu New Zealand & Mỹ","Sữa non Colostrum nhập khẩu giữ trọn hoạt tính","shield","linear-gradient(135deg,#3A56C8,#26327A)"],
  ["factory","Nhà máy Aiwado & Nutribiz","ISO 9001:2015, ISO 22000:2018, HACCP, FSSC 22000","verified","linear-gradient(135deg,#20B36B,#0E8A4E)"],
  ["hospital","Tin dùng tại BV lớn","Viện 108, BV Nhi Trung ương, BV Nhi Đồng Thành Phố","biotech","linear-gradient(135deg,#17A2B8,#0E7C86)"]];
+/* ===== NHIỆM VỤ HẰNG NGÀY & TUẦN (offline · localStorage) ===== */
+var DAILY_KEY="nt_daily",WEEKLY_KEY="nt_weekly";
+var DAILY_TASKS=[['consult','Tư vấn 1 khách','stethoscope'],['quiz','Chơi 1 Quiz','quiz'],['order','Chốt 1 đơn','add_shopping_cart']];
+var WEEK_GOALS={consult:15,order:8,quiz:5};
+var WEEK_TASKS=[['consult','Tư vấn khách','stethoscope',WEEK_GOALS.consult],['order','Chốt đơn','add_shopping_cart',WEEK_GOALS.order],['quiz','Chơi Quiz','quiz',WEEK_GOALS.quiz]];
+function _msDay(t){return new Date(t).toISOString().slice(0,10);}
+function _msWeekId(){var d=new Date(),y=new Date(d.getFullYear(),0,1),day=Math.floor((d-y)/86400000);return d.getFullYear()+'-W'+Math.ceil((day+y.getDay()+1)/7);}
+function daily(){
+ var d=lsGet(DAILY_KEY,null),today=_msDay(Date.now());
+ if(!d||d.date!==today){
+  var streak=1;
+  if(d&&d.date){var yd=_msDay(Date.now()-86400000);streak=(d.date===yd&&d.allDone)?(d.streak||0)+1:1;}
+  d={date:today,tasks:{consult:false,quiz:false,order:false},streak:streak,allDone:false,claimed:false};
+  lsSet(DAILY_KEY,d);
+ }
+ return d;
+}
+function dailyMark(k){
+ var d=daily();if(!d.tasks||d.tasks[k])return;
+ d.tasks[k]=true;
+ var all=d.tasks.consult&&d.tasks.quiz&&d.tasks.order;
+ if(all){d.allDone=true;}
+ if(all&&!d.claimed){
+  d.claimed=true;lsSet(DAILY_KEY,d);
+  try{var s=quizStats();s.xp=(s.xp||0)+30;saveQuiz(s);}catch(e){}
+  try{toast('Hoàn thành nhiệm vụ ngày! +30 XP 🎉');}catch(e){}
+  try{if(typeof pushNotif==='function')pushNotif('celebration','Nhiệm vụ ngày hoàn thành','+30 XP thưởng · chuỗi '+(d.streak||1)+' ngày 🔥');}catch(e){}
+ } else { lsSet(DAILY_KEY,d); }
+ try{if(S.tab==='home')draw();}catch(e){}
+}
+function dailyCardHTML(){
+ var d=daily(),done=DAILY_TASKS.reduce(function(a,t){return a+(d.tasks[t[0]]?1:0);},0),total=DAILY_TASKS.length,pct=Math.round(done*100/total);
+ var rows=DAILY_TASKS.map(function(t){var ok=!!d.tasks[t[0]];
+  return '<div class="ms-row'+(ok?' ok':'')+'"><span class="ms-ic">'+ic(t[2])+'</span><span class="ms-l">'+t[1]+'</span><span class="ms-ck">'+(ok?ic('check_circle'):'')+'</span></div>';}).join('');
+ return '<div class="card"><div class="sec" style="margin-bottom:10px"><div class="sec-l"><div class="sec-ic" style="background:var(--sec-fx);color:var(--on-sec-fx)">'+ic('checklist')+'</div><div><h3>Nhiệm vụ hằng ngày</h3><div class="sub">'+done+'/'+total+' hoàn thành'+(d.claimed?' · +30 XP ✓':'')+'</div></div></div><span class="ms-streak">🔥 '+(d.streak||1)+' ngày</span></div>'
+  +'<div class="ms-prog"><span style="width:'+pct+'%"></span></div><div class="ms-list">'+rows+'</div></div>';
+}
+function weekly(){
+ var w=lsGet(WEEKLY_KEY,null),id=_msWeekId();
+ if(!w||w.id!==id){w={id:id,consult:0,order:0,quiz:0,claimed:false};lsSet(WEEKLY_KEY,w);}
+ return w;
+}
+function weeklyBump(k){
+ var w=weekly();if(!(k in w)||k==='id'||k==='claimed')return;
+ w[k]=(w[k]||0)+1;
+ var all=(w.consult||0)>=WEEK_GOALS.consult&&(w.order||0)>=WEEK_GOALS.order&&(w.quiz||0)>=WEEK_GOALS.quiz;
+ if(all&&!w.claimed){
+  w.claimed=true;lsSet(WEEKLY_KEY,w);
+  try{var s=quizStats();s.xp=(s.xp||0)+100;saveQuiz(s);}catch(e){}
+  try{toast('Hoàn thành nhiệm vụ tuần! +100 XP 🏆');}catch(e){}
+  try{if(typeof pushNotif==='function')pushNotif('workspace_premium','Nhiệm vụ tuần hoàn thành','Bạn nhận +100 XP thưởng tuần này.');}catch(e){}
+ } else { lsSet(WEEKLY_KEY,w); }
+ try{if(S.tab==='home')draw();}catch(e){}
+}
+function weeklyCardHTML(){
+ var w=weekly(),allDone=(w.consult||0)>=WEEK_GOALS.consult&&(w.order||0)>=WEEK_GOALS.order&&(w.quiz||0)>=WEEK_GOALS.quiz;
+ var rows=WEEK_TASKS.map(function(t){var cur=Math.min(w[t[0]]||0,t[3]),ok=(w[t[0]]||0)>=t[3],p=Math.round(cur*100/t[3]);
+  return '<div class="ms-row'+(ok?' ok':'')+'"><span class="ms-ic">'+ic(t[2])+'</span><span class="ms-l">'+t[1]+'</span><span class="ms-wprog"><span class="ms-wbar"><i style="width:'+p+'%"></i></span><b>'+cur+'/'+t[3]+'</b></span></div>';}).join('');
+ return '<div class="card"><div class="sec" style="margin-bottom:10px"><div class="sec-l"><div class="sec-ic" style="background:var(--sc-low);color:var(--red)">'+ic('leaderboard')+'</div><div><h3>Nhiệm vụ tuần</h3><div class="sub">Thưởng +100 XP khi đủ chỉ tiêu'+(w.claimed?' · Đã nhận ✓':'')+'</div></div></div>'+(allDone?'<span class="tag-ok">HOÀN THÀNH</span>':'')+'</div>'
+  +'<div class="ms-list">'+rows+'</div></div>';
+}
 function renderHome(){
  var zr=ZONES.map(function(z){return '<div class="zcard press" onclick="startTV()" style="--zc:'+z[3]+'"><div class="zi"><img src="'+zicon(z[0])+'" alt="" onerror="this.style.display=\'none\'"></div><div class="zn">'+z[0]+'</div><div class="zd">'+z[1]+'</div><span class="zbadge">'+z[2]+'</span></div>';}).join('');
  var tr=TRUST.map(function(t){return '<div class="trust-it"><div class="ti" style="background:'+t[4]+'">'+ic(t[3])+'</div><div style="flex:1"><b>'+t[1]+'</b><span>'+t[2]+'</span></div><span class="chk">'+ic('check_circle')+'</span></div>';}).join('');
@@ -1322,6 +1404,7 @@ function renderHome(){
    +'<div class="hero-btns"><button class="btn btnP press" onclick="startTV()">'+ic('stethoscope')+'Bắt đầu tư vấn</button>'
     +'<button class="btn btnW press" onclick="go(\'sp\')">'+ic('nutrition')+'Xem 7 sản phẩm</button></div></div>'
   +'<div class="card" style="padding:15px 13px"><div class="qgrid">'+qg+'</div></div>'
+  +dailyCardHTML()+weeklyCardHTML()
   +(bn?'<div><div class="sec" style="margin-bottom:9px"><div class="sec-l"><div class="sec-ic" style="background:var(--sc-low);color:var(--red)">'+ic('sell')+'</div><div><h3>Ưu đãi đang chạy</h3><div class="sub">Chạm để xem chi tiết</div></div></div><span class="press" onclick="go(\'promo\')" style="font-size:12px;font-weight:700;color:var(--navy);cursor:pointer">Tất cả ›</span></div><div class="bnrail" id="bnrail">'+bn+'</div><div class="bndots" id="bndots">'+bndots+'</div></div>':'')
   +'<div class="card press" onclick="go(\'growth\')" style="display:flex;align-items:center;gap:12px;cursor:pointer;border-left:4px solid var(--sky)"><div class="sec-ic" style="width:46px;height:46px;font-size:25px;background:var(--sec-fx);color:var(--on-sec-fx);flex-shrink:0">'+ic('trending_up')+'</div><div style="flex:1;min-width:0"><div style="font-family:var(--fd);font-weight:700;font-size:15px">Biểu đồ tăng trưởng của bé</div><div style="font-size:12px;color:var(--on-var)">Lưu số đo theo thời gian · đối chiếu chuẩn WHO 0–5 tuổi</div></div><span style="color:var(--navy);font-size:22px;flex-shrink:0">'+ic('chevron_right')+'</span></div>'
   +'<div><div class="sec" style="margin-bottom:9px"><div class="sec-l"><div class="sec-ic">'+ic('hub')+'</div><div><h3>5 vùng dinh dưỡng</h3><div class="sub">Chọn vùng cần ưu tiên</div></div></div></div><div class="zrail">'+zr+'</div></div>'
@@ -1333,7 +1416,7 @@ function renderHome(){
 /* ===== WIZARD ===== */
 var OBJS=[{v:"tre_0_12",l:"Trẻ 0–12 tháng"},{v:"tre_1_10",l:"Trẻ trên 1 tuổi"},{v:"adult",l:"Người trưởng thành & cao tuổi"},{v:"pregnant",l:"Mẹ mang thai / sau sinh"}];
 var STEPTT=["Đối tượng & tiền sử","Đo chỉ số dinh dưỡng","Nhu cầu & vấn đề","Kết quả & gợi ý"];
-function startTV(){clearSess();S.step=1;S.user={obj:"",gender:"Nam",senior:false,postpartum:false,preterm:"",hist:[],cur:""};S.m={};S.cls=null;S.needs=[];go('tuvan');}
+function startTV(){clearSess();S.step=1;S._cMarked=false;S.user={obj:"",gender:"Nam",senior:false,postpartum:false,preterm:"",hist:[],cur:""};S.m={};S.cls=null;S.needs=[];go('tuvan');}
 function renderTV(){return progHead()+(S.step===1?tvStep1():S.step===2?tvStep2():S.step===3?tvStep3():tvStep4());}
 function progHead(){var seg='';for(var i=1;i<=4;i++)seg+='<div class="'+(S.step>i?'on':S.step===i?'cur':'')+'"></div>';
  var SICS=["person","straighten","checklist","check_circle"];
@@ -1416,6 +1499,7 @@ function skuCard(p,why){
 function tvStep4(){var contra=contraCheck();
  if(contra)return '<div class="card"><div class="sec-l" style="margin-bottom:10px"><div class="sec-ic" style="background:var(--red-s);color:var(--red)">'+ic('block')+'</div><h3 style="color:var(--red)">'+esc(contra.title)+'</h3></div><div class="danger">'+esc(contra.b)+'</div></div><button class="btn btnO" style="margin-top:14px" onclick="startTV()">↻ Tư vấn khách khác</button>';
  var c=S.cls,r=recommend(),main=r.ids.length?P(r.ids[0]):null;
+ try{if(!S._cMarked){S._cMarked=true;dailyMark('consult');weeklyBump('consult');}}catch(e){}
  var h='<div class="stack">'+patientSummary()+gaugeCard(c);
  if(c&&c.label==="Suy dinh dưỡng nặng")h+='<div class="danger" style="display:flex;gap:8px"><span style="flex-shrink:0">'+ic('warning')+'</span><div><b>Cần đưa đi khám:</b> Suy dinh dưỡng nặng — nên đến bác sĩ/chuyên gia dinh dưỡng đánh giá trước. Sản phẩm chỉ hỗ trợ, không thay điều trị.</div></div>';
  if(main){h+=skuCard(main,r.why);
@@ -1518,6 +1602,7 @@ function chotDon(){
  var sub=orderSubtotal(),disc=orderDiscVal(),tot=orderTotal();
  var o={id:"NT"+Date.now().toString(36).toUpperCase(),pg:S.pg||"—",name:S.orderName||"",addr:S.orderAddr||"",phone:S.orderPhone,note:S.orderNote,ctkm:S.orderCtkm,items:its,subtotal:sub,discount:disc,total:tot,at:Date.now(),status:"cho_gui",tries:0};
  var a=orders();a.push(o);saveOrders(a);pushNotif('receipt_long','Đơn mới đã tạo',o.id+' · '+(S.orderName||'khách'));
+ try{dailyMark('order');weeklyBump('order');}catch(e){}
  its.forEach(function(it){ stockDec(it.sku,it.qty); });
  S.cart={};S.orderVar={};S.orderNote="";S.orderCtkm="";S.orderPhone="";S.orderName="";S.orderAddr="";S.orderDisc="";
  toast("Đã tạo đơn "+o.id+". Mời khách ra quầy hoàn tất.");
@@ -1886,7 +1971,7 @@ var QUIZQS=[
 ];
 function startQuiz(){ S.quiz={i:0,correct:0,streak:0,ans:null,done:false}; go('quiz'); }
 function answerQuiz(idx){ if(!S.quiz||S.quiz.ans!=null)return; var q=QUIZQS[S.quiz.i]; S.quiz.ans=idx; var s=quizStats(); s.answered=(s.answered||0)+1; if(idx===q.c){ S.quiz.correct++; S.quiz.streak++; s.xp=(s.xp||0)+2; s.correct=(s.correct||0)+1; if(S.quiz.streak>(s.best||0))s.best=S.quiz.streak; } else { S.quiz.streak=0; } saveQuiz(s); draw(); }
-function nextQuiz(){ if(!S.quiz)return; if(S.quiz.i>=QUIZQS.length-1){ S.quiz.done=true; var s=quizStats(); s.plays=(s.plays||0)+1; if(S.quiz.correct>=5&&s.badges.indexOf("Chuyên gia Dinh dưỡng")<0){ s.badges.push("Chuyên gia Dinh dưỡng"); pushNotif('quiz','Huy hiệu mới!','Bạn đạt "Chuyên gia Dinh dưỡng" — '+S.quiz.correct+'/'+QUIZQS.length+' câu đúng.'); } saveQuiz(s); } else { S.quiz.i++; S.quiz.ans=null; } draw(); }
+function nextQuiz(){ if(!S.quiz)return; if(S.quiz.i>=QUIZQS.length-1){ S.quiz.done=true; var s=quizStats(); s.plays=(s.plays||0)+1; if(S.quiz.correct>=5&&s.badges.indexOf("Chuyên gia Dinh dưỡng")<0){ s.badges.push("Chuyên gia Dinh dưỡng"); pushNotif('quiz','Huy hiệu mới!','Bạn đạt "Chuyên gia Dinh dưỡng" — '+S.quiz.correct+'/'+QUIZQS.length+' câu đúng.'); } saveQuiz(s); try{dailyMark('quiz');weeklyBump('quiz');}catch(e){} } else { S.quiz.i++; S.quiz.ans=null; } draw(); }
 function renderQuiz(){ var s=quizStats();
  if(!S.quiz){ var bl=(s.badges&&s.badges.length)?s.badges.length+' huy hiệu':'chưa có huy hiệu';
   return '<div class="qz-hero"><div class="qzi">'+ic('quiz')+'</div><h3>Quiz nghiệp vụ</h3><p>Ôn kiến thức tư vấn Nutritie · '+QUIZQS.length+' câu hỏi mẫu</p>'
