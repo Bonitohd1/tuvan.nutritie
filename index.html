@@ -2537,7 +2537,7 @@ function renderQuiz(){ if(S.adv)return renderAdv();
   +'<div class="insight" style="margin-top:13px"><b>Luật chơi:</b> mỗi lượt có 3 tim. Đáp đúng để cộng XP và tăng combo (combo càng cao, điểm nhân càng lớn, tối đa x2). Đáp sai mất 1 tim và reset combo. Hết tim hoặc hết câu là kết thúc — nhận sao theo tỉ lệ đúng.</div>'; }
 /* -- Thông báo -- */
 var NOTI_KEY="nt_notifs";
-var NOTI_SEED=[ {ic:"sell",t:"Ưu đãi Nutritie đang chạy",d:"Mua 2 lon tặng ly sứ — nhắc khách khi chốt đơn.",read:false},
+var NOTI_SEED=[ {ic:"sell",t:"Ưu đãi đang được cập nhật",d:"Hỏi quản lý về chương trình hiện hành trước khi nhắc khách.",read:false},
  {ic:"bolt",t:"Mẹo tư vấn hôm nay",d:"Luôn đo Z-score/BMI trước khi gợi ý sản phẩm.",read:false},
  {ic:"quiz",t:"Thử thách Quiz",d:"Đạt 5/6 câu để nhận huy hiệu Chuyên gia.",read:false} ];
 function dynNotifs(){ return lsGet(NOTI_KEY,[]); }
@@ -2582,8 +2582,10 @@ function openNoti(){ try{if(typeof refreshNotifs==='function')refreshNotifs();}c
  var a=dynNotifs(); a.forEach(function(n){n.read=true;}); lsSet(NOTI_KEY,a); NOTI_SEED.forEach(function(n){n.read=true;}); updateBell(); }
 /* -- Ưu đãi / CTKM (mẫu) -- */
 /* bn = ảnh banner thiết kế sẵn (vuông ~1:1). Bỏ ảnh vào thư mục "App Nutritie-...·/App Nutritie/Ưu đãi/" đúng tên là hiện; chưa có thì tự hiện thẻ chữ dự phòng. */
-var PROMO=[ {t:"Mua 2 tặng 1 ly sứ",d:"Áp dụng khi mua 2 lon 800g bất kỳ. Đến hết tháng.",tag:"HOT",p:"baby",bn:"Ưu đãi/uudai-1.jpg"},
- {t:"Combo Mẹ & Bé",d:"Mua Mama A+ kèm Baby A+ giảm 10%.",tag:"MỚI",p:"mama",bn:"Ưu đãi/uudai-2.jpg"},
+/* 07/10/2026: bỏ 2 ưu đãi mẫu "Mua 2 tặng 1 ly sứ" và "Combo Mẹ & Bé — Baby A+ giảm 10%": khuyến mại / tặng quà gắn với sản phẩm cho trẻ nhỏ (Nghị định 100/2014).
+   Chỉ đưa chương trình thật vào đây SAU KHI Pháp chế duyệt; không gắn p:"baby". */
+var PROMO=[ {t:"Chương trình ưu đãi đang cập nhật",d:"Nội dung khuyến mại sẽ được công bố sau khi được duyệt.",tag:"",p:"",bn:""},
+ {t:"Hỏi quản lý về chương trình hiện hành",d:"PG liên hệ quản lý để biết chương trình đang áp dụng trước khi tư vấn.",tag:"",p:"",bn:""},
  {t:"Tích điểm đổi quà",d:"Mỗi đơn tích điểm cho PG — đổi quà cuối quý.",tag:"",p:"growiq",bn:"Ưu đãi/uudai-3.jpg"} ];
 function promoSeason(){var m=new Date().getMonth()+1;
  if(m>=2&&m<=4)return{name:'Xuân',fx:['🌸','🌸','🌿','🌸','🍃'],sky:['#8FB6E8','#B99BD2','#5E4C82'],sun:'#FFE3A6',h1:'#3E6E5A',h2:'#22463F',tree:'#173230',base:'#5E4C82'};
@@ -2704,7 +2706,7 @@ function presRender(){ var p=document.getElementById('present'); if(!p)return;
  var body='';
  if(presProd){ body=presProductView(presProd); }
  else if(presSec==='uudai'){
-   body='<div class="pr-h">Ưu đãi Nutritie 🎁</div><div class="pr-sub">Chương trình đang chạy — hỏi tư vấn viên để biết chi tiết</div>'
+   body='<div class="pr-h">Ưu đãi Nutritie 🎁</div><div class="pr-sub">Chương trình ưu đãi đang được cập nhật — hỏi tư vấn viên để biết chi tiết</div>'
     +PROMO.map(function(pm){var hero=(pm.bn?rimg(pm.bn):(pm.p?pimg(pm.p):''));return '<div class="pr-card">'+(hero?'<img class="pr-hero" src="'+hero+'" alt="'+esc(pm.t)+'" onerror="this.remove()">':'')+'<div class="pr-cbody">'+(pm.tag?'<span class="pr-tag">'+esc(pm.tag)+'</span>':'')+'<div class="pr-ct">'+esc(pm.t)+'</div><div class="pr-cd">'+esc(pm.d)+'</div></div></div>';}).join('');
  }
  else if(presSec==='camnhan'){
