@@ -1943,11 +1943,105 @@ function fmtDate(iso){var d=parseD(iso);if(!d)return esc(iso||"");return ('0'+d.
 function ageLabel(m){if(m==null)return "";var mm=Math.round(m);if(mm<0)mm=0;if(mm<24)return mm+" tháng tuổi";var y=Math.floor(mm/12),r=mm%12;return y+" tuổi"+(r?" "+r+" tháng":"");}
 var BB_KEY="nt_babies",MEA_KEY="nt_measures";
 /* Câu xin đồng ý khi lưu SĐT người mua cùng hồ sơ bé. Đổi câu thì đổi mã này để sau biết khách đã đồng ý với câu nào (khách góp ý 09/10/2026: phải nêu lý do). */
-var CONSENT_V="v4-2026-10-10";
+var CONSENT_V="nt-v4-2026-10-10";
 var CONSENT_TXT="Nutritie xin lưu tên, số điện thoại và số đo cân nặng, chiều cao của bé hôm nay để dễ dàng theo dõi biểu đồ tăng trưởng chiều cao, cân nặng của bé, từ đó đánh giá hiệu quả của tình trạng dinh dưỡng mà bé đang được áp dụng, đồng thời để chăm sóc và nhắc lịch cân đo cho bé. Anh/chị đồng ý không ạ?";
 function kidPhone(p){var d=(""+(p||"")).replace(/\D/g,"");if(d.indexOf("84")===0&&d.length>=11)d="0"+d.slice(2);if(d.length===9&&d.charAt(0)!=="0")d="0"+d;return d;}
 function kidPhoneOK(p){var d=kidPhone(p);return d.length===10&&d.charAt(0)==="0"&&"35789".indexOf(d.charAt(1))>=0;}
 function kidsOfPhone(p){var d=kidPhone(p);if(!kidPhoneOK(d))return [];return babies().filter(function(b){return b.phone===d;});}
+/* ===== ĐỒNG BỘ HỒ SƠ BÉ LÊN STUDIO (khách chốt 10/10/2026, giống App Wintop) =====
+ * Dùng CHÍNH đường /api/wintop/growth/* của Studio và mã kích hoạt NPP (X-Npp-Token): máy chủ gắn cứng NPP theo mã và KHÔNG nhận khoá chung
+ * (đây là số đo sức khoẻ của trẻ em, tra theo SĐT — khoá chung nằm trong mã nguồn ai cũng đọc được). Nutritie không có khái niệm NPP nên PG nhập
+ * mã NPP MỘT LẦN (hoặc mở link ?token=). Chưa nhập mã -> hồ sơ chỉ nằm trên máy này, app vẫn chạy bình thường.
+ * Bé tạo ở Nutritie cùng bảng với App Wintop -> máy Wintop của cùng NPP gõ SĐT cũng thấy (và ngược lại).
+ * Chỉ gửi bé CÓ SĐT + dấu đồng ý (b.phone && b.cv). Hàng chờ = chính dữ liệu trên máy: bé cờ dirty / lần đo chưa sv=1 / mã chờ xoá (GR_TOMB_KEY). */
+var GROWTH_API="https://api.wintop.vn/api/wintop/growth",NPP_TOKEN_KEY="nt_npp_token",GR_TOMB_KEY="nt_growth_tomb",_grFlushing=false,_gq={phone:"",state:"",msg:""};
+function nppToken(){return lsGet(NPP_TOKEN_KEY,"")||"";}
+function deburr(s){return (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/đ/g,"d");}
+/* Chuẩn hoá tên bé để so khớp — CÙNG LUẬT với name_key() ở máy chủ (backend/app/routers/appsale_growth.py) và kidKey() của App Wintop.
+   Sửa một nơi thì sửa cả ba, không thì cùng một bé thành hai hồ sơ. "Bé Na" = "bé na" = "NA". */
+function kidKey(name){var s=deburr((name||"").trim()).replace(/[^a-z0-9 ]+/g," ").replace(/\s+/g," ").trim();if(s.indexOf("be ")===0&&s.length>3)s=s.slice(3);return s||"be";}
+function kidGrowthSex(g){return g==="Nữ"?"Gái":"Trai";}
+function kidConsultSex(g){return g==="Gái"?"Nữ":"Nam";}
+function kidNewId(pre){return pre+Date.now().toString(36)+Math.floor(Math.random()*46656).toString(36);}
+function grTomb(id){if(!id)return;var a=lsGet(GR_TOMB_KEY,[]);if(a.indexOf(id)<0){a.push(id);lsSet(GR_TOMB_KEY,a);}}
+function growthCall(path,method,body,tok){
+ var tk=tok||nppToken(),ctl=("AbortController" in window)?new AbortController():null,tm=ctl?setTimeout(function(){try{ctl.abort();}catch(e){}},15000):null;
+ function clr(){if(tm)clearTimeout(tm);}
+ return fetch(GROWTH_API+path,{method:method,headers:{"Content-Type":"application/json","X-Npp-Token":tk},body:body?JSON.stringify(body):undefined,signal:ctl?ctl.signal:undefined})
+  .then(function(r){return r.json().catch(function(){return {};}).then(function(j){if(!r.ok){var e=new Error((j&&typeof j.detail==="string"&&j.detail)||("máy chủ trả lỗi "+r.status));e.status=r.status;throw e;}return j;});})
+  .then(function(j){clr();return j;},function(e){clr();throw e;});
+}
+function growthErrText(e){if(e&&e.name==="AbortError")return "quá thời gian chờ";
+ if(e&&e.status===404)return "hệ thống chưa bật lưu hồ sơ bé";   /* app lên trước, máy chủ cập nhật sau -> đường dẫn chưa có */
+ if(e&&e.status===403)return "máy này chưa có mã kích hoạt NPP hợp lệ";
+ if(e&&e.status===401)return "mã kích hoạt NPP không đúng hoặc đã bị thu hồi";
+ if(e&&e.status)return e.message;return "không kết nối được máy chủ";}
+/* Trộn dữ liệu máy chủ vào máy. full=true: danh sách `kids` là TOÀN BỘ bé của SĐT này trên máy chủ -> bé đã đồng bộ mà máy chủ không còn nghĩa là nơi khác đã xoá. */
+function growthMerge(phone,kids,full){
+ var bs=babies(),ms=measures(),seen={};
+ (kids||[]).forEach(function(k){
+  var b=null,i;seen[k.id]=1;
+  for(i=0;i<bs.length;i++)if(bs[i].sv===k.id)b=bs[i];
+  if(!b){var key=kidKey(k.name);for(i=0;i<bs.length;i++)if(bs[i].phone===phone&&kidKey(bs[i].ten)===key)b=bs[i];}
+  if(!b){b={id:kidNewId("B"),ten:k.name,ngaySinh:k.dob,gioiTinh:kidGrowthSex(k.gender),phone:phone};if(k.preterm_weeks!=null)b.snt=k.preterm_weeks;bs.push(b);}
+  b.sv=k.id;b.phone=phone;if(!b.cv)b.cv=k.consent_v||"";
+  if(!b.dirty){b.ten=k.name;b.ngaySinh=k.dob;b.gioiTinh=kidGrowthSex(k.gender);if(k.preterm_weeks!=null)b.snt=k.preterm_weeks;}   /* máy đang có sửa chưa gửi thì giữ bản trên máy */
+  var have={},onServer={},del=b.del||[];
+  ms.forEach(function(m){if(m.babyId===b.id)have[m.id]=m;});
+  (k.measures||[]).forEach(function(sm){onServer[sm.id]=1;var m=have[sm.id];
+   if(!m){if(del.indexOf(sm.id)>=0)return;   /* PG vừa xoá trên máy, chưa kịp báo máy chủ -> đừng cho nó sống lại */
+    var nm={id:sm.id,babyId:b.id,ngayDo:sm.date,canNang:sm.weight,chieuCao:sm.height,ghiChu:"",src:sm.source||"",sv:1};if(sm.measured_by==="me"||sm.measured_by==="do")nm.ng=sm.measured_by;ms.push(nm);}
+   else if(m.sv===1){m.ngayDo=sm.date;m.canNang=sm.weight;m.chieuCao=sm.height;if(sm.measured_by==="me"||sm.measured_by==="do")m.ng=sm.measured_by;}});
+  ms=ms.filter(function(m){return !(m.babyId===b.id&&m.sv===1&&!onServer[m.id]);});   /* lần đo nơi khác đã xoá */
+ });
+ if(full){var gone={};bs.forEach(function(b){if(b.phone===phone&&b.sv&&!seen[b.sv]&&!b.dirty&&!ms.some(function(m){return m.babyId===b.id&&m.sv!==1;}))gone[b.id]=1;});
+  bs=bs.filter(function(b){return !gone[b.id];});ms=ms.filter(function(m){return !gone[m.babyId];});}
+ saveBabies(bs);saveMeasures(ms);
+}
+function growthPending(){var ms=measures();return babies().filter(function(b){if(!b.phone||!b.cv)return false;if(b.dirty||(b.del&&b.del.length))return true;return ms.some(function(m){return m.babyId===b.id&&m.sv!==1;});});}
+function growthFlush(){
+ var pend=growthPending(),tomb=lsGet(GR_TOMB_KEY,[]);
+ if((!pend.length&&!tomb.length)||_grFlushing)return;
+ if(!nppToken()){S._grErr="máy này chưa nhập mã kích hoạt NPP";return;}
+ if(!navigator.onLine){S._grErr="đang không có mạng";return;}
+ _grFlushing=true;var i=0,t=0,failed=null,quiet=false;
+ function done(){_grFlushing=false;
+  if(failed){S._grErr=failed;console.warn("Gửi hồ sơ bé lỗi:",failed);
+   /* "Hệ thống chưa bật" (máy chủ chưa cập nhật) không phải lỗi của PG — không báo toast, chỉ hiện ở dòng trạng thái. */
+   if(!quiet&&!S._grWarned){S._grWarned=true;toast("Chưa lưu được số đo của bé về hệ thống ("+failed+"). App giữ lại và tự gửi sau.");}}
+  else{S._grErr=null;S._grWarned=false;}
+  if(S.tab==="growth")draw();}
+ function fail(e){failed=growthErrText(e);if(e&&e.status===404)quiet=true;}
+ function nextTomb(){
+  if(t>=tomb.length)return done();
+  var id=tomb[t];t++;
+  growthCall("/children/"+encodeURIComponent(id),"DELETE").then(function(){return true;},function(e){if(e&&e.status===404&&e.message.indexOf("Không tìm thấy")===0)return true;fail(e);return false;})
+   .then(function(ok){if(ok)lsSet(GR_TOMB_KEY,lsGet(GR_TOMB_KEY,[]).filter(function(x){return x!==id;}));nextTomb();});
+ }
+ function next(){
+  if(i>=pend.length)return nextTomb();
+  var b=babyById(pend[i].id);i++;if(!b)return next();
+  var mine=measures().filter(function(m){return m.babyId===b.id&&m.sv!==1;}).slice(0,60),removed=(b.del||[]).slice(0,200);
+  var body={phone:b.phone,child:{name:b.ten||"Bé",dob:b.ngaySinh,gender:kidConsultSex(b.gioiTinh),preterm_weeks:(b.snt==null?null:b.snt)},consent_v:b.cv,consent_at:b.ca||null,removed:removed,
+   measures:mine.map(function(m){return {client_id:m.id,date:m.ngayDo,weight:m.canNang,height:(m.chieuCao==null||m.chieuCao==="")?null:m.chieuCao,source:m.src||"nutritie",measured_by:(m.ng==="me"||m.ng==="do")?m.ng:null,pg:S.pg||""};})};
+  growthCall("/sync","POST",body).then(function(j){
+   /* Đọc LẠI từ máy rồi mới đánh dấu: trong lúc đang gửi PG có thể đã thêm số đo khác. */
+   var bs=babies(),ms=measures(),sent={};body.measures.forEach(function(m){sent[m.client_id]=1;});
+   bs.forEach(function(x){if(x.id===b.id){x.sv=j.child.id;x.dirty=false;x.del=(x.del||[]).filter(function(d){return removed.indexOf(d)<0;});}});
+   ms.forEach(function(m){if(m.babyId===b.id&&sent[m.id])m.sv=1;});
+   saveBabies(bs);saveMeasures(ms);growthMerge(b.phone,[j.child],false);
+  },fail).then(next);
+ }
+ next();
+}
+/* 1 dòng trạng thái cho 1 bé: đã về hệ thống / đang chờ gửi / chỉ lưu trên máy. */
+function growthSyncLine(b){if(!b)return "";
+ if(!b.phone||!b.cv)return "Hồ sơ này chỉ lưu trên máy (chưa gắn số điện thoại khách).";
+ var pend=growthPending().some(function(x){return x.id===b.id;});
+ if(!nppToken())return "Máy này chưa nhập mã kích hoạt NPP nên hồ sơ của bé chỉ lưu trên máy này.";
+ if(pend)return "⚠ Số đo chưa về hệ thống"+(S._grErr?(" ("+S._grErr+")"):"")+" — app giữ trên máy và tự gửi lại.";
+ return b.sv?"Đã lưu về hệ thống — máy khác của NPP gõ số điện thoại này cũng thấy.":"";}
+function growthSyncBlock(b){var s=growthSyncLine(b);return s?'<div style="font-size:11.5px;color:'+(s.charAt(0)==="⚠"?'#9A5B13':'var(--on-var)')+';margin:7px 2px 0;line-height:1.5">'+esc(s)+'</div>':'';}
 function babies(){return lsGet(BB_KEY,[]);}
 function saveBabies(a){lsSet(BB_KEY,a);}
 function measures(){return lsGet(MEA_KEY,[]);}
@@ -1971,11 +2065,11 @@ function submitBaby(){var f=S.bf||{},ten=(f.ten||"").trim(),ngay=f.ngaySinh||"",
  var cs=f.consent,ph="";if(cs==null&&!S.growth.editBaby){toast("Hỏi khách trước: có đồng ý cho lưu số điện thoại không?");return;}
  if(cs===true){ph=kidPhone(f.phone);if(!kidPhoneOK(ph)){toast("Nhập SĐT người mua (10 số, bắt đầu bằng 0).");return;}}
  var arr=babies();
- if(S.growth.editBaby){for(var i=0;i<arr.length;i++)if(arr[i].id===S.growth.editBaby){arr[i].ten=ten||arr[i].ten;arr[i].ngaySinh=ngay;arr[i].gioiTinh=gt;if(cs===true){if(arr[i].phone!==ph||!arr[i].cv){arr[i].cv=CONSENT_V;arr[i].ca=new Date().toISOString();}arr[i].phone=ph;}else if(cs===false){delete arr[i].phone;delete arr[i].cv;delete arr[i].ca;}}S.growth.editBaby=null;toast("Đã cập nhật hồ sơ bé.");}
- else{var id="B"+Date.now().toString(36);var nb={id:id,ten:ten||"Bé",ngaySinh:ngay,gioiTinh:gt};if(cs===true){nb.phone=ph;nb.cv=CONSENT_V;nb.ca=new Date().toISOString();}arr.push(nb);S.growth.baby=id;toast("Đã thêm hồ sơ "+(ten||"bé")+"!");}
- saveBabies(arr);S.bf={};S.growth.addingBaby=false;draw();}
+ if(S.growth.editBaby){for(var i=0;i<arr.length;i++)if(arr[i].id===S.growth.editBaby){var o=arr[i],oKey=kidKey(o.ten),oPh=o.phone,oSv=o.sv;o.ten=ten||o.ten;o.ngaySinh=ngay;o.gioiTinh=gt;if(cs===true){if(o.phone!==ph||!o.cv){o.cv=CONSENT_V;o.ca=new Date().toISOString();}o.phone=ph;}else if(cs===false){delete o.phone;delete o.cv;delete o.ca;}/* Hồ sơ trên máy chủ khoá theo SĐT + tên bé: đổi một trong hai = hồ sơ mới -> xoá cái cũ và gửi lại cả số đo; rút đồng ý = xoá khỏi máy chủ. */if(oSv&&(cs===false||o.phone!==oPh||kidKey(o.ten)!==oKey)){grTomb(oSv);delete o.sv;delete o.dirty;var mm=measures();mm.forEach(function(m){if(m.babyId===o.id)m.sv=0;});saveMeasures(mm);}if(o.phone&&o.cv)o.dirty=true;}S.growth.editBaby=null;toast("Đã cập nhật hồ sơ bé.");}
+ else{var id="B"+Date.now().toString(36);var nb={id:id,ten:ten||"Bé",ngaySinh:ngay,gioiTinh:gt};if(cs===true){nb.phone=ph;nb.cv=CONSENT_V;nb.ca=new Date().toISOString();nb.dirty=true;}arr.push(nb);S.growth.baby=id;toast("Đã thêm hồ sơ "+(ten||"bé")+"!");}
+ saveBabies(arr);S.bf={};S.growth.addingBaby=false;draw();growthFlush();}
 function editBaby(id){var b=babyById(id);if(!b)return;S.bf={ten:b.ten,ngaySinh:b.ngaySinh,gioiTinh:b.gioiTinh,phone:b.phone||"",consent:b.phone?true:null};S.growth.editBaby=id;S.growth.addingBaby=true;draw();}
-function delBaby(id){if(!confirm("Xóa hồ sơ bé này và toàn bộ số đo của bé?"))return;saveBabies(babies().filter(function(b){return b.id!==id;}));saveMeasures(measures().filter(function(m){return m.babyId!==id;}));if(S.growth.baby===id)S.growth.baby="";S.growth.editBaby=null;S.growth.addingBaby=false;toast("Đã xóa hồ sơ bé.");draw();}
+function delBaby(id){if(!confirm("Xóa hồ sơ bé này và toàn bộ số đo của bé?"))return;var db0=babyById(id);if(db0&&db0.sv)grTomb(db0.sv);saveBabies(babies().filter(function(b){return b.id!==id;}));saveMeasures(measures().filter(function(m){return m.babyId!==id;}));if(S.growth.baby===id)S.growth.baby="";S.growth.editBaby=null;S.growth.addingBaby=false;toast("Đã xóa hồ sơ bé.");draw();growthFlush();}
 function submitMeasure(){var b=curBaby();if(!b){toast("Chọn hồ sơ bé trước.");return;}var f=S.gf||{};
  var date=f.ngayDo||nowISO();if(!parseD(date)){toast("Ngày đo không hợp lệ.");return;}if(parseD(date)>new Date()){toast("Ngày đo không thể ở tương lai.");return;}
  var w=parseFloat(f.canNang);if(!isFinite(w)){toast("Nhập cân nặng (kg).");return;}if(w<1||w>150){toast("Cân nặng phải trong khoảng 1–150 kg.");return;}
@@ -1985,11 +2079,11 @@ function submitMeasure(){var b=curBaby();if(!b){toast("Chọn hồ sơ bé trư�
  var prevList=babyMeasures(b.id).filter(function(m){return m.id!==S.growth.edit;});
  if(!S.growth.edit&&prevList.length){var prev=prevList[prevList.length-1];if(prev&&prev.canNang&&w<prev.canNang*0.9&&!f._confirm){S.gf._confirm=true;toast("⚠️ Cân giảm >10% so lần trước ("+prev.canNang+"kg). Bấm Lưu lần nữa để xác nhận.");draw();return;}}
  var arr=measures();
- if(S.growth.edit){for(var i=0;i<arr.length;i++)if(arr[i].id===S.growth.edit){arr[i].ngayDo=date;arr[i].canNang=w;arr[i].chieuCao=hh;arr[i].ghiChu=f.ghiChu||"";}S.growth.edit=null;toast("Đã cập nhật số đo.");}
+ if(S.growth.edit){for(var i=0;i<arr.length;i++)if(arr[i].id===S.growth.edit){arr[i].ngayDo=date;arr[i].canNang=w;arr[i].chieuCao=hh;arr[i].ghiChu=f.ghiChu||"";arr[i].sv=0;}S.growth.edit=null;toast("Đã cập nhật số đo.");}
  else{arr.push({id:"M"+Date.now().toString(36),babyId:b.id,ngayDo:date,canNang:w,chieuCao:hh,ghiChu:f.ghiChu||""});toast(POS[Math.floor(Math.random()*POS.length)]);}
- saveMeasures(arr);S.gf={};draw();}
+ saveMeasures(arr);S.gf={};draw();growthFlush();}
 function editMeasure(id){var arr=measures();for(var i=0;i<arr.length;i++)if(arr[i].id===id){S.gf={ngayDo:arr[i].ngayDo,canNang:arr[i].canNang,chieuCao:(arr[i].chieuCao!=null?arr[i].chieuCao:""),ghiChu:arr[i].ghiChu||""};S.growth.baby=arr[i].babyId;}S.growth.edit=id;draw();}
-function delMeasure(id){if(!confirm("Xóa số đo này?"))return;saveMeasures(measures().filter(function(m){return m.id!==id;}));if(S.growth.edit===id){S.growth.edit=null;S.gf={};}toast("Đã xóa số đo.");draw();}
+function delMeasure(id){if(!confirm("Xóa số đo này?"))return;var dm=null;measures().forEach(function(m){if(m.id===id)dm=m;});if(dm&&dm.sv===1){var bb=babies();bb.forEach(function(x){if(x.id===dm.babyId){x.del=(x.del||[]).concat([id]);}});saveBabies(bb);}saveMeasures(measures().filter(function(m){return m.id!==id;}));if(S.growth.edit===id){S.growth.edit=null;S.gf={};}toast("Đã xóa số đo.");draw();growthFlush();}
 function growthPoint(id){var m=null,arr=measures();for(var i=0;i<arr.length;i++)if(arr[i].id===id)m=arr[i];if(!m)return;var b=babyById(m.babyId);if(!b)return;var am=ageMo(b.ngaySinh,m.ngayDo);var s=fmtDate(m.ngayDo)+" · "+ageLabel(am)+" · "+m.canNang+"kg";if(m.chieuCao)s+=" · "+m.chieuCao+"cm";
  if(am!=null&&am<=60){var zw=zFrom(lmsAt(gTbl(b,"w"),am),m.canNang);s+=" · cân Z="+zw.toFixed(1)+" ("+zClass(zw,"w").lb+")";}
  else if(am!=null&&am<=228&&m.chieuCao>0){var bmi=m.canNang/((m.chieuCao/100)*(m.chieuCao/100)),zb=zFrom(lmsAt(gTbl(b,"b"),am),bmi),zh=zFrom(lmsAt(gTbl(b,"h"),am),m.chieuCao);s+=" · BMI "+bmi.toFixed(1)+" Z="+zb.toFixed(1)+" ("+zClass(zb,"b").lb+") · cao Z="+zh.toFixed(1)+" ("+zClass(zh,"h").lb+")";}
@@ -2099,21 +2193,46 @@ function growthAssess(b,ms){
   h+='<div class="danger" style="margin-top:11px;display:flex;gap:8px"><span style="flex-shrink:0">'+ic('warning')+'</span><div>Chỉ số của bé đang ngoài vùng bình thường theo chuẩn WHO ('+why.join(", ")+'). Mẹ nên đưa bé đi khám chuyên gia dinh dưỡng / bác sĩ nhi để được đánh giá kỹ hơn. <i>Thông tin trong app chỉ để tham khảo, không thay thế chẩn đoán y khoa.</i></div></div>';}
  return h+'</div>';}
 /* ---- Tab Tăng trưởng: tìm hồ sơ bé theo SĐT người mua (khách yêu cầu 09/10/2026, giống App Wintop) ----
-   1 SĐT ra nhiều bé -> chạm chọn bé (VD con tên "In") -> ra biểu đồ. Nutritie lưu bé CHỈ trên máy này nên tìm cũng chỉ trên máy này (nói rõ trên màn).
-   KHÔNG gọi draw() lúc gõ: vẽ lại cả màn là ô nhập mất con trỏ — chỉ vẽ lại khung #gqres. */
+   1 SĐT ra nhiều bé -> chạm chọn bé (VD con tên "In") -> ra biểu đồ. Có mã NPP: hỏi cả hệ thống (trộn vào máy); chưa có: chỉ trên máy này (nói rõ).
+   KHÔNG gọi draw() lúc gõ: vẽ lại cả màn là ô nhập mất con trỏ — chỉ vẽ lại khung #gqres. 5 trạng thái KHÁC NHAU: SĐT sai / đang tìm / có bé / không có bé / không tìm được. */
 function gqLine(t,warn){return '<div style="font-size:12px;line-height:1.5;margin:2px 0 0;color:'+(warn?'#9A5B13':'var(--on-var)')+'">'+t+'</div>';}
-function gqHtml(){var raw=(S.growth.q||"").trim();if(!raw)return "";var p=kidPhone(raw);
- if(!kidPhoneOK(p))return S.growth.qs==="bad"?gqLine("Số điện thoại chưa đúng — cần 10 số, bắt đầu bằng 0.",true):"";
- if(S.growth.qs!=="ok"||S.growth.qp!==p)return gqLine("Bấm “Tìm” để xem các bé của số này.");
- var ks=kidsOfPhone(p),cur=S.growth.baby;
- if(!ks.length)return gqLine("Chưa thấy bé nào của số này trên máy này. Hồ sơ tạo trước đây chưa có SĐT — bấm Sửa ở hồ sơ bé để thêm (khi khách đồng ý).",true);
- return '<label style="margin-top:2px">'+ks.length+' bé của số này — chạm để xem biểu đồ</label><div class="gbaby" style="margin:2px 0 4px">'+ks.map(function(b){var m=ageMo(b.ngaySinh,nowISO());return '<div class="gchip'+(b.id===cur?' on':'')+'" onclick="selBaby(\''+b.id+'\')">'+ic('child_care')+esc(b.ten||"Bé")+(m!=null&&m>=0?(" · "+ageLabel(m)):"")+'</div>';}).join("")+'</div>'+gqLine("Chỉ tìm trên máy này.");}
+function gqHtml(){var raw=(S.growth.q||"").trim();if(!raw)return "";var p=kidPhone(raw),st=(_gq.phone===p)?_gq.state:"";
+ if(!kidPhoneOK(p))return st==="bad"?gqLine("Số điện thoại chưa đúng — cần 10 số, bắt đầu bằng 0.",true):"";
+ if(!st)return gqLine("Bấm “Tìm” để xem các bé của số này.");
+ if(st==="loading")return gqLine("Đang tìm hồ sơ bé của số này trên hệ thống…");
+ var ks=kidsOfPhone(p),cur=S.growth.baby,note="";
+ if(st==="off")note="Chỉ tìm trên máy này (máy chưa nhập mã kích hoạt NPP nên không tìm trên hệ thống).";
+ else if(st==="nosrv")note="Chỉ tìm trên máy này (hệ thống chưa bật lưu hồ sơ bé).";
+ else if(st==="err")note="⚠ Chưa tải được từ hệ thống ("+esc(_gq.msg)+"). Chỉ hiện các bé đã lưu trên máy này.";
+ if(!ks.length)return gqLine(st==="ok"?"Số này chưa có hồ sơ bé nào.":("Chưa thấy bé nào của số này trên máy này. Hồ sơ tạo trước đây chưa có SĐT — bấm Sửa ở hồ sơ bé để thêm (khi khách đồng ý). "+note),st==="err");
+ return '<label style="margin-top:2px">'+ks.length+' bé của số này — chạm để xem biểu đồ</label><div class="gbaby" style="margin:2px 0 4px">'+ks.map(function(b){var m=ageMo(b.ngaySinh,nowISO());return '<div class="gchip'+(b.id===cur?' on':'')+'" onclick="selBaby(\''+b.id+'\')">'+ic('child_care')+esc(b.ten||"Bé")+(m!=null&&m>=0?(" · "+ageLabel(m)):"")+'</div>';}).join("")+'</div>'+(note?gqLine(note,st==="err"):"");}
 function gqPaint(){var e=document.getElementById("gqres");if(e)e.innerHTML=gqHtml();}
-function growthSearch(){var p=kidPhone(S.growth.q||"");if(!kidPhoneOK(p)){S.growth.qs="bad";S.growth.qp=p;gqPaint();return;}S.growth.qs="ok";S.growth.qp=p;gqPaint();}
+function growthSearch(){var p=kidPhone(S.growth.q||"");
+ if(!kidPhoneOK(p)){_gq={phone:p,state:"bad",msg:""};gqPaint();return;}
+ if(!nppToken()){_gq={phone:p,state:"off",msg:""};gqPaint();return;}
+ _gq={phone:p,state:"loading",msg:""};gqPaint();
+ growthCall("/lookup","POST",{phone:p}).then(function(j){growthMerge(p,j.children||[],true);if(_gq.phone!==p)return;_gq={phone:p,state:"ok",msg:""};if(S.tab==="growth")draw();else gqPaint();})
+  .catch(function(e){console.warn("Tìm hồ sơ bé lỗi:",e&&e.message);if(_gq.phone!==p)return;_gq={phone:p,state:(e&&e.status===404)?"nosrv":"err",msg:growthErrText(e)};gqPaint();});}
 function growthSearchCard(){return '<div class="card" style="padding:11px 12px;margin-bottom:12px"><label style="margin-top:0">Tìm hồ sơ bé theo số điện thoại</label>'
   +'<div style="display:flex;gap:8px;align-items:stretch"><input id="gq" type="tel" inputmode="numeric" autocomplete="off" value="'+esc(S.growth.q||"")+'" placeholder="SĐT người mua" oninput="S.growth.q=this.value" onkeydown="if(event.key===\'Enter\'){event.preventDefault();growthSearch();}" style="flex:1;min-width:0;margin:0">'
   +'<button class="btn btnP" style="width:auto;padding:0 18px;flex:0 0 auto" onclick="growthSearch()">Tìm</button></div>'
-  +'<div id="gqres" style="margin-top:8px">'+gqHtml()+'</div></div>';}
+  +'<div id="gqres" style="margin-top:8px">'+gqHtml()+'</div></div>'+growthLinkCard();}
+/* Kết nối hệ thống: nhập mã NPP một lần. Kiểm mã bằng 1 lần tra SĐT giả hợp lệ (0900000000) — 401 = mã sai, không lưu; 404 = máy chủ chưa cập nhật (vẫn lưu mã). */
+function growthLinkCard(){
+ if(nppToken())return '<div style="font-size:11.5px;color:var(--on-var);margin:-4px 2px 12px;line-height:1.5">'+ic('check_circle')+' Đã kết nối hệ thống — hồ sơ bé lưu về Studio, máy khác của NPP cũng thấy. <a style="text-decoration:underline;cursor:pointer;font-weight:700" onclick="nppUnlink()">Ngắt kết nối</a></div>';
+ return '<div class="card" style="padding:11px 12px;margin-bottom:12px"><label style="margin-top:0">Kết nối hệ thống (không bắt buộc)</label>'
+  +'<div style="font-size:12px;line-height:1.5;color:var(--on-var);margin:2px 0 8px">Nhập mã kích hoạt NPP để hồ sơ bé lưu về hệ thống, máy khác của NPP gõ số điện thoại là thấy. Chưa nhập thì hồ sơ chỉ nằm trên máy này.</div>'
+  +'<div style="display:flex;gap:8px;align-items:stretch"><input id="npp_tk" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Mã kích hoạt NPP" style="flex:1;min-width:0;margin:0" onkeydown="if(event.key===\'Enter\'){event.preventDefault();nppLink();}">'
+  +'<button class="btn btnO" style="width:auto;padding:0 18px;flex:0 0 auto" onclick="nppLink()">Kết nối</button></div><div id="npp_msg" style="font-size:12px;line-height:1.5;margin-top:7px"></div></div>';}
+function nppMsg(t,warn){var e=document.getElementById("npp_msg");if(e){e.style.color=warn?'#9A5B13':'var(--on-var)';e.textContent=t;}}
+function nppLink(){var inp=document.getElementById("npp_tk"),tk=(inp?inp.value:"").trim();
+ if(!tk){nppMsg("Nhập mã kích hoạt NPP.",true);return;}
+ nppMsg("Đang kiểm tra mã…");
+ growthCall("/lookup","POST",{phone:"0900000000"},tk).then(function(){lsSet(NPP_TOKEN_KEY,tk);toast("Đã kết nối hệ thống.");draw();growthFlush();})
+  .catch(function(e){
+   if(e&&e.status===404){lsSet(NPP_TOKEN_KEY,tk);toast("Đã lưu mã. Hệ thống chưa bật lưu hồ sơ bé — app giữ trên máy và tự gửi khi sẵn sàng.");draw();return;}
+   nppMsg("Chưa kết nối được: "+growthErrText(e)+".",true);});}
+function nppUnlink(){if(!confirm("Ngắt kết nối hệ thống trên máy này? Hồ sơ bé vẫn còn trên máy, nhưng sẽ không tự gửi về hệ thống nữa."))return;try{localStorage.removeItem(NPP_TOKEN_KEY);}catch(e){}toast("Đã ngắt kết nối.");draw();}
 function renderGrowth(){
  var bs=babies();
  var head='<div class="sec" style="margin-bottom:12px"><div class="sec-l"><div class="sec-ic">'+ic('trending_up')+'</div><div><h3>Biểu đồ tăng trưởng</h3><div class="sub">Chuẩn WHO 0–19 tuổi · lưu tại máy</div></div></div></div>'+growthSearchCard();
@@ -2123,6 +2242,7 @@ function renderGrowth(){
  h+='<div class="gbaby" style="margin-bottom:12px">'+bs.map(function(x){return '<div class="gchip'+(x.id===b.id?' on':'')+'" onclick="selBaby(\''+x.id+'\')">'+ic('child_care')+esc(x.ten||"Bé")+'</div>';}).join('')+'<div class="gchip add" onclick="S.growth.addingBaby=true;S.growth.editBaby=null;S.bf={};draw()">'+ic('add')+'Bé</div></div>';
  if(S.growth.addingBaby)h+=babyForm();
  h+='<div class="card" style="padding:12px 14px;display:flex;align-items:center;gap:10px"><div class="sec-ic" style="background:var(--sec-fx);color:var(--on-sec-fx)">'+ic('child_care')+'</div><div style="flex:1;min-width:0"><div style="font-family:var(--fd);font-weight:700;font-size:14px">'+esc(b.ten||"Bé")+' · '+esc(b.gioiTinh||"Trai")+'</div><div style="font-size:11.5px;color:var(--on-var)">Sinh '+fmtDate(b.ngaySinh)+' · '+ageLabel(nowA)+'</div></div><div class="mact"><button onclick="editBaby(\''+b.id+'\')">'+ic('edit')+'</button><button onclick="delBaby(\''+b.id+'\')">'+ic('delete')+'</button></div></div>';
+ h+=growthSyncBlock(b);
  var lastM=ms.length?ms[ms.length-1]:null,dueDays=lastM?Math.floor((Date.now()-parseD(lastM.ngayDo))/86400000):null;
  if(dueDays!=null&&dueDays>=30)h+='<div class="reminder" style="margin-top:12px">'+ic('notifications')+'<div><b>Đến hẹn cân đo cho bé</b><div style="font-size:11.5px;opacity:.95">Đã '+dueDays+' ngày kể từ lần đo gần nhất — cập nhật để đường tăng trưởng luôn chính xác.</div></div></div>';
  if(nowA!=null&&nowA>228)h+='<div class="warn" style="margin-top:12px">'+ic('warning')+'<div>Bé đã trên 19 tuổi, ngoài phạm vi bảng chuẩn WHO của app. Mẹ vẫn có thể lưu số đo để tham khảo.</div></div>';
@@ -3036,7 +3156,10 @@ var _ll=document.getElementById('loginlogo');if(_ll)_ll.src=LOGO;
 S.pg=getPG();
 if(window.__appUp)window.__appUp();
 setTimeout(function(){document.getElementById('splash').classList.add('hide');if(!S.pg){renderLogin();document.getElementById('login').style.display='flex';}},1900);
-window.addEventListener('online',syncOrders);setInterval(syncOrders,30000);/* retry ~30s/lần, tối đa MAX_TRIES */
+window.addEventListener('online',syncOrders);setInterval(syncOrders,30000);
+window.addEventListener('online',function(){growthFlush();});setInterval(growthFlush,30000);setTimeout(growthFlush,3000);
+/* Link cấp sẵn mã NPP: ?token=<mã> (giống App Wintop). Cất vào máy rồi xoá khỏi thanh địa chỉ ngay. */
+try{var _tkq=new URLSearchParams(location.search).get('token');if(_tkq&&_tkq.trim()){lsSet(NPP_TOKEN_KEY,_tkq.trim());history.replaceState(null,'',location.pathname+location.hash);}}catch(e){}/* retry ~30s/lần, tối đa MAX_TRIES */
 /* Nhắc cân đo cho bé qua chuông thông báo (tận dụng biểu đồ tăng trưởng) */
 function growthReminderCheck(){ try{ var due=(typeof dueBabies==="function")?dueBabies():[]; if(!due.length){updateBell();return;} var has=dynNotifs().some(function(n){return n.t==="Đến hẹn cân đo cho bé"&&n.at&&(Date.now()-n.at)<20*3600000;}); if(!has)pushNotif('notifications','Đến hẹn cân đo cho bé',due.map(function(b){return b.ten||"Bé";}).join(", ")+' — đã hơn 30 ngày chưa cập nhật số đo cho bé.'); updateBell(); }catch(e){} }
 try{if(typeof refreshNotifs==='function'){refreshNotifs();}else{growthReminderCheck();updateBell();}}catch(e){try{growthReminderCheck();updateBell();}catch(e2){}}
