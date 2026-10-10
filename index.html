@@ -1942,6 +1942,12 @@ function ageMo(birthISO,dateISO){var b=parseD(birthISO),d=parseD(dateISO);if(!b|
 function fmtDate(iso){var d=parseD(iso);if(!d)return esc(iso||"");return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();}
 function ageLabel(m){if(m==null)return "";var mm=Math.round(m);if(mm<0)mm=0;if(mm<24)return mm+" tháng tuổi";var y=Math.floor(mm/12),r=mm%12;return y+" tuổi"+(r?" "+r+" tháng":"");}
 var BB_KEY="nt_babies",MEA_KEY="nt_measures";
+/* Câu xin đồng ý khi lưu SĐT người mua cùng hồ sơ bé. Đổi câu thì đổi mã này để sau biết khách đã đồng ý với câu nào (khách góp ý 09/10/2026: phải nêu lý do). */
+var CONSENT_V="v3-2026-10-09";
+var CONSENT_TXT="Nutritie xin lưu tên, số điện thoại và số đo cân nặng, chiều cao của bé hôm nay để dễ dàng theo dõi biểu đồ tăng trưởng chiều cao, cân nặng của bé, từ đó đánh giá hiệu quả của tình trạng dinh dưỡng mà bé đang được áp dụng. Anh/chị đồng ý không ạ?";
+function kidPhone(p){var d=(""+(p||"")).replace(/\D/g,"");if(d.indexOf("84")===0&&d.length>=11)d="0"+d.slice(2);if(d.length===9&&d.charAt(0)!=="0")d="0"+d;return d;}
+function kidPhoneOK(p){var d=kidPhone(p);return d.length===10&&d.charAt(0)==="0"&&"35789".indexOf(d.charAt(1))>=0;}
+function kidsOfPhone(p){var d=kidPhone(p);if(!kidPhoneOK(d))return [];return babies().filter(function(b){return b.phone===d;});}
 function babies(){return lsGet(BB_KEY,[]);}
 function saveBabies(a){lsSet(BB_KEY,a);}
 function measures(){return lsGet(MEA_KEY,[]);}
@@ -1961,11 +1967,14 @@ function zClass(z,type){if(z==null||!isFinite(z))return {lb:"Chưa đủ dữ li
 function selBaby(id){S.growth.baby=id;S.growth.edit=null;S.growth.editBaby=null;S.growth.addingBaby=false;S.gf={};draw();}
 function submitBaby(){var f=S.bf||{},ten=(f.ten||"").trim(),ngay=f.ngaySinh||"",gt=f.gioiTinh||"Trai";
  if(!ngay){toast("Nhập ngày sinh của bé (bắt buộc).");return;}var d=parseD(ngay);if(!d){toast("Ngày sinh không hợp lệ.");return;}if(d>new Date()){toast("Ngày sinh không thể ở tương lai.");return;}
+ /* Hỏi khách TRƯỚC khi lưu SĐT: đồng ý -> bắt buộc SĐT hợp lệ; không đồng ý -> hồ sơ vẫn lưu trên máy nhưng KHÔNG có SĐT (sửa hồ sơ cũ mà chưa chọn thì giữ nguyên). */
+ var cs=f.consent,ph="";if(cs==null&&!S.growth.editBaby){toast("Hỏi khách trước: có đồng ý cho lưu số điện thoại không?");return;}
+ if(cs===true){ph=kidPhone(f.phone);if(!kidPhoneOK(ph)){toast("Nhập SĐT người mua (10 số, bắt đầu bằng 0).");return;}}
  var arr=babies();
- if(S.growth.editBaby){for(var i=0;i<arr.length;i++)if(arr[i].id===S.growth.editBaby){arr[i].ten=ten||arr[i].ten;arr[i].ngaySinh=ngay;arr[i].gioiTinh=gt;}S.growth.editBaby=null;toast("Đã cập nhật hồ sơ bé.");}
- else{var id="B"+Date.now().toString(36);arr.push({id:id,ten:ten||"Bé",ngaySinh:ngay,gioiTinh:gt});S.growth.baby=id;toast("Đã thêm hồ sơ "+(ten||"bé")+"!");}
+ if(S.growth.editBaby){for(var i=0;i<arr.length;i++)if(arr[i].id===S.growth.editBaby){arr[i].ten=ten||arr[i].ten;arr[i].ngaySinh=ngay;arr[i].gioiTinh=gt;if(cs===true){if(arr[i].phone!==ph||!arr[i].cv){arr[i].cv=CONSENT_V;arr[i].ca=new Date().toISOString();}arr[i].phone=ph;}else if(cs===false){delete arr[i].phone;delete arr[i].cv;delete arr[i].ca;}}S.growth.editBaby=null;toast("Đã cập nhật hồ sơ bé.");}
+ else{var id="B"+Date.now().toString(36);var nb={id:id,ten:ten||"Bé",ngaySinh:ngay,gioiTinh:gt};if(cs===true){nb.phone=ph;nb.cv=CONSENT_V;nb.ca=new Date().toISOString();}arr.push(nb);S.growth.baby=id;toast("Đã thêm hồ sơ "+(ten||"bé")+"!");}
  saveBabies(arr);S.bf={};S.growth.addingBaby=false;draw();}
-function editBaby(id){var b=babyById(id);if(!b)return;S.bf={ten:b.ten,ngaySinh:b.ngaySinh,gioiTinh:b.gioiTinh};S.growth.editBaby=id;S.growth.addingBaby=true;draw();}
+function editBaby(id){var b=babyById(id);if(!b)return;S.bf={ten:b.ten,ngaySinh:b.ngaySinh,gioiTinh:b.gioiTinh,phone:b.phone||"",consent:b.phone?true:null};S.growth.editBaby=id;S.growth.addingBaby=true;draw();}
 function delBaby(id){if(!confirm("Xóa hồ sơ bé này và toàn bộ số đo của bé?"))return;saveBabies(babies().filter(function(b){return b.id!==id;}));saveMeasures(measures().filter(function(m){return m.babyId!==id;}));if(S.growth.baby===id)S.growth.baby="";S.growth.editBaby=null;S.growth.addingBaby=false;toast("Đã xóa hồ sơ bé.");draw();}
 function submitMeasure(){var b=curBaby();if(!b){toast("Chọn hồ sơ bé trước.");return;}var f=S.gf||{};
  var date=f.ngayDo||nowISO();if(!parseD(date)){toast("Ngày đo không hợp lệ.");return;}if(parseD(date)>new Date()){toast("Ngày đo không thể ở tương lai.");return;}
@@ -1990,6 +1999,11 @@ function babyForm(){var f=S.bf||{},editing=!!S.growth.editBaby;
  +'<label>Tên gọi của bé</label><input value="'+esc(f.ten||"")+'" oninput="S.bf.ten=this.value" placeholder="VD: Bé Bo">'
  +'<label>Ngày sinh *</label><input type="date" value="'+esc(f.ngaySinh||"")+'" max="'+nowISO()+'" oninput="S.bf.ngaySinh=this.value">'
  +'<label>Giới tính *</label><div class="chips">'+["Trai","Gái"].map(function(g){return '<div class="chip'+(((f.gioiTinh||"Trai")===g)?" on":"")+'" onclick="S.bf.gioiTinh=\''+g+'\';draw()">'+g+'</div>';}).join('')+'</div>'
+ +'<div style="margin-top:14px;padding:11px 12px;border:1.5px solid var(--line);border-radius:14px;background:#F7F9FD">'
+  +'<div style="font-size:12px;font-weight:700;color:var(--on-var);margin-bottom:5px">Đọc cho khách trước khi lưu SĐT</div>'
+  +'<div style="font-size:12.5px;line-height:1.6;margin-bottom:9px">“'+CONSENT_TXT+'”</div>'
+  +'<div class="chips">'+[["Khách đồng ý",true],["Khách không đồng ý",false]].map(function(x){return '<div class="chip'+(f.consent===x[1]?" on":"")+'" onclick="S.bf.consent='+x[1]+';draw()">'+x[0]+'</div>';}).join("")+'</div>'
+  +(f.consent===true?'<label>SĐT người mua *</label><input id="bf_phone" type="tel" inputmode="numeric" value="'+esc(f.phone||"")+'" oninput="S.bf.phone=this.value" placeholder="VD: 0912345678">':(f.consent===false?'<div style="font-size:11.5px;color:var(--on-var);margin-top:7px;line-height:1.5">Không lưu SĐT. Hồ sơ bé vẫn lưu trên máy này để theo dõi, nhưng sẽ không tìm được theo số điện thoại.</div>':''))+'</div>'
  +'<div class="btnrow" style="margin-top:14px"><button class="btn btnO" onclick="S.growth.addingBaby=false;S.growth.editBaby=null;S.bf={};draw()">Hủy</button><button class="btn btnP" onclick="submitBaby()">'+ic('check')+(editing?"Lưu":"Thêm bé")+'</button></div></div>';}
 function measureForm(b){var f=S.gf||{},editing=!!S.growth.edit;
  return '<div class="card" style="margin-top:12px"><div class="sec-l" style="margin-bottom:4px"><div class="sec-ic">'+ic('add')+'</div><h3 style="font-size:15px">'+(editing?"Sửa số đo":"Thêm số đo cho "+esc(b.ten||"bé"))+'</h3></div>'
@@ -2084,9 +2098,25 @@ function growthAssess(b,ms){
  if(needDoc){var why=[];if(zW!=null&&zW<-2)why.push("nhẹ cân");if(zH!=null&&zH<-2)why.push("thấp còi");if(zB!=null&&zB<-2)why.push("gầy");if(zB!=null&&zB>2)why.push("béo phì");if(zH!=null&&zH>3)why.push("rất cao so với tuổi");
   h+='<div class="danger" style="margin-top:11px;display:flex;gap:8px"><span style="flex-shrink:0">'+ic('warning')+'</span><div>Chỉ số của bé đang ngoài vùng bình thường theo chuẩn WHO ('+why.join(", ")+'). Mẹ nên đưa bé đi khám chuyên gia dinh dưỡng / bác sĩ nhi để được đánh giá kỹ hơn. <i>Thông tin trong app chỉ để tham khảo, không thay thế chẩn đoán y khoa.</i></div></div>';}
  return h+'</div>';}
+/* ---- Tab Tăng trưởng: tìm hồ sơ bé theo SĐT người mua (khách yêu cầu 09/10/2026, giống App Wintop) ----
+   1 SĐT ra nhiều bé -> chạm chọn bé (VD con tên "In") -> ra biểu đồ. Nutritie lưu bé CHỈ trên máy này nên tìm cũng chỉ trên máy này (nói rõ trên màn).
+   KHÔNG gọi draw() lúc gõ: vẽ lại cả màn là ô nhập mất con trỏ — chỉ vẽ lại khung #gqres. */
+function gqLine(t,warn){return '<div style="font-size:12px;line-height:1.5;margin:2px 0 0;color:'+(warn?'#9A5B13':'var(--on-var)')+'">'+t+'</div>';}
+function gqHtml(){var raw=(S.growth.q||"").trim();if(!raw)return "";var p=kidPhone(raw);
+ if(!kidPhoneOK(p))return S.growth.qs==="bad"?gqLine("Số điện thoại chưa đúng — cần 10 số, bắt đầu bằng 0.",true):"";
+ if(S.growth.qs!=="ok"||S.growth.qp!==p)return gqLine("Bấm “Tìm” để xem các bé của số này.");
+ var ks=kidsOfPhone(p),cur=S.growth.baby;
+ if(!ks.length)return gqLine("Chưa thấy bé nào của số này trên máy này. Hồ sơ tạo trước đây chưa có SĐT — bấm Sửa ở hồ sơ bé để thêm (khi khách đồng ý).",true);
+ return '<label style="margin-top:2px">'+ks.length+' bé của số này — chạm để xem biểu đồ</label><div class="gbaby" style="margin:2px 0 4px">'+ks.map(function(b){var m=ageMo(b.ngaySinh,nowISO());return '<div class="gchip'+(b.id===cur?' on':'')+'" onclick="selBaby(\''+b.id+'\')">'+ic('child_care')+esc(b.ten||"Bé")+(m!=null&&m>=0?(" · "+ageLabel(m)):"")+'</div>';}).join("")+'</div>'+gqLine("Chỉ tìm trên máy này.");}
+function gqPaint(){var e=document.getElementById("gqres");if(e)e.innerHTML=gqHtml();}
+function growthSearch(){var p=kidPhone(S.growth.q||"");if(!kidPhoneOK(p)){S.growth.qs="bad";S.growth.qp=p;gqPaint();return;}S.growth.qs="ok";S.growth.qp=p;gqPaint();}
+function growthSearchCard(){return '<div class="card" style="padding:11px 12px;margin-bottom:12px"><label style="margin-top:0">Tìm hồ sơ bé theo số điện thoại</label>'
+  +'<div style="display:flex;gap:8px;align-items:stretch"><input id="gq" type="tel" inputmode="numeric" autocomplete="off" value="'+esc(S.growth.q||"")+'" placeholder="SĐT người mua" oninput="S.growth.q=this.value" onkeydown="if(event.key===\'Enter\'){event.preventDefault();growthSearch();}" style="flex:1;min-width:0;margin:0">'
+  +'<button class="btn btnP" style="width:auto;padding:0 18px;flex:0 0 auto" onclick="growthSearch()">Tìm</button></div>'
+  +'<div id="gqres" style="margin-top:8px">'+gqHtml()+'</div></div>';}
 function renderGrowth(){
  var bs=babies();
- var head='<div class="sec" style="margin-bottom:12px"><div class="sec-l"><div class="sec-ic">'+ic('trending_up')+'</div><div><h3>Biểu đồ tăng trưởng</h3><div class="sub">Chuẩn WHO 0–19 tuổi · lưu tại máy</div></div></div></div>';
+ var head='<div class="sec" style="margin-bottom:12px"><div class="sec-l"><div class="sec-ic">'+ic('trending_up')+'</div><div><h3>Biểu đồ tăng trưởng</h3><div class="sub">Chuẩn WHO 0–19 tuổi · lưu tại máy</div></div></div></div>'+growthSearchCard();
  if(!bs.length)return head+'<div class="card" style="text-align:center;padding:30px 22px"><div class="gr-emy">'+ic('child_care')+'<span class="gr-emy-tr">'+ic('trending_up')+'</span></div><div style="font-family:var(--fd);font-weight:700;font-size:16px">Tạo hồ sơ cho bé</div><div style="font-size:12.5px;color:var(--on-var);margin-top:5px;line-height:1.6">Thêm bé để bắt đầu lưu số đo và vẽ đường tăng trưởng theo tháng.</div></div>'+babyForm();
  var b=curBaby(),ms=babyMeasures(b.id),nowA=ageMo(b.ngaySinh,nowISO());
  var h=head;
