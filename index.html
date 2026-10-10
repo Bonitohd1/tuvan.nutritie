@@ -1943,8 +1943,8 @@ function fmtDate(iso){var d=parseD(iso);if(!d)return esc(iso||"");return ('0'+d.
 function ageLabel(m){if(m==null)return "";var mm=Math.round(m);if(mm<0)mm=0;if(mm<24)return mm+" tháng tuổi";var y=Math.floor(mm/12),r=mm%12;return y+" tuổi"+(r?" "+r+" tháng":"");}
 var BB_KEY="nt_babies",MEA_KEY="nt_measures";
 /* Câu xin đồng ý khi lưu SĐT người mua cùng hồ sơ bé. Đổi câu thì đổi mã này để sau biết khách đã đồng ý với câu nào (khách góp ý 09/10/2026: phải nêu lý do). */
-var CONSENT_V="v3-2026-10-09";
-var CONSENT_TXT="Nutritie xin lưu tên, số điện thoại và số đo cân nặng, chiều cao của bé hôm nay để dễ dàng theo dõi biểu đồ tăng trưởng chiều cao, cân nặng của bé, từ đó đánh giá hiệu quả của tình trạng dinh dưỡng mà bé đang được áp dụng. Anh/chị đồng ý không ạ?";
+var CONSENT_V="v4-2026-10-10";
+var CONSENT_TXT="Nutritie xin lưu tên, số điện thoại và số đo cân nặng, chiều cao của bé hôm nay để dễ dàng theo dõi biểu đồ tăng trưởng chiều cao, cân nặng của bé, từ đó đánh giá hiệu quả của tình trạng dinh dưỡng mà bé đang được áp dụng, đồng thời để chăm sóc và nhắc lịch cân đo cho bé. Anh/chị đồng ý không ạ?";
 function kidPhone(p){var d=(""+(p||"")).replace(/\D/g,"");if(d.indexOf("84")===0&&d.length>=11)d="0"+d.slice(2);if(d.length===9&&d.charAt(0)!=="0")d="0"+d;return d;}
 function kidPhoneOK(p){var d=kidPhone(p);return d.length===10&&d.charAt(0)==="0"&&"35789".indexOf(d.charAt(1))>=0;}
 function kidsOfPhone(p){var d=kidPhone(p);if(!kidPhoneOK(d))return [];return babies().filter(function(b){return b.phone===d;});}
