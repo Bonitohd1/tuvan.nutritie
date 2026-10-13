@@ -35,7 +35,8 @@ with sync_playwright() as p:
             for k, v in r.items(): fams[k] = fams.get(k, 0) + v
         check(T('không phần tử nào dùng Space Grotesk'), not [k for k in fams if 'Space Grotesk' in k], fams)
         check(T('mọi chữ trên 4 màn dùng ĐÚNG MỘT chuỗi font'), len(fams) == 1, fams)
-        check(T('chuỗi font giống Wintop (Be Vietnam Pro -> font hệ thống)'), list(fams)[0].replace("'", '"') == STACK if fams else False, fams)
+        norm = lambda s: s.replace('"', '').replace("'", '').replace(' ', '')   # WebKit Windows ghi có nháy, WebKit Linux (CI) ghi không nháy
+        check(T('chuỗi font giống Wintop (Be Vietnam Pro -> font hệ thống)'), norm(list(fams)[0]) == norm(STACK) if fams else False, fams)
         b.close()
 shutil.rmtree(d, ignore_errors=True)
 print(f'TỔNG {sum(res)} / {len(res)}'); sys.exit(0 if all(res) else 1)
