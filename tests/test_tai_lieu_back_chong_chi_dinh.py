@@ -53,13 +53,15 @@ with sync_playwright() as p:
 
         # ---------- 1. TÀI LIỆU ----------
         pg.evaluate("go('docs')"); pg.wait_for_timeout(200)
+        # 13/10 chiều: mọi PDF đã vào kho (DOCPG) nên không còn mục "chờ" thật -> MÔ PHỎNG tệp chưa có bằng cách bỏ DOCPG, để vẫn canh cơ chế "không 404"
+        pg.evaluate("Object.keys(DOCPG).forEach(k=>delete DOCPG[k]);draw()"); pg.wait_for_timeout(200)
         txt = pg.evaluate("document.getElementById('view').textContent")
         check(T('mục Tài liệu: có nhãn "Chờ cập nhật" cho tệp chưa có'), 'Chờ cập nhật' in txt)
         check(T('nhóm "Kỹ năng chốt sale" hiện (đã có 7 ảnh hướng dẫn)'), 'Kỹ năng chốt sale' in txt, txt[:200])
         n_click = pg.evaluate("[...document.querySelectorAll('#view .doc-row')].filter(r=>r.getAttribute('onclick')).length")
         n_pend = pg.evaluate("document.querySelectorAll('#view .doc-row.pend').length")
         check(T('hàng chưa có tệp KHÔNG bấm được (không onclick)'), n_pend >= 10 and pg.evaluate("[...document.querySelectorAll('#view .doc-row.pend')].every(r=>!r.getAttribute('onclick'))"), n_pend)
-        check(T('chỉ còn mục có nội dung thật bấm mở được (2 bài kiến thức + NĐ100 + chứng nhận Aiwado + 7 ảnh chốt sale = 11)'), n_click == 11, n_click)
+        check(T('chỉ còn mục có nội dung thật bấm mở được (2 bài kiến thức + NĐ100 + 2 ảnh Aiwado + 7 ảnh chốt sale = 12)'), n_click == 12, n_click)
         pg.evaluate("document.querySelector('#view .doc-row:not(.pend)').click()"); pg.wait_for_timeout(250)
         rd = pg.evaluate("document.getElementById('docreader').innerHTML")
         check(T('trình đọc bài viết mở ra'), pg.evaluate("document.getElementById('docreader').classList.contains('open')"))

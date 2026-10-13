@@ -791,6 +791,10 @@
   .dr-body{flex:1;position:relative;overflow:auto;-webkit-overflow-scrolling:touch;background:#5b6172;display:flex;flex-direction:column}
   .dr-frame{flex:1;width:100%;border:0;background:#5b6172;min-height:62vh}
   .dr-img{display:block;width:100%;max-width:820px;height:auto;margin:0 auto;background:#fff}
+  .dr-pages{gap:8px;padding-bottom:10px}
+  .dr-pg{min-height:34vh;flex-shrink:0}
+  .bo-ban{border-radius:18px;overflow:hidden;box-shadow:0 4px 18px rgba(30,58,95,.16);background:#e9f2fb;line-height:0}
+  .bo-ban img{display:block;width:100%;height:auto}
   .dr-article{background:#fff;margin:12px;border-radius:16px;padding:18px;box-shadow:0 8px 22px rgba(0,0,0,.25)}
   .dr-foot{flex-shrink:0;display:flex;align-items:center;gap:12px;padding:11px 15px;background:#111834}
   .dr-foot .dis{font-size:11px;color:#aeb7d0;flex:1;line-height:1.45}
@@ -1704,6 +1708,8 @@ function weeklyCardHTML(){
  return '<div class="card"><div class="sec" style="margin-bottom:10px"><div class="sec-l"><div class="sec-ic" style="background:var(--sc-low);color:var(--red)">'+ic('leaderboard')+'</div><div><h3>Nhiệm vụ tuần</h3><div class="sub">Thưởng +100 XP khi đủ chỉ tiêu'+(w.claimed?' · Đã nhận ✓':'')+'</div></div></div>'+(allDone?'<span class="tag-ok">HOÀN THÀNH</span>':'')+'</div>'
   +'<div class="ms-list">'+rows+'</div></div>';
 }
+/* Banner bộ 7 sản phẩm (ảnh chị Thúy gửi). Chỉ PG thấy; không đưa vào chế độ Trình khách vì có hình lon Baby/Bio (trẻ dưới 24 tháng, NĐ 100). */
+function boBanner(go_){ return '<div class="bo-ban'+(go_?' press':'')+'"'+(go_?' onclick="go(\'sp\')" style="cursor:pointer"':'')+'><img src="assets/bo-nutritie.jpg" alt="Bộ 7 sản phẩm Nutritie" onerror="this.parentNode.remove()"></div>'; }
 function renderHome(){
  var zr=ZONES.map(function(z){return '<div class="zcard press" onclick="startTV()" style="--zc:'+z[3]+'"><div class="zi"><img src="'+zicon(z[0])+'" alt="" onerror="this.style.display=\'none\'"></div><div class="zn">'+z[0]+'</div><div class="zd">'+z[1]+'</div><span class="zbadge">'+z[2]+'</span></div>';}).join('');
  var tr=TRUST.map(function(t){return '<div class="trust-it"><div class="ti" style="background:'+t[4]+'">'+ic(t[3])+'</div><div style="flex:1"><b>'+t[1]+'</b><span>'+t[2]+'</span></div><span class="chk">'+ic('check_circle')+'</span></div>';}).join('');
@@ -1721,6 +1727,7 @@ function renderHome(){
     +'<h2>Chuyên gia Dinh dưỡng Nutritie</h2><p>Đo chỉ số (BMI/Z-score) → gợi ý đúng sản phẩm trong ~2 phút.</p></div>'
    +'<div class="hero-btns"><button class="btn btnP press" onclick="startTV()">'+ic('stethoscope')+'Bắt đầu tư vấn</button>'
     +'<button class="btn btnW press" onclick="go(\'sp\')">'+ic('nutrition')+'Xem 7 sản phẩm</button></div></div>'
+  +boBanner(true)
   +'<div class="card" style="padding:15px 13px"><div class="qgrid">'+qg+'</div></div>'
   +rwHomeCard()
   +'<div class="card press" onclick="openPresent()" style="cursor:pointer;background:linear-gradient(135deg,var(--navy),var(--navy2));border:none;color:#fff;display:flex;align-items:center;gap:13px"><div style="width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;flex-shrink:0">'+ic('co_present')+'</div><div style="flex:1;min-width:0"><div style="font-family:var(--fd);font-weight:800;font-size:15.5px">Trình khách 🖥️</div><div style="font-size:12px;opacity:.9">Chế độ toàn màn hình — đưa điện thoại cho khách xem</div></div><span style="font-size:22px;opacity:.9;flex-shrink:0">'+ic('chevron_right')+'</span></div>'
@@ -1958,7 +1965,7 @@ function tvStep4(){var contra=contraCheck();
  return h;}
 
 /* ===== SẢN PHẨM ===== */
-function renderSP(){var h='<div class="sec" style="margin-bottom:12px"><div class="sec-l"><div class="sec-ic">'+ic('nutrition')+'</div><div><h3>7 sản phẩm Nutritie</h3><div class="sub">Chạm để xem chi tiết & tư vấn</div></div></div></div><div class="grid">';
+function renderSP(){var h=boBanner(false)+'<div class="sec" style="margin:12px 0"><div class="sec-l"><div class="sec-ic">'+ic('nutrition')+'</div><div><h3>7 sản phẩm Nutritie</h3><div class="sub">Chạm để xem chi tiết & tư vấn</div></div></div></div><div class="grid">';
  for(var i=0;i<PRODUCTS.length;i++){var p=PRODUCTS[i];
   var chips=(p.claims||[]).slice(0,2).map(function(c){return '<span>'+esc(c.split(':')[0])+'</span>';}).join('');
   var kcal=p.kcalml?'<span class="kcal">'+p.kcalml+' kcal/ml</span>':'';
@@ -2967,11 +2974,17 @@ var TAILIEU=[
    {t:"HSCB BioA+",type:"PDF",sum:"Hồ sơ tự công bố sản phẩm (2024).",f:"Hồ sơ công bố/HS chỉnh sửa/HSCB_Nutritie BioA+_full_2024 (1).pdf"},
    {t:"HSCB Pedia A+",type:"PDF",sum:"Hồ sơ tự công bố sản phẩm.",f:"Hồ sơ công bố/HS chỉnh sửa/HSCB_Nutritie Pedia A+_2022-01.pdf"},
    {t:"HSCB Mama A+",type:"PDF",sum:"Hồ sơ tự công bố sản phẩm.",f:"Hồ sơ công bố/HS chỉnh sửa/HSCB_Nutritie Mama A+_2022-01.pdf"},
+   {t:"HSCB Grow IQ A+",type:"PDF",sum:"Hồ sơ tự công bố sản phẩm.",f:"Hồ sơ công bố/HS chỉnh sửa/HSCB_Nutritie Grow A+_2022-01.pdf"},
+   {t:"HSCB Canxi Pro A+",type:"PDF",sum:"Hồ sơ tự công bố sản phẩm.",f:"Hồ sơ công bố/HS chỉnh sửa/HS tu CB_Nutritie Canxi Pro A+_2022-01.pdf"},
+   {t:"HSCB Colostrum DHA",type:"PDF",sum:"Hồ sơ tự công bố sữa pha sẵn (SBPS).",f:"Hồ sơ công bố/HS chỉnh sửa/HSTCB_SBPS Nutriie Colostrum DHA.pdf"},
    {t:"Tuân thủ NĐ100/2014",type:"Bài viết",sum:"Quy định quảng cáo SP cho trẻ dưới 24 tháng; luôn nhắc 'Sữa mẹ là tốt nhất'."} ]},
  {cat:"Kiểm nghiệm & Chứng nhận",ic:"verified",items:[
    {t:"KQ Kiểm nghiệm Colostrum DHA",type:"PDF",sum:"Kết quả kiểm nghiệm SBPS Colostrum DHA.",f:"Kiểm Nghiệm/KQ KN SBPS Nutritie Colostrum DHA.pdf"},
+   {t:"KQ Kiểm nghiệm Nutritie (sữa bột)",type:"PDF",sum:"Kết quả kiểm nghiệm sản phẩm Nutritie (NPP Colostrum VN).",f:"Kiểm Nghiệm/KQ KN SN Nutritie (NPP Colostrum VN).pdf"},
    {t:"Chứng nhận giải thưởng Nutritie",type:"PDF",sum:"Top 10 Thương hiệu Việt Nam.",f:"Chứng nhận/Chứng nhận giải thưởng Nutritie.pdf"},
    {t:"Chứng nhận nhà máy Aiwado",type:"Ảnh",sum:"ISO 9001/22000 (bột).",f:"Chứng nhận/Sữa bột_cn_aiwado_1-566x800.jpg"},
+   {t:"Chứng nhận nhà máy Aiwado (2)",type:"Ảnh",sum:"Chứng nhận nhà máy sữa bột, trang 2.",f:"Chứng nhận/Sữa bột_cn_aiwado_2-566x800.jpg"},
+   {t:"Chứng nhận Nutribiz ISO 9001",type:"PDF",sum:"ISO 9001 (pha sẵn RTD).",f:"Chứng nhận/Sữa pha sẵn_Nutribiz Dairy_9001.pdf"},
    {t:"Chứng nhận Nutribiz FSSC",type:"PDF",sum:"FSSC 22000 (pha sẵn RTD).",f:"Chứng nhận/Sữa pha sẵn_Nutribiz_954671_FSSC 5.1.pdf"} ]},
  {cat:"Kỹ năng chốt sale",ic:"forum",items:[
     {t:"Chốt sale — Baby A+",type:"Ảnh",sum:"Mong muốn của khách → key dinh dưỡng → tư vấn gợi ý.",f:"Chốt sale theo SKU/Chốt sale app_Nutritie Baby A+.jpg"},
@@ -2984,8 +2997,11 @@ var TAILIEU=[
 ];
 /* Tệp tài liệu THẬT có trong app. 13/10/2026: mọi PDF trong mục Tài liệu ra 404 vì tệp nằm ở Drive, chưa chép vào kho. Chép tệp vào kho rồi
    thêm đường dẫn vào DOC_AVAIL thì mục tự mở được; tệp chưa có hiện "Chờ cập nhật" (không dẫn khách ra Drive, không ra trang 404). */
+/* DOCPG: tài liệu PDF đã đổi thành ẢNH TỪNG TRANG (assets/docs/<khoá>/NN.jpg). Vì sao không dùng <iframe> PDF: webview iPhone/Zalo hay chỉ hiện trang 1,
+   không cuộn / phóng to được. Ảnh xếp dọc thì cuộn + chạm hai ngón phóng to chạy ở mọi máy. */
+var DOCPG={"Tài liệu Training/Nutritie Baby A+.pdf":["assets/docs/tt-baby/01.jpg","assets/docs/tt-baby/02.jpg","assets/docs/tt-baby/03.jpg","assets/docs/tt-baby/04.jpg","assets/docs/tt-baby/05.jpg","assets/docs/tt-baby/06.jpg","assets/docs/tt-baby/07.jpg","assets/docs/tt-baby/08.jpg","assets/docs/tt-baby/09.jpg","assets/docs/tt-baby/10.jpg","assets/docs/tt-baby/11.jpg","assets/docs/tt-baby/12.jpg","assets/docs/tt-baby/13.jpg","assets/docs/tt-baby/14.jpg","assets/docs/tt-baby/15.jpg","assets/docs/tt-baby/16.jpg","assets/docs/tt-baby/17.jpg","assets/docs/tt-baby/18.jpg"],"Tài liệu Training/Nutritie Bio A+.pdf":["assets/docs/tt-bio/01.jpg","assets/docs/tt-bio/02.jpg","assets/docs/tt-bio/03.jpg","assets/docs/tt-bio/04.jpg","assets/docs/tt-bio/05.jpg","assets/docs/tt-bio/06.jpg","assets/docs/tt-bio/07.jpg","assets/docs/tt-bio/08.jpg","assets/docs/tt-bio/09.jpg","assets/docs/tt-bio/10.jpg","assets/docs/tt-bio/11.jpg","assets/docs/tt-bio/12.jpg","assets/docs/tt-bio/13.jpg","assets/docs/tt-bio/14.jpg","assets/docs/tt-bio/15.jpg","assets/docs/tt-bio/16.jpg","assets/docs/tt-bio/17.jpg"],"Tài liệu Training/Nutritie Pedia A+.pdf":["assets/docs/tt-pedia/01.jpg","assets/docs/tt-pedia/02.jpg","assets/docs/tt-pedia/03.jpg","assets/docs/tt-pedia/04.jpg","assets/docs/tt-pedia/05.jpg","assets/docs/tt-pedia/06.jpg","assets/docs/tt-pedia/07.jpg","assets/docs/tt-pedia/08.jpg","assets/docs/tt-pedia/09.jpg","assets/docs/tt-pedia/10.jpg","assets/docs/tt-pedia/11.jpg","assets/docs/tt-pedia/12.jpg","assets/docs/tt-pedia/13.jpg","assets/docs/tt-pedia/14.jpg","assets/docs/tt-pedia/15.jpg","assets/docs/tt-pedia/16.jpg","assets/docs/tt-pedia/17.jpg","assets/docs/tt-pedia/18.jpg"],"Tài liệu Training/Nutritie Grow  A+.pdf":["assets/docs/tt-grow/01.jpg","assets/docs/tt-grow/02.jpg","assets/docs/tt-grow/03.jpg","assets/docs/tt-grow/04.jpg","assets/docs/tt-grow/05.jpg","assets/docs/tt-grow/06.jpg","assets/docs/tt-grow/07.jpg","assets/docs/tt-grow/08.jpg","assets/docs/tt-grow/09.jpg","assets/docs/tt-grow/10.jpg","assets/docs/tt-grow/11.jpg","assets/docs/tt-grow/12.jpg","assets/docs/tt-grow/13.jpg","assets/docs/tt-grow/14.jpg","assets/docs/tt-grow/15.jpg","assets/docs/tt-grow/16.jpg","assets/docs/tt-grow/17.jpg","assets/docs/tt-grow/18.jpg","assets/docs/tt-grow/19.jpg"],"Tài liệu Training/Nutritie Mama  A+.pdf":["assets/docs/tt-mama/01.jpg","assets/docs/tt-mama/02.jpg","assets/docs/tt-mama/03.jpg","assets/docs/tt-mama/04.jpg","assets/docs/tt-mama/05.jpg","assets/docs/tt-mama/06.jpg","assets/docs/tt-mama/07.jpg","assets/docs/tt-mama/08.jpg","assets/docs/tt-mama/09.jpg","assets/docs/tt-mama/10.jpg","assets/docs/tt-mama/11.jpg","assets/docs/tt-mama/12.jpg","assets/docs/tt-mama/13.jpg","assets/docs/tt-mama/14.jpg","assets/docs/tt-mama/15.jpg","assets/docs/tt-mama/16.jpg","assets/docs/tt-mama/17.jpg","assets/docs/tt-mama/18.jpg","assets/docs/tt-mama/19.jpg","assets/docs/tt-mama/20.jpg","assets/docs/tt-mama/21.jpg","assets/docs/tt-mama/22.jpg"],"Tài liệu Training/Nutritie Canxi  A+.pdf":["assets/docs/tt-canxi/01.jpg","assets/docs/tt-canxi/02.jpg","assets/docs/tt-canxi/03.jpg","assets/docs/tt-canxi/04.jpg","assets/docs/tt-canxi/05.jpg","assets/docs/tt-canxi/06.jpg","assets/docs/tt-canxi/07.jpg","assets/docs/tt-canxi/08.jpg","assets/docs/tt-canxi/09.jpg","assets/docs/tt-canxi/10.jpg","assets/docs/tt-canxi/11.jpg","assets/docs/tt-canxi/12.jpg","assets/docs/tt-canxi/13.jpg","assets/docs/tt-canxi/14.jpg","assets/docs/tt-canxi/15.jpg","assets/docs/tt-canxi/16.jpg","assets/docs/tt-canxi/17.jpg"],"Hồ sơ công bố/HS chỉnh sửa/HSCB_Nutritie Baby A+_2022-01.pdf":["assets/docs/hs-baby/01.jpg","assets/docs/hs-baby/02.jpg","assets/docs/hs-baby/03.jpg","assets/docs/hs-baby/04.jpg"],"Hồ sơ công bố/HS chỉnh sửa/HSCB_Nutritie BioA+_full_2024 (1).pdf":["assets/docs/hs-bio/01.jpg","assets/docs/hs-bio/02.jpg"],"Hồ sơ công bố/HS chỉnh sửa/HSCB_Nutritie Pedia A+_2022-01.pdf":["assets/docs/hs-pedia/01.jpg","assets/docs/hs-pedia/02.jpg","assets/docs/hs-pedia/03.jpg","assets/docs/hs-pedia/04.jpg"],"Hồ sơ công bố/HS chỉnh sửa/HSCB_Nutritie Mama A+_2022-01.pdf":["assets/docs/hs-mama/01.jpg","assets/docs/hs-mama/02.jpg","assets/docs/hs-mama/03.jpg","assets/docs/hs-mama/04.jpg"],"Hồ sơ công bố/HS chỉnh sửa/HSCB_Nutritie Grow A+_2022-01.pdf":["assets/docs/hs-grow/01.jpg","assets/docs/hs-grow/02.jpg","assets/docs/hs-grow/03.jpg","assets/docs/hs-grow/04.jpg"],"Hồ sơ công bố/HS chỉnh sửa/HS tu CB_Nutritie Canxi Pro A+_2022-01.pdf":["assets/docs/hs-canxi/01.jpg","assets/docs/hs-canxi/02.jpg","assets/docs/hs-canxi/03.jpg"],"Hồ sơ công bố/HS chỉnh sửa/HSTCB_SBPS Nutriie Colostrum DHA.pdf":["assets/docs/hs-colo/01.jpg","assets/docs/hs-colo/02.jpg","assets/docs/hs-colo/03.jpg","assets/docs/hs-colo/04.jpg"],"Kiểm Nghiệm/KQ KN SBPS Nutritie Colostrum DHA.pdf":["assets/docs/kn-colo/01.jpg","assets/docs/kn-colo/02.jpg"],"Kiểm Nghiệm/KQ KN SN Nutritie (NPP Colostrum VN).pdf":["assets/docs/kn-chung/01.jpg","assets/docs/kn-chung/02.jpg","assets/docs/kn-chung/03.jpg","assets/docs/kn-chung/04.jpg","assets/docs/kn-chung/05.jpg","assets/docs/kn-chung/06.jpg","assets/docs/kn-chung/07.jpg","assets/docs/kn-chung/08.jpg"],"Chứng nhận/Chứng nhận giải thưởng Nutritie.pdf":["assets/docs/cn-giaithuong/01.jpg"],"Chứng nhận/Sữa pha sẵn_Nutribiz_954671_FSSC 5.1.pdf":["assets/docs/cn-fssc/01.jpg"],"Chứng nhận/Sữa pha sẵn_Nutribiz Dairy_9001.pdf":["assets/docs/cn-iso9001/01.jpg"]};
 var DOC_AVAIL={};
-function fileReady(pth){ return !!(pth&&(DOC_AVAIL[pth]||(typeof DRIMG!=="undefined"&&DRIMG[pth]))); }
+function fileReady(pth){ return !!(pth&&(DOC_AVAIL[pth]||DOCPG[pth]||(typeof DRIMG!=="undefined"&&DRIMG[pth]))); }
 var CHOT_SALE={baby:"Chốt sale theo SKU/Chốt sale app_Nutritie Baby A+.jpg",bio:"Chốt sale theo SKU/Chốt sale app_Nutritie Bio A+.jpg",pedia:"Chốt sale theo SKU/Chốt sale app_Nutritie Pedia A+.jpg",growiq:"Chốt sale theo SKU/Chốt sale app_Nutritie Grow IQ A+.jpg",mama:"Chốt sale theo SKU/Chốt sale app_Nutritie Mama A+.jpg",canxipro:"Chốt sale theo SKU/Chốt sale app_Nutritie Canxi Pro A+.jpg",colostrum:"Chốt sale theo SKU/Chốt sale app_Nutritie Colostrum DHA.jpg"};
 /* Hướng dẫn chốt sale = nội dung NỘI BỘ cho tư vấn viên (có lời tư vấn cho cả sản phẩm trẻ dưới 24 tháng): chỉ gắn ở kết quả tư vấn + trang sản phẩm của PG, KHÔNG ở chế độ Trình khách. */
 function chotSaleBtn(id,cls){var f=CHOT_SALE[id];if(!f||!fileReady(f))return "";var p=P(id);return '<button class="btn '+(cls||'btnO')+'" onclick="openFileDoc('+jq(f)+','+jq('Hướng dẫn chốt sale — '+(p?p.name:''))+',\'Ảnh\','+jq('Dành cho tư vấn viên')+')">'+ic('forum')+'Hướng dẫn chốt sale (cho tư vấn viên)</button>';}
@@ -3016,12 +3032,15 @@ function renderDocs(){
 function openDoc(cat,title){ var found=null; TAILIEU.forEach(function(g){ if(g.cat!==cat)return; g.items.forEach(function(it){ if(it.t===title)found={g:g,it:it}; }); }); if(!found)return;
  var g=found.g,it=found.it,dr=document.getElementById('docreader'); if(!dr)return;
  var ok=docReady(it);
-  var head='<div class="dr-bar"><button class="dr-back" onclick="closeDoc()">'+ic('chevron_left')+'Quay lại</button><div class="dr-tt"><b>'+esc(it.t)+'</b><span>'+esc(g.cat)+' · '+esc(it.type)+'</span></div>'+(it.f&&ok?'<a class="dr-open" href="'+rimg(it.f)+'" target="_blank" rel="noopener" title="Mở bằng ứng dụng">'+ic('open_in_new')+'</a>':'')+'</div>';
+  var head='<div class="dr-bar"><button class="dr-back" onclick="closeDoc()">'+ic('chevron_left')+'Quay lại</button><div class="dr-tt"><b>'+esc(it.t)+'</b><span>'+esc(g.cat)+' · '+esc(it.type)+'</span></div>'+(it.f&&ok?'<a class="dr-open" href="'+docOpenHref(it.f)+'" target="_blank" rel="noopener" title="Mở bằng ứng dụng">'+ic('open_in_new')+'</a>':'')+'</div>';
   var body = (it.f&&ok)
-    ? docPane(rimg(it.f),it.t)
+    ? docBody(it.f,it.t)
     : '<div class="dr-body"><div class="dr-article"><div class="sci">'+esc(it.sum)+'</div><div class="dr-pend">'+(it.f?'Tài liệu này đang chờ cập nhật.':'Nội dung đầy đủ của bài này đang được cập nhật.')+'</div></div></div>';
   dr.innerHTML=head+body; dr.classList.add('open'); document.body.style.overflow='hidden'; fillIcons(); navPush({dr:1}); }
 /* Đóng bằng nút "Quay lại" = lùi một bước lịch sử (để nút Back của điện thoại/Zalo cùng hành xử), popstate sẽ đóng thật */
+function docPages(pg,title){ return '<div class="dr-body dr-pages">'+pg.map(function(u,i){return '<img class="dr-img dr-pg" loading="lazy" decoding="async" src="'+u+'" alt="'+escA(title)+' — trang '+(i+1)+'/'+pg.length+'">';}).join('')+'</div><div class="dr-foot"><span class="dis">'+(pg.length>1?pg.length+' trang · cuộn xuống để đọc tiếp · ':'')+'chạm hai ngón để phóng to.</span></div>'; }
+function docBody(path,title){ var pg=DOCPG[path]; return (pg&&pg.length)?docPages(pg,title):docPane(rimg(path),title); }
+function docOpenHref(path){ var pg=DOCPG[path]; return (pg&&pg.length)?pg[0]:rimg(path); }
 function docPane(url,title){
  if(/\.(jpe?g|png|webp|gif)(\?|$)/i.test(url)||/^data:image/.test(url))return '<div class="dr-body"><img class="dr-img" src="'+url+'" alt="'+esc(title)+'"></div><div class="dr-foot"><span class="dis">Chạm hai ngón để phóng to ảnh.</span></div>';
  return '<div class="dr-body"><iframe class="dr-frame" src="'+url+'" title="'+esc(title)+'"></iframe></div><div class="dr-foot"><span class="dis">Đang mở tài liệu trong app. Không hiển thị? Bấm biểu tượng mở ở góc trên.</span></div>';}
@@ -3031,8 +3050,8 @@ function closeDoc(){ var st=null; try{ st=history.state; }catch(e){} if(st&&st.d
 function openFileDoc(path,title,type,sub){ var dr=document.getElementById('docreader'); if(!dr){ window.open(rimg(path),'_blank'); return; }
  type=type||(/\.pdf$/i.test(path)?'PDF':'Ảnh');
    var ok=fileReady(path);
-  var head='<div class="dr-bar"><button class="dr-back" onclick="closeDoc()">'+ic('chevron_left')+'Quay lại</button><div class="dr-tt"><b>'+esc(title)+'</b><span>'+(sub?esc(sub):'Hồ sơ &amp; Chứng nhận')+' · '+esc(type)+'</span></div>'+(ok?'<a class="dr-open" href="'+rimg(path)+'" target="_blank" rel="noopener" title="Mở bằng ứng dụng">'+ic('open_in_new')+'</a>':'')+'</div>';
-  var body=ok?docPane(rimg(path),title)
+  var head='<div class="dr-bar"><button class="dr-back" onclick="closeDoc()">'+ic('chevron_left')+'Quay lại</button><div class="dr-tt"><b>'+esc(title)+'</b><span>'+(sub?esc(sub):'Hồ sơ &amp; Chứng nhận')+' · '+esc(type)+'</span></div>'+(ok?'<a class="dr-open" href="'+docOpenHref(path)+'" target="_blank" rel="noopener" title="Mở bằng ứng dụng">'+ic('open_in_new')+'</a>':'')+'</div>';
+  var body=ok?docBody(path,title)
     :'<div class="dr-body"><div class="dr-article"><div class="dr-pend">Tài liệu này đang chờ cập nhật.</div></div></div>';
   dr.innerHTML=head+body; dr.classList.add('open'); document.body.style.overflow='hidden'; fillIcons(); navPush({dr:1}); }
 
