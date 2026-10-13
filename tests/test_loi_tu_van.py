@@ -135,6 +135,15 @@ with sync_playwright() as p:
                 result(pg, obj, m)
                 worst = max(worst, pg.evaluate("document.documentElement.scrollWidth-window.innerWidth"))
             check(T(f'thước đo ở Z cực đoan (Z>3 / Z<-3) không tràn ngang ở {vw}px'), worst <= 0, worst)
+        # WebKit trên Linux (CI) dựng chữ RỘNG hơn máy dev -> mô phỏng bằng giãn chữ nhãn thước đo, tràn phải vẫn không xảy ra
+        pg.add_style_tag(content='.gmark span{letter-spacing:1.4px;font-size:12px !important}')
+        for vw in (320, 360):
+            pg.set_viewport_size({'width': vw, 'height': 760})
+            worst = 0
+            for obj, m in [('tre_1_10', {'age': 3, 'w': 20, 'h': 95}), ('tre_0_12', {'months': 6, 'w': 12}), ('tre_0_12', {'months': 3, 'w': 3.2}), ('tre_1_10', {'age': 7, 'w': 34, 'h': 120})]:
+                result(pg, obj, m)
+                worst = max(worst, pg.evaluate("document.documentElement.scrollWidth-window.innerWidth"))
+            check(T(f'nhãn thước đo GIÃN RỘNG (mô phỏng phông Linux) vẫn không tràn ngang ở {vw}px'), worst <= 0, worst)
         pg.set_viewport_size({'width': 320, 'height': 700})
         r = result(pg, 'tre_1_10', {'age': 5, 'w': 18, 'h': 105}, extra={'name': 'B' * 120})
         check(T('tên bé 120 ký tự liền ở bước kết quả: không tràn ngang ở 320px'), pg.evaluate("document.documentElement.scrollWidth-window.innerWidth") <= 0, pg.evaluate("document.documentElement.scrollWidth-window.innerWidth"))
