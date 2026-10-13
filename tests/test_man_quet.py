@@ -52,7 +52,7 @@ with sync_playwright() as p:
         pg = ctx.new_page()
         errs = []
         pg.on('pageerror', lambda e: errs.append(str(e)[:200]))
-        pg.route('https://**', lambda r: r.abort())
+        pg.route('**/*', lambda r: r.continue_() if r.request.url.startswith('http://127.0.0.1') else r.abort())
         T = lambda s: f'[{w}x{h}] ' + s
         pg.goto(URL)
         pg.wait_for_function("document.getElementById('splash').classList.contains('hide')", timeout=15000)
@@ -110,7 +110,7 @@ with sync_playwright() as p:
     ctx = b.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True, reduced_motion='reduce')
     ctx.add_init_script("localStorage.setItem('nt_pg', JSON.stringify('PG01'))")
     pg = ctx.new_page(); errs = []
-    pg.on('pageerror', lambda e: errs.append(str(e)[:200])); pg.route('https://**', lambda r: r.abort())
+    pg.on('pageerror', lambda e: errs.append(str(e)[:200])); pg.route('**/*', lambda r: r.continue_() if r.request.url.startswith('http://127.0.0.1') else r.abort())
     pg.goto(URL); pg.wait_for_function("document.getElementById('splash').classList.contains('hide')", timeout=15000); pg.wait_for_timeout(500)
     prep(pg)
     t0 = time.time(); pg.locator('button.btnN:has-text("Xem kết quả")').click()
@@ -126,7 +126,7 @@ with sync_playwright() as p:
     ctx = b.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True)
     ctx.add_init_script("localStorage.setItem('nt_pg', JSON.stringify('PG01'))")
     pg = ctx.new_page(); errs = []
-    pg.on('pageerror', lambda e: errs.append(str(e)[:200])); pg.route('https://**', lambda r: r.abort())
+    pg.on('pageerror', lambda e: errs.append(str(e)[:200])); pg.route('**/*', lambda r: r.continue_() if r.request.url.startswith('http://127.0.0.1') else r.abort())
     pg.goto(URL); pg.wait_for_function("document.getElementById('splash').classList.contains('hide')", timeout=15000); pg.wait_for_timeout(500)
     prep(pg, 'adult', {'w': 62, 'h': 165})
     pg.locator('button.btnN:has-text("Xem kết quả")').click(); pg.wait_for_timeout(800)

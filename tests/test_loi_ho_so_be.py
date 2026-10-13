@@ -37,7 +37,7 @@ ISOM = "(a)=>{const d=new Date();d.setMonth(d.getMonth()-a);return d.getFullYear
 def fresh(ctx, errs, clock=None):
     pg = ctx.new_page()
     pg.on('pageerror', lambda e: errs.append(str(e)[:200]))
-    pg.route('https://**', lambda r: r.abort())
+    pg.route('**/*', lambda r: r.continue_() if r.request.url.startswith('http://127.0.0.1') else r.abort())
     if clock:
         pg.clock.set_fixed_time(clock)
     pg.goto(URL)

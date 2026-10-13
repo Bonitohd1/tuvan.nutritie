@@ -45,7 +45,7 @@ with sync_playwright() as p:
         ctx.add_init_script("localStorage.setItem('nt_pg', JSON.stringify('PG01'))")
         pg = ctx.new_page(); errs = []
         pg.on('pageerror', lambda e: errs.append(str(e)[:200]))
-        pg.route('https://**', lambda r: r.abort())
+        pg.route('**/*', lambda r: r.continue_() if r.request.url.startswith('http://127.0.0.1') else r.abort())
         T = lambda s: f'[{eng}] ' + s
         pg.goto(URL)
         pg.wait_for_function("document.getElementById('splash').classList.contains('hide')", timeout=30000)
@@ -66,13 +66,13 @@ with sync_playwright() as p:
         rd = pg.evaluate("document.getElementById('docreader').innerHTML")
         check(T('trình đọc bài viết mở ra'), pg.evaluate("document.getElementById('docreader').classList.contains('open')"))
         check(T('trình đọc KHÔNG có link Drive và KHÔNG có iframe (404)'), 'drive.google' not in rd and '<iframe' not in rd, rd[:200])
-        check(T('trình đọc nói rõ nội dung đang cập nhật'), 'đang được cập nhật' in rd)
+        check(T('trình đọc bài viết có NỘI DUNG THẬT (không còn "đang được cập nhật")'), 'Z-score' in rd and 'đang được cập nhật' not in rd, rd[:120])
         pg.click('#docreader .dr-back'); pg.wait_for_timeout(300)
         check(T('nút "Quay lại" đóng được trình đọc'), not pg.evaluate("document.getElementById('docreader').classList.contains('open')"))
         check(T('sau khi đóng vẫn ở mục Tài liệu (không văng app)'), pg.evaluate("S.tab")=='docs')
 
         # ---------- 2. NÚT BACK ----------
-        pg = ctx.new_page(); pg.on('pageerror', lambda e: errs.append(str(e)[:200])); pg.route('https://**', lambda r: r.abort())
+        pg = ctx.new_page(); pg.on('pageerror', lambda e: errs.append(str(e)[:200])); pg.route('**/*', lambda r: r.continue_() if r.request.url.startswith('http://127.0.0.1') else r.abort())
         pg.goto(URL); pg.wait_for_function("document.getElementById('splash').classList.contains('hide')", timeout=30000); pg.wait_for_timeout(500)
         pg.evaluate("go('docs')"); pg.wait_for_timeout(150)
         pg.evaluate("document.querySelector('#view .doc-row:not(.pend)').click()"); pg.wait_for_timeout(200)

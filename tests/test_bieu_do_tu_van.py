@@ -42,7 +42,7 @@ def store(pg):
 def fresh(ctx, errs):
     pg = ctx.new_page()
     pg.on('pageerror', lambda e: errs.append(str(e)[:200]))
-    pg.route('https://**', lambda r: r.abort())
+    pg.route('**/*', lambda r: r.continue_() if r.request.url.startswith('http://127.0.0.1') else r.abort())
     pg.goto(URL)
     pg.wait_for_function("document.getElementById('splash').classList.contains('hide')", timeout=30000)
     pg.wait_for_timeout(500)

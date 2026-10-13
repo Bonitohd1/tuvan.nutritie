@@ -31,7 +31,7 @@ with sync_playwright() as p:
         errs = []; bad = []
         pg.on('pageerror', lambda e: errs.append(str(e)[:200]))
         pg.on('response', lambda r: bad.append((r.status, r.url[-70:])) if r.status >= 400 and 'favicon' not in r.url else None)
-        pg.route('https://**', lambda r: r.abort())      # chặn mọi lời gọi ra ngoài (không đụng máy chủ thật)
+        pg.route('**/*', lambda r: r.continue_() if r.request.url.startswith('http://127.0.0.1') else r.abort())      # chặn mọi lời gọi ra ngoài (không đụng máy chủ thật)
         t = time.time(); pg.goto(base); pg.wait_for_function("document.getElementById('splash').classList.contains('hide')", timeout=45000 if CI else 15000)
         dt = time.time() - t
         # Trên CI chỉ chromium đo tốc độ; WebKit Linux headless của runner chậm thất thường (7s rồi >15s) -> chỉ đòi 'có tắt', không đòi nhanh.
@@ -61,14 +61,14 @@ with sync_playwright() as p:
         open(os.path.join(d, 'index.html'), 'w', encoding='utf-8').write(h2); return serve(d)
     if 'spslow' in html:
         s2, u2 = variant(lambda h: h.replace('var DRIMG={', "throw new Error('boom-test');var DRIMG={", 1))
-        ctx = b.new_context(viewport={'width': 390, 'height': 844}); pg = ctx.new_page(); pg.route('https://**', lambda r: r.abort())
+        ctx = b.new_context(viewport={'width': 390, 'height': 844}); pg = ctx.new_page(); pg.route('**/*', lambda r: r.continue_() if r.request.url.startswith('http://127.0.0.1') else r.abort())
         pg.goto(u2); pg.wait_for_timeout(1200)
         shown = pg.evaluate("(()=>{const e=document.getElementById('spslow');return e&&getComputedStyle(e).display==='block'?e.innerText:''})()")
         check('mã khởi động chết: màn mở đầu HIỆN LỖI THẬT + nút Tải lại', 'boom-test' in shown and 'Tải lại' in shown, shown)
         splash_stuck = pg.evaluate("!document.getElementById('splash').classList.contains('hide')")
         check('(ghi nhận) lúc mã chết màn mở đầu vẫn ở đó nhưng đã có thông báo', splash_stuck); ctx.close(); s2.shutdown()
         s3, u3 = variant(lambda h: h.replace("if(window.__appUp)window.__appUp();", "", 1))
-        ctx = b.new_context(viewport={'width': 390, 'height': 844}); pg = ctx.new_page(); pg.route('https://**', lambda r: r.abort())
+        ctx = b.new_context(viewport={'width': 390, 'height': 844}); pg = ctx.new_page(); pg.route('**/*', lambda r: r.continue_() if r.request.url.startswith('http://127.0.0.1') else r.abort())
         pg.goto(u3); pg.wait_for_timeout(9000)
         shown = pg.evaluate("(()=>{const e=document.getElementById('spslow');return e&&getComputedStyle(e).display==='block'?e.innerText:''})()")
         check('quá 8 giây chưa khởi động xong: hiện "mạng đang chậm" + nút Tải lại', 'mạng đang chậm' in shown and 'Tải lại' in shown, shown); ctx.close(); s3.shutdown()

@@ -50,7 +50,7 @@ with sync_playwright() as p:
         def fresh():
             pg = ctx.new_page()
             pg.on('pageerror', lambda e: errs.append(str(e)[:200]))
-            pg.route('https://**', lambda r: r.abort())
+            pg.route('**/*', lambda r: r.continue_() if r.request.url.startswith('http://127.0.0.1') else r.abort())
             pg.goto(URL)
             pg.wait_for_function("document.getElementById('splash').classList.contains('hide')", timeout=30000)
             pg.wait_for_timeout(700)
@@ -115,7 +115,7 @@ with sync_playwright() as p:
         pg = ctx.new_page(); bad = []
         pg.on('pageerror', lambda e: errs.append(str(e)[:200]))
         pg.on('response', lambda r: bad.append(r.url) if r.status == 404 else None)
-        pg.route('https://**', lambda r: r.abort())
+        pg.route('**/*', lambda r: r.continue_() if r.request.url.startswith('http://127.0.0.1') else r.abort())
         pg.goto(URL); pg.wait_for_function("document.getElementById('splash').classList.contains('hide')", timeout=30000); pg.wait_for_timeout(500)
         for t_ in ('home', 'sp', 'promo'):
             pg.evaluate("(t)=>go(t)", t_); pg.wait_for_timeout(300)

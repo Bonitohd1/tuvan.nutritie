@@ -24,7 +24,7 @@ with sync_playwright() as p:
         ctx.add_init_script("localStorage.setItem('nt_pg', JSON.stringify('PG01'))")
         pg = ctx.new_page(); reqs = []
         pg.on('request', lambda r: reqs.append(r.url))
-        pg.route('https://**', lambda r: r.abort())
+        pg.route('**/*', lambda r: r.continue_() if r.request.url.startswith('http://127.0.0.1') else r.abort())
         pg.goto(URL); pg.wait_for_function("document.getElementById('splash').classList.contains('hide')", timeout=30000); pg.wait_for_timeout(500)
         T = lambda s: f'[{eng}] ' + s
         check(T('không còn nạp font từ Google Fonts'), not [u for u in reqs if 'fonts.g' in u], [u for u in reqs if 'fonts.g' in u])

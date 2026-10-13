@@ -39,7 +39,7 @@ with sync_playwright() as p:
         ctx.add_init_script("localStorage.setItem('nt_pg', JSON.stringify('PG01'))")
         pg = ctx.new_page(); errs = []
         pg.on('pageerror', lambda e: errs.append(str(e)[:200]))
-        pg.route('https://**', lambda r: r.abort())
+        pg.route('**/*', lambda r: r.continue_() if r.request.url.startswith('http://127.0.0.1') else r.abort())
         T = lambda s: f'[{eng}] ' + s
         pg.goto(URL)
         pg.wait_for_function("document.getElementById('splash').classList.contains('hide')", timeout=30000)
@@ -66,14 +66,14 @@ with sync_playwright() as p:
         bad_open = []
         for cat, t_, f in titles:
             pg.evaluate("([c,t])=>openDoc(c,t)", [cat, t_]); pg.wait_for_timeout(120)
-            info = pg.evaluate("""(()=>{const dr=document.getElementById('docreader');return {open:dr.classList.contains('open'),imgs:dr.querySelectorAll('img.dr-img').length,iframe:!!dr.querySelector('iframe'),drive:dr.innerHTML.indexOf('drive.google')>=0,pend:dr.textContent.indexOf('chờ cập nhật')>=0||dr.textContent.indexOf('đang được cập nhật')>=0}})()""")
+            info = pg.evaluate("""(()=>{const dr=document.getElementById('docreader');return {open:dr.classList.contains('open'),imgs:dr.querySelectorAll('img.dr-img').length,iframe:!!dr.querySelector('iframe'),drive:dr.innerHTML.indexOf('drive.google')>=0,pend:dr.textContent.indexOf('chờ cập nhật')>=0||dr.textContent.indexOf('đang được cập nhật')>=0,paras:dr.querySelectorAll('.dr-p').length}})()""")
             exp = len(pg.evaluate("(f)=>DOCPG[f]||null", f) or []) if f else None
             if f:
                 single = pg.evaluate("(f)=>!DOCPG[f]&&!!DRIMG[f]", f)
                 want = exp if exp else (1 if single else -1)
                 ok_ = info['open'] and info['imgs'] == want and not info['iframe'] and not info['drive'] and not info['pend']
             else:
-                ok_ = info['open'] and not info['iframe'] and not info['drive']  # bài viết
+                ok_ = info['open'] and not info['iframe'] and not info['drive'] and not info['pend'] and info['paras'] >= 5  # bài viết: phải có nội dung thật
             if not ok_:
                 bad_open.append((t_, info))
             pg.evaluate("closeDocNow()")

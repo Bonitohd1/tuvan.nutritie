@@ -42,7 +42,7 @@ with sync_playwright() as p:
         ctx.add_init_script("localStorage.setItem('nt_pg', JSON.stringify('PG01'));localStorage.setItem('nt_guided','1')")
         pg = ctx.new_page(); errs = []
         pg.on('pageerror', lambda e: errs.append(str(e)[:200]))
-        pg.route('https://**', lambda r: r.abort())
+        pg.route('**/*', lambda r: r.continue_() if r.request.url.startswith('http://127.0.0.1') else r.abort())
         T = lambda s: f'[{eng}] ' + s
         pg.goto(URL)
         pg.wait_for_function("document.getElementById('splash').classList.contains('hide')", timeout=30000)
@@ -110,6 +110,23 @@ with sync_playwright() as p:
             check(T(f'"{hist}": hiện "Cần hỏi bác sĩ", KHÔNG nút lên đơn'), 'Cần hỏi bác sĩ' in r['t'] and key in r['t'] and not r['order'], r['t'][:160])
         r = pg.evaluate("""()=>{startTV();S.tab='tuvan';S.user.obj='tre_1_10';S.user.hist=['Đang bị tiêu chảy cấp / Viêm ruột cấp'];S.m={age:4,w:16,h:100};S.cls=classify();S.step=4;draw();return document.getElementById('view').textContent}""")
         check(T('tiêu chảy cấp: không còn câu "uống sữa lúc này làm tiêu chảy nặng hơn"; nói hỏi bác sĩ về chế độ bú/ăn'), 'làm tiêu chảy nặng hơn' not in r and 'hỏi bác sĩ' in r, r[:200])
+        # ---- đợt 2 (agent rà yêu cầu khách + tối ưu) ----
+        pg.evaluate("openPresent();presGo('uudai')"); pg.wait_for_timeout(250)
+        ud = pg.evaluate("document.querySelector('#present .pr-body').textContent")
+        check(T('Trình khách > Ưu đãi: KHÔNG lộ nội dung nội bộ PG ("Hỏi quản lý…", "Tích điểm đổi quà… cho PG")'), 'Hỏi quản lý' not in ud and 'Tích điểm' not in ud and 'cho PG' not in ud and 'tư vấn viên' in ud, ud[:200])
+        pg.evaluate("closePresent()")
+        pg.evaluate("startTV();S.tab='tuvan';S.user.obj='tre_1_10';S.user.hist=['Không có'];S.m={age:4,w:16,h:100};S.cls=classify();S.step=4;draw()")
+        rv = pg.evaluate("document.getElementById('view').textContent")
+        check(T('thẻ sản phẩm ghi "Gợi ý ưu tiên", không còn "Ưu tiên số 1" (bộ luật QC cấm "số 1")'), 'Ưu tiên số 1' not in rv, rv[:80])
+        check(T('ảnh nhân vật đã thu nhỏ (WebP): splash dùng nhanvat.webp, mascot dolphin.webp; tệp ≤ 80KB'),
+              pg.evaluate("document.querySelector('.sp-girl').getAttribute('src')") == 'nhanvat.webp' and pg.evaluate("MASCOT") == 'dolphin.webp'
+              and all(os.path.getsize(os.path.join(d, f)) < 80 * 1024 for f in ('nhanvat.webp', 'dolphin.webp')))
+        run = pg.evaluate("(()=>{const a=document.querySelectorAll('#splash *');let r=0;a.forEach(e=>{if(getComputedStyle(e).animationName!=='none'&&getComputedStyle(e).animationPlayState==='running')r++});return [a.length,r,document.getElementById('splash').classList.contains('hide')]})()")
+        check(T('splash đã ẩn: KHÔNG còn animation nào đang chạy ngầm (trước: hàng trăm lần layout / 10 giây)'), run[2] and run[1] == 0, run)
+        bad = pg.evaluate("""(()=>{var r=[];[['nt_notifs','null'],['nt_notifs','"x"'],['nt_babies','5'],['nt_measures','{}']].forEach(function(kv){localStorage.setItem(kv[0],kv[1])});
+          r.push(Array.isArray(lsGet('nt_notifs',[])),Array.isArray(lsGet('nt_babies',[])),Array.isArray(lsGet('nt_measures',[])));
+          localStorage.setItem('nt_x','{"a":1}');r.push(lsGet('nt_x',{}).a===1);localStorage.setItem('nt_y','7');r.push(lsGet('nt_y',0)===7);return r})()""")
+        check(T('lsGet: dữ liệu sai kiểu (null / chuỗi / số / {}) trả về mặc định, dữ liệu đúng kiểu giữ nguyên'), all(bad), bad)
         check(T('không lỗi JS'), not errs, errs)
         b.close()
 

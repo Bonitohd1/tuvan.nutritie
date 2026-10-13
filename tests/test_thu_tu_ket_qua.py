@@ -26,7 +26,7 @@ with sync_playwright() as p:
     for eng in ('chromium', 'webkit'):
         b = getattr(p, eng).launch(); ctx = b.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True)
         ctx.add_init_script("localStorage.setItem('nt_pg', JSON.stringify('PG01'))")
-        pg = ctx.new_page(); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)[:200])); pg.route('https://**', lambda r: r.abort())
+        pg = ctx.new_page(); errs = []; pg.on('pageerror', lambda e: errs.append(str(e)[:200])); pg.route('**/*', lambda r: r.continue_() if r.request.url.startswith('http://127.0.0.1') else r.abort())
         pg.goto(URL); pg.wait_for_function("document.getElementById('splash').classList.contains('hide')", timeout=30000); pg.wait_for_timeout(500)
         T = lambda s: f'[{eng}] ' + s
         # trẻ 7 tuổi gầy, hay ốm (đúng ca chị Thúy chụp): Pedia A+ + Colostrum DHA

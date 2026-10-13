@@ -57,7 +57,7 @@ with sync_playwright() as p:
         ctx = b.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True); pg = ctx.new_page()
         errs = []
         pg.on('pageerror', lambda e: errs.append(str(e)[:200]))
-        pg.route('https://**', lambda r: r.abort())      # chặn mọi lời gọi ra ngoài
+        pg.route('**/*', lambda r: r.continue_() if r.request.url.startswith('http://127.0.0.1') else r.abort())      # chặn mọi lời gọi ra ngoài
         pg.goto(base, wait_until='commit')
         try:
             pg.wait_for_function("document.getElementById('splash') && document.getElementById('splash').classList.contains('hide')", timeout=30000)

@@ -47,7 +47,7 @@ with sync_playwright() as p:
         ctx.add_init_script("localStorage.setItem('nt_pg', JSON.stringify('PG01'))")
         pg = ctx.new_page(); errs = []
         pg.on('pageerror', lambda e: errs.append(str(e)[:200]))
-        pg.route('https://**', lambda r: r.abort())
+        pg.route('**/*', lambda r: r.continue_() if r.request.url.startswith('http://127.0.0.1') else r.abort())
         T = lambda s: f'[{eng}] ' + s
         pg.goto(URL)
         pg.wait_for_function("document.getElementById('splash').classList.contains('hide')", timeout=30000)
@@ -62,7 +62,7 @@ with sync_playwright() as p:
         r = result(pg, 'tre_1_10', {'age': 5, 'w': 15.5, 'h': 103})
         check(T('bé 5 tuổi BMI 14,6 (WHO bình thường) không còn bị gọi "Gầy"'), r['cls']['status'] != 'low' and r['cls']['label'] == 'Bình thường', r['cls'])
         sweep = pg.evaluate("""(()=>{startTV();S.user.obj='tre_0_12';var bad=[],n=0;for(var g of ['Nam','Nữ'])for(var mo=0;mo<=12;mo+=1)for(var w=2.5;w<=14;w+=0.25){S.user.gender=g;S.user.preterm='';S.m={months:mo,w:w};var c=classify(),z=whoZ('w',mo,w),zc=zClass(z,'w').lb;n++;
-          var ok=(c.label===zc)||(c.label==='Nguy cơ nhẹ cân'&&zc==='Bình thường')||(c.label==='Cân nặng cao hơn chuẩn'&&zc==='Cao hơn chuẩn');if(!ok)bad.push([g,mo,w,c.label,zc]);}return {n:n,bad:bad.slice(0,3),nb:bad.length}})()""")
+          var ok=(c.label===zc)||(c.label==='Hơi thấp (vẫn trong chuẩn WHO)'&&zc==='Bình thường')||(c.label==='Cân nặng cao hơn chuẩn'&&zc==='Cao hơn chuẩn');if(!ok)bad.push([g,mo,w,c.label,zc]);}return {n:n,bad:bad.slice(0,3),nb:bad.length}})()""")
         check(T(f'quét {sweep["n"]} ca (giới × tháng × cân): nhãn tư vấn LUÔN khớp nhãn biểu đồ WHO'), sweep['nb'] == 0, sweep)
 
         # ---- trẻ thừa cân không bị gợi ý Pedia ----
