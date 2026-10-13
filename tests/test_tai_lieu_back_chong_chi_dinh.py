@@ -1,5 +1,5 @@
 """Phép thử Nutritie 13/10/2026 (phản hồi chị Thúy): 3 nhóm.
- 1) Mục Tài liệu: tệp chưa có thì "Chờ cập nhật" (không ra trang 404, không dẫn ra Drive), nhóm "Kỹ năng chốt sale" ẩn.
+ 1) Mục Tài liệu: tệp chưa có thì "Chờ cập nhật" (không ra trang 404, không dẫn ra Drive). Nhóm "Kỹ năng chốt sale" ẩn khi chưa có nội dung; từ 13/10 có 7 ảnh -> hiện (xem test_chot_sale.py).
  2) Nút Back của điện thoại/Zalo: lùi một màn trong app thay vì THOÁT app; nút "Quay lại" của trình đọc tài liệu đóng được.
  3) Ca chống chỉ định: vẫn phân tích chỉ số (thước đo BMI) + nói khi nào tư vấn tiếp; KHÔNG có nút lên đơn khi đang chống chỉ định.
 Dùng: python tests/test_tai_lieu_back_chong_chi_dinh.py [thư-mục-tuvan.nutritie]   (chạy trên bản cũ phải ĐỎ)
@@ -55,11 +55,11 @@ with sync_playwright() as p:
         pg.evaluate("go('docs')"); pg.wait_for_timeout(200)
         txt = pg.evaluate("document.getElementById('view').textContent")
         check(T('mục Tài liệu: có nhãn "Chờ cập nhật" cho tệp chưa có'), 'Chờ cập nhật' in txt)
-        check(T('nhóm "Kỹ năng chốt sale" bị ẩn (không còn trong chip nhóm và danh sách)'), 'Kỹ năng chốt sale' not in txt, txt[:200])
+        check(T('nhóm "Kỹ năng chốt sale" hiện (đã có 7 ảnh hướng dẫn)'), 'Kỹ năng chốt sale' in txt, txt[:200])
         n_click = pg.evaluate("[...document.querySelectorAll('#view .doc-row')].filter(r=>r.getAttribute('onclick')).length")
         n_pend = pg.evaluate("document.querySelectorAll('#view .doc-row.pend').length")
         check(T('hàng chưa có tệp KHÔNG bấm được (không onclick)'), n_pend >= 10 and pg.evaluate("[...document.querySelectorAll('#view .doc-row.pend')].every(r=>!r.getAttribute('onclick'))"), n_pend)
-        check(T('chỉ còn các bài viết (có chữ trong app) bấm mở được'), 0 < n_click <= 5, n_click)
+        check(T('chỉ còn mục có nội dung thật bấm mở được (2 bài kiến thức + NĐ100 + chứng nhận Aiwado + 7 ảnh chốt sale = 11)'), n_click == 11, n_click)
         pg.evaluate("document.querySelector('#view .doc-row:not(.pend)').click()"); pg.wait_for_timeout(250)
         rd = pg.evaluate("document.getElementById('docreader').innerHTML")
         check(T('trình đọc bài viết mở ra'), pg.evaluate("document.getElementById('docreader').classList.contains('open')"))

@@ -790,6 +790,7 @@
   .dr-open{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.18);color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:19px;flex-shrink:0}
   .dr-body{flex:1;position:relative;overflow:auto;-webkit-overflow-scrolling:touch;background:#5b6172;display:flex;flex-direction:column}
   .dr-frame{flex:1;width:100%;border:0;background:#5b6172;min-height:62vh}
+  .dr-img{display:block;width:100%;max-width:820px;height:auto;margin:0 auto;background:#fff}
   .dr-article{background:#fff;margin:12px;border-radius:16px;padding:18px;box-shadow:0 8px 22px rgba(0,0,0,.25)}
   .dr-foot{flex-shrink:0;display:flex;align-items:center;gap:12px;padding:11px 15px;background:#111834}
   .dr-foot .dis{font-size:11px;color:#aeb7d0;flex:1;line-height:1.45}
@@ -1952,6 +1953,7 @@ function tvStep4(){var contra=contraCheck();
  var ordIds=(S.user.obj==="tre_0_12")?r.ids.slice(0,1):r.ids;/* 2 dòng cho bé 0–12 tháng là LỰA CHỌN THAY THẾ, không lên đơn cả hai */
   if(main)h+='<button class="btn btnP press" onclick="orderFromRec(['+ordIds.map(jq).join(',')+'])">'+ic('add_shopping_cart')+'Lên đơn sản phẩm gợi ý</button>';
  if(main)h+='<button class="btn btnO" onclick="openP(\''+main.id+'\')">'+ic('article')+'Xem chi tiết '+esc(main.name)+'</button>';
+ if(main)h+=chotSaleBtn(main.id);
  h+='<button class="btn btnN press" onclick="startTV()">'+ic('refresh')+'Tư vấn khách khác</button></div>';
  return h;}
 
@@ -2002,6 +2004,7 @@ function openP(id){var p=P(id);if(!p)return;
   +specHtml
   +'<div class="plbl">'+ic('article')+'Thông tin nhãn</div><div class="pinfo">'+info+'</div>'
   +dossierHtml
+  +chotSaleBlock(p.id)
   +'<div class="warn" style="margin-top:14px">'+ic('warning')+'<div>'+esc(WARN[p.id])+'</div></div>'
   +'<div class="pactbar"><div class="btnrow"><button class="btn btnO" onclick="cartAdd(\''+p.id+'\',1);closeP();toast(\'Đã thêm vào giỏ hàng\')">'+ic('add_shopping_cart')+'Thêm vào giỏ</button><button class="btn btnP" onclick="orderFromRec([\''+p.id+'\'])">'+ic('receipt_long')+'Lên đơn ngay</button></div>'
   +'<button class="btn btnW" style="margin-top:10px" onclick="pickCompare(\''+p.id+'\')">'+ic('compare_arrows')+'So sánh với sản phẩm khác</button></div>'
@@ -2929,7 +2932,7 @@ function renderPromo(){ var ss=promoSeason(),lv=promoLeaves(ss.fx);
  return '<div class="sec" style="margin-bottom:12px"><div class="sec-l"><div class="sec-ic">'+ic('sell')+'</div><div><h3>Ưu đãi & CTKM</h3><div class="sub">Nội dung mẫu — khách cập nhật sau</div></div></div></div><div class="pmgrid">'+PROMO.map(function(p,i){var im=(p.p&&typeof pimg==="function")?pimg(p.p):"";var bnr=(p.bn&&typeof rimg==="function")?rimg(p.bn):"";return '<div class="bnr" style="'+(im?'':'background:#22305F')+'">'+(im?'<img class="bnr-bg" src="'+im+'" alt="" onerror="this.style.display=\'none\'">':'')+'<span class="bnr-ov"></span>'+(p.tag?'<span class="btag'+ptc(p.tag)+'">'+esc(p.tag)+'</span>':'')+'<div class="bnr-in"><div class="bt">'+esc(p.t)+'</div><div class="bd">'+esc(p.d)+'</div></div>'+(bnr?'<img class="bnr-banner" src="'+bnr+'" alt="'+esc(p.t)+'" onerror="this.remove()">':'')+'</div>';}).join('')+'</div>'; }
 /* -- Ảnh thật từ bộ tài liệu (local, chạy offline) + link Drive -- */
 var ROOT="App Nutritie-20260912T150953Z-1-001/App Nutritie/";
-var DRIMG={"Hoạt động từ thiện/Trung thu cho em.png": "assets/dr/d805f36db843.jpg", "Hoạt động từ thiện/Tết ấm.png": "assets/dr/b3cf07aba910.jpg", "Hoạt động từ thiện/Yêu thương cho em 1.6.png": "assets/dr/2e71b8ae290d.jpg", "Hoạt động từ thiện/chương trình “Trái tim cho em” 2025.jpg": "assets/dr/0ebda68951ed.jpg", "Hoạt động từ thiện/chương trình “Trái tim cho em” 2026.jpg": "assets/dr/4c857b1a940b.jpg", "Điểm bán/Bỉm sữa Chung Hưởng.png": "assets/dr/e2ea59fa8a57.jpg", "Điểm bán/Hệ thống cửa hàng mẹ và bé Bi_s Mart - Châu Thành, Sóc Trăng.png": "assets/dr/647017a86be3.jpg", "Điểm bán/Hệ thống cửa hàng mẹ và bé Bi_s Mart - Châu Thành, Trà Vinh.png": "assets/dr/651556f2fd15.jpg", "Điểm bán/Hệ thống cửa hàng mẹ và bé Bi_s Mart - Giá Rai, Bạc Liêu.png": "assets/dr/37494e98fea1.jpg", "Điểm bán/Hệ thống cửa hàng mẹ và bé Bi_s Mart - Kế Sách, Sóc Trăng.png": "assets/dr/7a008370af82.jpg", "Điểm bán/Hệ thống cửa hàng mẹ và bé Bi_s Mart - Mỹ Xuyên, Sóc Trăng.png": "assets/dr/a521de87c7ac.jpg", "Điểm bán/Hệ thống cửa hàng mẹ và bé TopMom.png": "assets/dr/95d304c51752.jpg", "Điểm bán/Shop Mẹ&bé Hello Baby.png": "assets/dr/7bb2f922fbc4.jpg", "Điểm bán/Shop Phú Len.png": "assets/dr/4ca46a0db967.jpg", "Điểm bán/Shop Sữa Bỉm.png": "assets/dr/35513df89b5b.jpg", "Điểm bán/Sữa bỉm Hưng Thoa.png": "assets/dr/d3b9e6025de1.jpg", "Điểm bán/Thế Giới Sữa BINBO.png": "assets/dr/bb99dc10975d.jpg", "Bảng thành phần/TPDD Nutritie Baby.png": "assets/dr/334fb1412861.jpg", "Bảng thành phần/TPDD Nutritie BioA+.png": "assets/dr/ddfb78d26b59.jpg", "Bảng thành phần/TPDD Nutritie Glupro.png": "assets/dr/697b2fd4355c.jpg", "Bảng thành phần/TPDD Nutritie Pedia.png": "assets/dr/e766b29ab9af.jpg", "Bảng thành phần/TPDD SBPS Nutritie Colostrum DHA 110 ml.png": "assets/dr/0959d5e8d04f.jpg", "Bảng thành phần/TPDD SBPS Nutritie Colostrum DHA 180 ml.png": "assets/dr/40451cfaf823.jpg", "Bảng thành phần/TTDD Nutritie Canxi Pro.png": "assets/dr/835744ef3e12.jpg", "Bảng thành phần/TTDD Nutritie Grow IQ.png": "assets/dr/91778634f953.jpg", "Bảng thành phần/TTDD Nutritie Mama.png": "assets/dr/e4c555172219.jpg", "Chứng nhận/Sữa bột_cn_aiwado_1-566x800.jpg": "assets/dr/d1d1bc2e4cf5.jpg", "Chứng nhận/Sữa bột_cn_aiwado_2-566x800.jpg": "assets/dr/e6cec93b8839.jpg"};function rimg(p){return DRIMG[p]||encodeURI(ROOT+p);}
+var DRIMG={"Hoạt động từ thiện/Trung thu cho em.png": "assets/dr/d805f36db843.jpg", "Hoạt động từ thiện/Tết ấm.png": "assets/dr/b3cf07aba910.jpg", "Hoạt động từ thiện/Yêu thương cho em 1.6.png": "assets/dr/2e71b8ae290d.jpg", "Hoạt động từ thiện/chương trình “Trái tim cho em” 2025.jpg": "assets/dr/0ebda68951ed.jpg", "Hoạt động từ thiện/chương trình “Trái tim cho em” 2026.jpg": "assets/dr/4c857b1a940b.jpg", "Điểm bán/Bỉm sữa Chung Hưởng.png": "assets/dr/e2ea59fa8a57.jpg", "Điểm bán/Hệ thống cửa hàng mẹ và bé Bi_s Mart - Châu Thành, Sóc Trăng.png": "assets/dr/647017a86be3.jpg", "Điểm bán/Hệ thống cửa hàng mẹ và bé Bi_s Mart - Châu Thành, Trà Vinh.png": "assets/dr/651556f2fd15.jpg", "Điểm bán/Hệ thống cửa hàng mẹ và bé Bi_s Mart - Giá Rai, Bạc Liêu.png": "assets/dr/37494e98fea1.jpg", "Điểm bán/Hệ thống cửa hàng mẹ và bé Bi_s Mart - Kế Sách, Sóc Trăng.png": "assets/dr/7a008370af82.jpg", "Điểm bán/Hệ thống cửa hàng mẹ và bé Bi_s Mart - Mỹ Xuyên, Sóc Trăng.png": "assets/dr/a521de87c7ac.jpg", "Điểm bán/Hệ thống cửa hàng mẹ và bé TopMom.png": "assets/dr/95d304c51752.jpg", "Điểm bán/Shop Mẹ&bé Hello Baby.png": "assets/dr/7bb2f922fbc4.jpg", "Điểm bán/Shop Phú Len.png": "assets/dr/4ca46a0db967.jpg", "Điểm bán/Shop Sữa Bỉm.png": "assets/dr/35513df89b5b.jpg", "Điểm bán/Sữa bỉm Hưng Thoa.png": "assets/dr/d3b9e6025de1.jpg", "Điểm bán/Thế Giới Sữa BINBO.png": "assets/dr/bb99dc10975d.jpg", "Bảng thành phần/TPDD Nutritie Baby.png": "assets/dr/334fb1412861.jpg", "Bảng thành phần/TPDD Nutritie BioA+.png": "assets/dr/ddfb78d26b59.jpg", "Bảng thành phần/TPDD Nutritie Glupro.png": "assets/dr/697b2fd4355c.jpg", "Bảng thành phần/TPDD Nutritie Pedia.png": "assets/dr/e766b29ab9af.jpg", "Bảng thành phần/TPDD SBPS Nutritie Colostrum DHA 110 ml.png": "assets/dr/0959d5e8d04f.jpg", "Bảng thành phần/TPDD SBPS Nutritie Colostrum DHA 180 ml.png": "assets/dr/40451cfaf823.jpg", "Bảng thành phần/TTDD Nutritie Canxi Pro.png": "assets/dr/835744ef3e12.jpg", "Bảng thành phần/TTDD Nutritie Grow IQ.png": "assets/dr/91778634f953.jpg", "Bảng thành phần/TTDD Nutritie Mama.png": "assets/dr/e4c555172219.jpg", "Chứng nhận/Sữa bột_cn_aiwado_1-566x800.jpg": "assets/dr/d1d1bc2e4cf5.jpg", "Chứng nhận/Sữa bột_cn_aiwado_2-566x800.jpg": "assets/dr/e6cec93b8839.jpg", "Chốt sale theo SKU/Chốt sale app_Nutritie Baby A+.jpg": "assets/chotsale/baby.jpg", "Chốt sale theo SKU/Chốt sale app_Nutritie Bio A+.jpg": "assets/chotsale/bio.jpg", "Chốt sale theo SKU/Chốt sale app_Nutritie Pedia A+.jpg": "assets/chotsale/pedia.jpg", "Chốt sale theo SKU/Chốt sale app_Nutritie Grow IQ A+.jpg": "assets/chotsale/growiq.jpg", "Chốt sale theo SKU/Chốt sale app_Nutritie Mama A+.jpg": "assets/chotsale/mama.jpg", "Chốt sale theo SKU/Chốt sale app_Nutritie Canxi Pro A+.jpg": "assets/chotsale/canxipro.jpg", "Chốt sale theo SKU/Chốt sale app_Nutritie Colostrum DHA.jpg": "assets/chotsale/colostrum.jpg"};function rimg(p){return DRIMG[p]||encodeURI(ROOT+p);}
 var DRIVE_FOLDER="https://drive.google.com/drive/folders/1lYB3BD9NwSmDAVvkkdEphLyICbZKSFTb";
 /* -- Cảm nhận khách hàng + Điểm bán tin dùng (ảnh thật) -- */
 var FEEDBACK=[ {name:"Chị Lan (Q.7)",star:5,t:"Bé nhà mình dùng Pedia A+ 2 tháng đã tăng 0.8kg, ăn ngon hơn hẳn."},
@@ -2970,15 +2973,23 @@ var TAILIEU=[
    {t:"Chứng nhận giải thưởng Nutritie",type:"PDF",sum:"Top 10 Thương hiệu Việt Nam.",f:"Chứng nhận/Chứng nhận giải thưởng Nutritie.pdf"},
    {t:"Chứng nhận nhà máy Aiwado",type:"Ảnh",sum:"ISO 9001/22000 (bột).",f:"Chứng nhận/Sữa bột_cn_aiwado_1-566x800.jpg"},
    {t:"Chứng nhận Nutribiz FSSC",type:"PDF",sum:"FSSC 22000 (pha sẵn RTD).",f:"Chứng nhận/Sữa pha sẵn_Nutribiz_954671_FSSC 5.1.pdf"} ]},
- {cat:"Kỹ năng chốt sale",ic:"forum",hide:true,items:[
-   {t:"Chốt sale — Baby A+",type:"Ảnh",sum:"Nỗi đau → USP → câu chốt.",f:"Chốt sale theo SKU/Chốt sale app_Nutritie Baby A+.jpg"},
-   {t:"Chốt sale — Pedia A+",type:"Ảnh",sum:"Nỗi đau → USP → câu chốt.",f:"Chốt sale theo SKU/Chốt sale app_Nutritie Pedia A+.jpg"},
-   {t:"Chốt sale — Grow IQ A+",type:"Ảnh",sum:"Nỗi đau → USP → câu chốt.",f:"Chốt sale theo SKU/Chốt sale app_Nutritie Grow IQ A+.jpg"} ]}
+ {cat:"Kỹ năng chốt sale",ic:"forum",items:[
+    {t:"Chốt sale — Baby A+",type:"Ảnh",sum:"Mong muốn của khách → key dinh dưỡng → tư vấn gợi ý.",f:"Chốt sale theo SKU/Chốt sale app_Nutritie Baby A+.jpg"},
+    {t:"Chốt sale — Bio A+",type:"Ảnh",sum:"Mong muốn của khách → key dinh dưỡng → tư vấn gợi ý.",f:"Chốt sale theo SKU/Chốt sale app_Nutritie Bio A+.jpg"},
+    {t:"Chốt sale — Pedia A+",type:"Ảnh",sum:"Mong muốn của khách → key dinh dưỡng → tư vấn gợi ý.",f:"Chốt sale theo SKU/Chốt sale app_Nutritie Pedia A+.jpg"},
+    {t:"Chốt sale — Grow IQ A+",type:"Ảnh",sum:"Mong muốn của khách → key dinh dưỡng → tư vấn gợi ý.",f:"Chốt sale theo SKU/Chốt sale app_Nutritie Grow IQ A+.jpg"},
+    {t:"Chốt sale — Mama A+",type:"Ảnh",sum:"Mong muốn của khách → key dinh dưỡng → tư vấn gợi ý.",f:"Chốt sale theo SKU/Chốt sale app_Nutritie Mama A+.jpg"},
+    {t:"Chốt sale — Canxi Pro A+",type:"Ảnh",sum:"Mong muốn của khách → key dinh dưỡng → tư vấn gợi ý.",f:"Chốt sale theo SKU/Chốt sale app_Nutritie Canxi Pro A+.jpg"},
+    {t:"Chốt sale — Colostrum DHA",type:"Ảnh",sum:"Mong muốn của khách → key dinh dưỡng → tư vấn gợi ý.",f:"Chốt sale theo SKU/Chốt sale app_Nutritie Colostrum DHA.jpg"} ]}
 ];
 /* Tệp tài liệu THẬT có trong app. 13/10/2026: mọi PDF trong mục Tài liệu ra 404 vì tệp nằm ở Drive, chưa chép vào kho. Chép tệp vào kho rồi
    thêm đường dẫn vào DOC_AVAIL thì mục tự mở được; tệp chưa có hiện "Chờ cập nhật" (không dẫn khách ra Drive, không ra trang 404). */
 var DOC_AVAIL={};
 function fileReady(pth){ return !!(pth&&(DOC_AVAIL[pth]||(typeof DRIMG!=="undefined"&&DRIMG[pth]))); }
+var CHOT_SALE={baby:"Chốt sale theo SKU/Chốt sale app_Nutritie Baby A+.jpg",bio:"Chốt sale theo SKU/Chốt sale app_Nutritie Bio A+.jpg",pedia:"Chốt sale theo SKU/Chốt sale app_Nutritie Pedia A+.jpg",growiq:"Chốt sale theo SKU/Chốt sale app_Nutritie Grow IQ A+.jpg",mama:"Chốt sale theo SKU/Chốt sale app_Nutritie Mama A+.jpg",canxipro:"Chốt sale theo SKU/Chốt sale app_Nutritie Canxi Pro A+.jpg",colostrum:"Chốt sale theo SKU/Chốt sale app_Nutritie Colostrum DHA.jpg"};
+/* Hướng dẫn chốt sale = nội dung NỘI BỘ cho tư vấn viên (có lời tư vấn cho cả sản phẩm trẻ dưới 24 tháng): chỉ gắn ở kết quả tư vấn + trang sản phẩm của PG, KHÔNG ở chế độ Trình khách. */
+function chotSaleBtn(id,cls){var f=CHOT_SALE[id];if(!f||!fileReady(f))return "";var p=P(id);return '<button class="btn '+(cls||'btnO')+'" onclick="openFileDoc('+jq(f)+','+jq('Hướng dẫn chốt sale — '+(p?p.name:''))+',\'Ảnh\','+jq('Dành cho tư vấn viên')+')">'+ic('forum')+'Hướng dẫn chốt sale (cho tư vấn viên)</button>';}
+function chotSaleBlock(id){var b=chotSaleBtn(id);return b?'<div class="plbl">'+ic('forum')+'Chốt sale (cho tư vấn viên)</div>'+b:"";}
 function docReady(it){ return it.f?fileReady(it.f):true; }
 function docGroupShown(g){ return !g.hide||g.items.some(docReady); }
 function jq(v){ return "'"+String(v).replace(/\\/g,"\\\\").replace(/'/g,"\\'")+"'"; }
@@ -3007,18 +3018,21 @@ function openDoc(cat,title){ var found=null; TAILIEU.forEach(function(g){ if(g.c
  var ok=docReady(it);
   var head='<div class="dr-bar"><button class="dr-back" onclick="closeDoc()">'+ic('chevron_left')+'Quay lại</button><div class="dr-tt"><b>'+esc(it.t)+'</b><span>'+esc(g.cat)+' · '+esc(it.type)+'</span></div>'+(it.f&&ok?'<a class="dr-open" href="'+rimg(it.f)+'" target="_blank" rel="noopener" title="Mở bằng ứng dụng">'+ic('open_in_new')+'</a>':'')+'</div>';
   var body = (it.f&&ok)
-    ? '<div class="dr-body"><iframe class="dr-frame" src="'+rimg(it.f)+'" title="'+esc(it.t)+'"></iframe></div><div class="dr-foot"><span class="dis">Đang đọc '+esc(it.type)+' ngay trong app. Không hiển thị? Bấm biểu tượng mở ở góc trên.</span></div>'
+    ? docPane(rimg(it.f),it.t)
     : '<div class="dr-body"><div class="dr-article"><div class="sci">'+esc(it.sum)+'</div><div class="dr-pend">'+(it.f?'Tài liệu này đang chờ cập nhật.':'Nội dung đầy đủ của bài này đang được cập nhật.')+'</div></div></div>';
   dr.innerHTML=head+body; dr.classList.add('open'); document.body.style.overflow='hidden'; fillIcons(); navPush({dr:1}); }
 /* Đóng bằng nút "Quay lại" = lùi một bước lịch sử (để nút Back của điện thoại/Zalo cùng hành xử), popstate sẽ đóng thật */
+function docPane(url,title){
+ if(/\.(jpe?g|png|webp|gif)(\?|$)/i.test(url)||/^data:image/.test(url))return '<div class="dr-body"><img class="dr-img" src="'+url+'" alt="'+esc(title)+'"></div><div class="dr-foot"><span class="dis">Chạm hai ngón để phóng to ảnh.</span></div>';
+ return '<div class="dr-body"><iframe class="dr-frame" src="'+url+'" title="'+esc(title)+'"></iframe></div><div class="dr-foot"><span class="dis">Đang mở tài liệu trong app. Không hiển thị? Bấm biểu tượng mở ở góc trên.</span></div>';}
 function closeDocNow(){ var dr=document.getElementById('docreader'); if(dr){ dr.classList.remove('open'); dr.innerHTML=''; } document.body.style.overflow=''; }
 function closeDoc(){ var st=null; try{ st=history.state; }catch(e){} if(st&&st.dr){ history.back(); return; } closeDocNow(); }
 /* Mở 1 file (ảnh/PDF) trực tiếp bằng đường dẫn local (offline: rimg) + Drive fallback — dùng cho Bảng thành phần & Hồ sơ/Chứng nhận */
-function openFileDoc(path,title,type){ var dr=document.getElementById('docreader'); if(!dr){ window.open(rimg(path),'_blank'); return; }
+function openFileDoc(path,title,type,sub){ var dr=document.getElementById('docreader'); if(!dr){ window.open(rimg(path),'_blank'); return; }
  type=type||(/\.pdf$/i.test(path)?'PDF':'Ảnh');
    var ok=fileReady(path);
-  var head='<div class="dr-bar"><button class="dr-back" onclick="closeDoc()">'+ic('chevron_left')+'Quay lại</button><div class="dr-tt"><b>'+esc(title)+'</b><span>Hồ sơ &amp; Chứng nhận · '+esc(type)+'</span></div>'+(ok?'<a class="dr-open" href="'+rimg(path)+'" target="_blank" rel="noopener" title="Mở bằng ứng dụng">'+ic('open_in_new')+'</a>':'')+'</div>';
-  var body=ok?'<div class="dr-body"><iframe class="dr-frame" src="'+rimg(path)+'" title="'+esc(title)+'"></iframe></div><div class="dr-foot"><span class="dis">Đang mở tài liệu trong app. Không hiển thị? Bấm biểu tượng mở ở góc trên.</span></div>'
+  var head='<div class="dr-bar"><button class="dr-back" onclick="closeDoc()">'+ic('chevron_left')+'Quay lại</button><div class="dr-tt"><b>'+esc(title)+'</b><span>'+(sub?esc(sub):'Hồ sơ &amp; Chứng nhận')+' · '+esc(type)+'</span></div>'+(ok?'<a class="dr-open" href="'+rimg(path)+'" target="_blank" rel="noopener" title="Mở bằng ứng dụng">'+ic('open_in_new')+'</a>':'')+'</div>';
+  var body=ok?docPane(rimg(path),title)
     :'<div class="dr-body"><div class="dr-article"><div class="dr-pend">Tài liệu này đang chờ cập nhật.</div></div></div>';
   dr.innerHTML=head+body; dr.classList.add('open'); document.body.style.overflow='hidden'; fillIcons(); navPush({dr:1}); }
 

@@ -41,7 +41,7 @@ with sync_playwright() as p:
         check(f'[{eng}] không lỗi JS', not errs, errs)
         check(f'[{eng}] thông báo "mạng chậm" KHÔNG hiện khi app chạy bình thường', pg.evaluate("(()=>{const e=document.getElementById('spslow');return !e||getComputedStyle(e).display==='none'||getComputedStyle(document.getElementById('splash')).opacity==='0'})()"))
         urls = pg.evaluate("Object.values(DRIMG)")
-        check(f'[{eng}] DRIMG trỏ tới tệp (không còn base64): {len(urls)} ảnh', len(urls) >= 20 and all(isinstance(u, str) and u.startswith('assets/dr/') for u in urls), urls[:2])
+        check(f'[{eng}] DRIMG trỏ tới tệp (không còn base64): {len(urls)} ảnh', len(urls) >= 20 and all(isinstance(u, str) and u.startswith(('assets/dr/', 'assets/chotsale/')) for u in urls), urls[:2])
         ok = pg.evaluate("""async(u)=>Promise.all(u.map(x=>new Promise(r=>{const i=new Image();i.onload=()=>r(i.naturalWidth>0);i.onerror=()=>r(false);i.src=x;})))""", urls)
         check(f'[{eng}] cả {len(urls)} ảnh tải được (200 + giải mã được)', all(ok), [u for u, o in zip(urls, ok) if not o][:3])
         check(f'[{eng}] rimg() cho đường dẫn tài liệu trả đúng tệp', pg.evaluate("rimg('Bảng thành phần/TPDD Nutritie Baby.png')").startswith('assets/dr/'))
