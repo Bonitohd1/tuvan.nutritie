@@ -41,7 +41,7 @@ with sync_playwright() as p:
         # (2) sinh non
         t2, h2 = page(pg, '14', '8', '60', preterm='2')
         check(T('sinh non: hiện "tuổi sau hiệu chỉnh 13,5 tháng"'), 'tuổi sau hiệu chỉnh 13,5 tháng' in t2, t2[:200])
-        z = pg.evaluate("[S.cls.metric, zwa(corrMonths(), num('w'), S.user.gender).toFixed(1)]")
+        z = pg.evaluate("[S.cls.metric, zf(whoZ('w', corrMonths(), num('w')))]")
         check(T('điểm Z đúng bằng điểm Z theo tuổi HIỆU CHỈNH'), z[0].endswith(z[1]), z)
         pg.evaluate("S.user.preterm='8';S.m={months:'3',w:'5.2',h:'58'};S.cls=classify()")
         a = pg.evaluate("S.cls.metric"); pg.evaluate("S.user.preterm=''; S.cls=classify()"); c = pg.evaluate("S.cls.metric")
