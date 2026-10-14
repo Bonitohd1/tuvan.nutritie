@@ -1513,6 +1513,19 @@ var LS_FAIL="Không lưu được vào máy này (bộ nhớ đầy hoặc trìn
 var PG_KEY="nt_pg",OQ_KEY="nt_order_queue";
 function getPG(){return lsGet(PG_KEY,"");}
 function setPG(c){S.pg=c;lsSet(PG_KEY,c);}
+function custSummary(phone){ var d=kidPhone(phone); if(!kidPhoneOK(d))return '';
+ var os=orders().filter(function(o){return kidPhone(o.phone)===d;}); var kids=kidsOfPhone(d);
+ if(!os.length&&!kids.length)return '';
+ var parts=[];
+ if(os.length){ var last=os[os.length-1]; var sku=(last.items&&last.items[0]&&last.items[0].name)||''; var days=Math.floor((Date.now()-(last.at||Date.now()))/86400000);
+   parts.push('<b>Khách cũ</b> · '+os.length+' đơn trước'+(sku?(' · gần nhất: '+esc(sku.replace("Nutritie ",""))+(days>0?(' ('+days+' ngày trước)'):'')):'')); }
+ if(kids.length){ var tot=0; kids.forEach(function(b){tot+=babyMeasures(b.id).length;}); parts.push(kids.length+' bé đã lưu'+(tot?(' · '+tot+' lần đo'):'')+' — tiện theo dõi tăng trưởng'); }
+ return '<div style="background:var(--sec-fx);border-radius:11px;padding:9px 11px;font-size:12.5px;line-height:1.55;margin-top:8px;display:flex;gap:8px;align-items:flex-start"><span style="color:var(--navy);flex-shrink:0">'+ic('person')+'</span><div>'+parts.join('<br>')+'</div></div>'; }
+function custHistPaint(){ var e=document.getElementById('cust_hist'); if(e)e.innerHTML=custSummary(S.user.phone); }
+function reBuyDue(){ var os=orders(),map={},now=Date.now();
+ os.forEach(function(o){ var ph=kidPhone(o.phone); if(!kidPhoneOK(ph))return; if(!map[ph]||o.at>map[ph].at)map[ph]={at:o.at,name:o.name,sku:(o.items&&o.items[0]&&o.items[0].name)||''}; });
+ var out=[]; for(var ph in map){ var days=Math.floor((now-map[ph].at)/86400000); if(days>=20)out.push({phone:ph,name:map[ph].name,sku:map[ph].sku,days:days}); }
+ out.sort(function(a,b){return b.days-a.days;}); return out.slice(0,5); }
 function orders(){return lsGet(OQ_KEY,[]);}
 function saveOrders(a){lsSet(OQ_KEY,a);}
 function pendingOrders(){return orders().filter(function(o){return o.status==="cho_gui"||o.status==="loi_gui";});}
@@ -1671,6 +1684,8 @@ function recommend(){var o=S.user.obj,c=S.cls,n=S.needs,low=c&&c.status==="low",
 
 /* ===== HOME ===== */
 function homeBanners(){var h='',s=getSess(),pend=pendingOrders().length;
+ var reb=(typeof reBuyDue==="function")?reBuyDue():[];
+ if(reb.length)h+='<div class="banner" style="border-left:4px solid var(--warm)"><div style="display:flex;align-items:center;gap:10px"><span style="color:var(--warm);font-size:22px">'+ic('schedule')+'</span><div style="flex:1;min-width:0"><b style="font-size:13px">Khách nên nhắc tái mua ('+reb.length+')</b><div style="font-size:11px;color:var(--on-var)">'+esc(reb.slice(0,3).map(function(r){return (r.name||('…'+r.phone.slice(-3)))+' · '+(r.sku?r.sku.replace("Nutritie ",""):'đơn cũ')+' '+r.days+' ngày trước';}).join("; "))+'</div></div><button class="btn btnN" style="width:auto;height:36px;padding:0 14px" onclick="go(\'crm\')">Xem</button></div></div>';
  var due=(typeof dueBabies==="function")?dueBabies():[];
  if(due.length)h+='<div class="banner" style="border-left:4px solid var(--sky)"><div style="display:flex;align-items:center;gap:10px"><span style="color:var(--sky);font-size:22px">'+ic('notifications')+'</span><div style="flex:1"><b style="font-size:13px">Đến hẹn cân đo cho bé</b><div style="font-size:11px;color:var(--on-var)">'+esc(due.map(function(b){return b.ten||"Bé";}).join(", "))+' — đã hơn 30 ngày chưa cập nhật</div></div><button class="btn btnN" style="width:auto;height:36px;padding:0 14px" onclick="go(\'growth\')">Đo ngay</button></div></div>';
  if(s&&s.step>1)h+='<div class="banner" style="border-left:4px solid var(--navy)"><div style="display:flex;align-items:center;gap:10px"><span style="color:var(--navy);font-size:22px">'+ic('stethoscope')+'</span><div style="flex:1"><b style="font-size:13px">Có phiên tư vấn đang dở</b><div style="font-size:11px;color:var(--on-var)">Đang ở bước '+s.step+'/4</div></div></div><div class="btnrow" style="margin-top:10px"><button class="btn btnO" style="height:38px" onclick="dropSess()">Bỏ</button><button class="btn btnN" style="height:38px" onclick="resumeSess()">Tiếp tục</button></div></div>';
@@ -1803,7 +1818,7 @@ function kidBlock(){var u=S.user,ok=kidDobOK();
   +'<div style="font-size:12px;font-weight:700;color:var(--on-var);margin-bottom:5px">Đọc cho khách trước khi lưu SĐT</div>'
   +'<div style="font-size:12.5px;line-height:1.6;margin-bottom:9px">“'+CONSENT_TXT+'”</div>'
   +'<div class="chips">'+[["Khách đồng ý",true],["Khách không đồng ý",false]].map(function(x){return '<div class="chip'+(u.consent===x[1]?" on":"")+'" onclick="S.user.consent='+x[1]+';draw()">'+x[0]+'</div>';}).join("")+'</div>'
-  +(u.consent===true?'<label>SĐT người mua *</label><input id="kid_phone" type="tel" inputmode="numeric" value="'+esc(u.phone||"")+'" oninput="S.user.phone=this.value" placeholder="VD: 0912345678">':(u.consent===false?'<div style="font-size:11.5px;color:var(--on-var);margin-top:7px;line-height:1.5">Không lưu SĐT. Hồ sơ bé vẫn lưu trên máy này để vẽ biểu đồ, nhưng sẽ không tìm được theo số điện thoại.</div>':''))+'</div>';
+  +(u.consent===true?'<label>SĐT người mua *</label><input id="kid_phone" type="tel" inputmode="numeric" value="'+esc(u.phone||"")+'" oninput="S.user.phone=this.value;custHistPaint()" placeholder="VD: 0912345678"><div id="cust_hist">'+custSummary(u.phone)+'</div>':(u.consent===false?'<div style="font-size:11.5px;color:var(--on-var);margin-top:7px;line-height:1.5">Không lưu SĐT. Hồ sơ bé vẫn lưu trên máy này để vẽ biểu đồ, nhưng sẽ không tìm được theo số điện thoại.</div>':''))+'</div>';
  return h;}
 /* Lưu hồ sơ bé + số đo hôm nay MỘT lần cho mỗi buổi tư vấn (vẽ lại màn kết quả không nhân đôi). Chưa hỏi đồng ý thì KHÔNG lưu gì. */
 function consultSaveGrowth(){
@@ -2033,6 +2048,7 @@ function tvStep4(){var contra=contraCheck();
   if(main)h+='<button class="btn btnP press" onclick="orderFromRec(['+ordIds.map(jq).join(',')+'])">'+ic('add_shopping_cart')+'Lên đơn sản phẩm gợi ý</button>';
  if(main)h+='<button class="btn btnO" onclick="openP(\''+main.id+'\')">'+ic('article')+'Xem chi tiết '+esc(main.name)+'</button>';
  if(main)h+=chotSaleBtn(main.id);
+ if(c||main)h+='<button class="btn btnW press" onclick="presResult()">'+ic('co_present')+'Trình kết quả cho khách</button>';
  h+='<button class="btn btnN press" onclick="startTV()">'+ic('refresh')+'Tư vấn khách khác</button></div>';
  return h;}
 
@@ -3182,6 +3198,27 @@ function legalText(id){var c=LEGAL_CAT[id]||"Sản phẩm dinh dưỡng";return 
 var PRES_HIDE=['baby','bio'];   /* sản phẩm dinh dưỡng công thức cho trẻ <24 tháng: Trình khách KHÔNG hiện ảnh lon / lợi ích (NĐ 100/2014) — chỉ chỉ dẫn hỏi tư vấn viên */
 var PRES_INFANT=['baby','bio','pedia','growiq','colostrum']; /* SP liên quan trẻ <24 tháng → kèm khuyến cáo NĐ100 */
 function openPresent(){ presSec='uudai'; presProd=null; var p=document.getElementById('present'); if(!p)return; presRender(); p.classList.add('open'); document.body.style.overflow='hidden'; }
+function custScience(){ var o=S.user.obj,c=S.cls,low=c&&c.status==="low";
+ if(o==="tre_0_12")return "Giai đoạn đầu đời, bé cần dinh dưỡng phù hợp độ tuổi. Sữa mẹ là thức ăn tốt nhất cho sức khỏe và sự phát triển toàn diện của trẻ nhỏ.";
+ if(o==="tre_1_10")return low?"Theo chỉ số đo hôm nay, bé cần được bổ sung đủ năng lượng và dưỡng chất để bắt kịp đà tăng trưởng.":"Chỉ số của bé đang trong vùng chuẩn WHO — tiếp tục duy trì chế độ dinh dưỡng cân đối và theo dõi định kỳ.";
+ if(o==="adult")return low?"Theo chỉ số BMI, cơ thể đang cần bổ sung năng lượng và dưỡng chất để phục hồi thể trạng.":"Chỉ số BMI đang trong vùng ổn — duy trì dinh dưỡng cân đối và vận động đều đặn.";
+ return "Giai đoạn mang thai / sau sinh, mẹ cần bổ sung đầy đủ dưỡng chất cho cả mẹ và bé."; }
+function presResult(){ var p=document.getElementById('present'); if(!p)return;
+ var c=S.cls, contra=(typeof contraCheck==='function')?contraCheck():null, r=(typeof recommend==='function')?recommend():{ids:[]};
+ var main=(!contra&&r.ids&&r.ids.length)?P(r.ids[0]):null;
+ var young=(S.user.obj==="tre_0_12")||(S.user.obj==="tre_1_10"&&num("age")!=null&&num("age")<2);
+ var body='';
+ if(c) body+=gaugeCard(c,!!contra);
+ body+='<div class="pr-card" style="background:#fff;color:var(--on)"><div class="sec-l" style="margin-bottom:6px"><div class="sec-ic">'+ic('verified')+'</div><h3 style="font-size:15px;color:var(--navy)">Nhận định dinh dưỡng</h3></div><div style="font-size:13.5px;line-height:1.65;color:var(--on)">'+esc(custScience())+'</div></div>';
+ if(main && PRES_HIDE.indexOf(main.id)<0){ var im=pimg(main.id);
+   body+='<div class="pr-card" style="background:#fff;color:var(--on)"><div style="font-family:var(--fd);font-weight:700;font-size:11px;color:var(--navy);text-transform:uppercase;letter-spacing:.3px">Sản phẩm phù hợp</div><div style="display:flex;gap:12px;align-items:center;margin-top:8px"><div style="width:72px;height:72px;border-radius:14px;background:'+main.grad+';position:relative;overflow:hidden;flex-shrink:0">'+(im?'<img src="'+im+'" alt="" style="position:absolute;inset:6px;width:calc(100% - 12px);height:calc(100% - 12px);object-fit:contain">':'')+'</div><div style="flex:1;min-width:0"><div style="font-family:var(--fd);font-weight:800;font-size:16px;color:var(--navy)">'+esc(main.name)+'</div><div style="font-size:12.5px;color:var(--on-var);margin-top:2px">'+esc(main.tl)+'</div></div></div></div>';
+ } else {
+   body+='<div class="pr-card" style="background:#fff;color:var(--on)"><div style="font-size:13.5px;line-height:1.65">Tư vấn viên sẽ tư vấn sản phẩm dinh dưỡng phù hợp với '+(young?"độ tuổi của bé":"tình trạng của khách")+'.</div></div>';
+ }
+ if(young) body+='<div class="pr-nd100" style="margin-top:10px">'+ic('info')+'<span>'+esc(SME_VI)+'</span></div>';
+ body+='<div style="text-align:center;color:#9fb0c8;font-size:12px;margin-top:12px">Tư vấn viên sẽ trao đổi chi tiết hơn với anh/chị.</div>';
+ p.innerHTML='<div class="pr-top"><div class="pr-topbar"><img class="pr-logo" src="'+LOGO+'" alt="Nutritie" onerror="this.remove()"><div class="pr-brand">Nutritie<span>Kết quả tư vấn dinh dưỡng</span></div><button class="pr-close" onclick="closePresent()">'+ic('close')+'Đóng</button></div></div><div class="pr-body">'+body+'</div>';
+ presProd=null; p.classList.add('open'); document.body.style.overflow='hidden'; if(typeof fillIcons==="function")fillIcons(); }
 function closePresent(){ var p=document.getElementById('present'); if(p){ p.classList.remove('open'); p.innerHTML=''; } presProd=null; document.body.style.overflow=''; }
 function presFb(im){var sp=document.createElement('span');sp.className=im.getAttribute('data-fb')||'pr-pe';sp.textContent=im.getAttribute('data-e')||'';im.replaceWith(sp);}   /* ảnh lỗi -> hiện emoji thay thế (emoji KHÔNG được đè lên ảnh còn tốt) */
 function presGo(s){ presSec=s; presProd=null; presRender(); var b=document.querySelector('#present .pr-body'); if(b)b.scrollTop=0; }
