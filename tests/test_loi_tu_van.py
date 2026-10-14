@@ -111,11 +111,11 @@ with sync_playwright() as p:
         # ngày sinh lệch nhóm
         for obj, mo, key in [('tre_0_12', 36, 'Trẻ trên 1 tuổi'), ('tre_1_10', 4, 'chưa tròn 1 tuổi'), ('tre_1_10', 15 * 12, 'trên 11 tuổi')]:
             dob = pg.evaluate(ISOM, mo)
-            st = pg.evaluate("""([o,dob])=>{startTV();S.user.obj=o;S.user.dob=dob;S.user.consent=false;S.user.hist=['Không có'];S.step=1;window.__t=[];next1();return [S.step,__t.length?__t[__t.length-1]:'']}""", [obj, dob])
+            st = pg.evaluate("""([o,dob])=>{startTV();S.user.obj=o;S.user.gender='Nam';S.user.dob=dob;S.user.consent=false;S.user.hist=['Không có'];S.step=1;window.__t=[];next1();return [S.step,__t.length?__t[__t.length-1]:'']}""", [obj, dob])
             check(T(f'{obj}, ngày sinh cách {mo} tháng: chặn ở bước 1 ("{key}")'), st[0] == 1 and key in st[1], st)
 
         # ---- đổi đối tượng giữa chừng ----
-        st = pg.evaluate("""()=>{startTV();S.user.obj='tre_0_12';S.user.name='Bo';S.user.preterm='6';S.user.dob=(function(){var d=new Date();d.setMonth(d.getMonth()-5);return d.toISOString().slice(0,10)})();S.user.consent=true;S.user.phone='0912345678';S.m={months:5,w:6.5,h:62};S.needs=['Tăng chiều cao'];
+        st = pg.evaluate("""()=>{startTV();S.user.obj='tre_0_12';S.user.name='Bo';S.user.preterm='6';S.user.gender='Nam';S.user.dob=(function(){var d=new Date();d.setMonth(d.getMonth()-5);return d.toISOString().slice(0,10)})();S.user.consent=true;S.user.phone='0912345678';S.m={months:5,w:6.5,h:62};S.needs=['Tăng chiều cao'];
           setObj('adult');S.m={w:60,h:170};S.cls=classify();S.step=4;draw();var t=document.getElementById('view').textContent;return {name:S.user.name,dob:S.user.dob,phone:S.user.phone,needs:S.needs.length,t:t}}""")
         check(T('đổi từ bé 0–12 tháng sang người lớn: xoá tên bé, ngày sinh, SĐT, sinh non, nhu cầu cũ'),
               st['name'] == '' and st['dob'] == '' and st['phone'] == '' and st['needs'] == 0 and 'sinh non' not in st['t'] and 'Tăng chiều cao' not in st['t'], {k: st[k] for k in ('name', 'dob', 'phone', 'needs')})

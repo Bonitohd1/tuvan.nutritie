@@ -107,9 +107,9 @@ with sync_playwright() as p:
         check(T('đúng cùng bé (tên + ngày sinh + SĐT) cũng không tạo trùng'), pg.evaluate("babies().length") == 2, last_toast(pg))
         # tư vấn: 2 khách cùng SĐT, tên trống
         pg.evaluate("localStorage.removeItem(BB_KEY);localStorage.removeItem(MEA_KEY)")
-        pg.evaluate("""([d1,d2])=>{startTV();S.user.obj='tre_0_12';S.user.dob=d1;S.user.consent=true;S.user.phone='0912345678';S.user.name='';S.step=1;next1();
+        pg.evaluate("""([d1,d2])=>{startTV();S.user.obj='tre_0_12';S.user.gender='Nam';S.user.dob=d1;S.user.consent=true;S.user.phone='0912345678';S.user.name='';S.step=1;next1();
           S.m.w='8.4';S.m.h='';S._gSaved=false;consultSaveGrowth();
-          startTV();S.user.obj='tre_1_10';S.user.dob=d2;S.user.consent=true;S.user.phone='0912345678';S.user.name='';S.step=1;next1();}""", [pg.evaluate(ISOM, 8), pg.evaluate(ISOM, 30)])
+          startTV();S.user.obj='tre_1_10';S.user.gender='Nam';S.user.dob=d2;S.user.consent=true;S.user.phone='0912345678';S.user.name='';S.step=1;next1();}""", [pg.evaluate(ISOM, 8), pg.evaluate(ISOM, 30)])
         check(T('N3: tư vấn khách thứ 2 cùng SĐT, tên trống, bé khác ngày sinh: bị chặn ở bước 1 (không đè hồ sơ bé 1)'),
               pg.evaluate("S.step") == 1 and pg.evaluate("babies().length") == 1 and pg.evaluate("babies()[0].gioiTinh") == 'Trai' and 'KHÁC TÊN' in last_toast(pg), last_toast(pg))
 
@@ -132,7 +132,7 @@ with sync_playwright() as p:
 
         # ===== V5: SĐT trong nháp khi không đồng ý =====
         pg = fresh(ctx, errs)
-        pg.evaluate("""([d])=>{startTV();S.user.obj='tre_1_10';S.user.dob=d;S.user.consent=true;S.user.phone='0912345678';S.step=1;draw();S.user.consent=false;draw();}""", [pg.evaluate(ISOM, 60)])
+        pg.evaluate("""([d])=>{startTV();S.user.obj='tre_1_10';S.user.gender='Nam';S.user.dob=d;S.user.consent=true;S.user.phone='0912345678';S.step=1;draw();S.user.consent=false;draw();}""", [pg.evaluate(ISOM, 60)])
         pg.wait_for_timeout(100)
         sess = pg.evaluate("localStorage.getItem(SESS_KEY)||''")
         check(T('V5: khách KHÔNG đồng ý -> nháp phiên không còn SĐT'), '0912345678' not in sess and 'nt_session' != '', sess[:120])

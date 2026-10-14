@@ -55,6 +55,7 @@ def step1(pg, obj, dob, name='', consent=None, phone='', hist=None):
     pg.evaluate("go('tuvan')")
     pg.wait_for_timeout(150)
     pg.evaluate(f"setObj('{obj}')")
+    pg.evaluate("if(!S.user.gender)S.user.gender='Nam';draw()")  # 15/10: bắt chọn giới tính cho trẻ
     pg.wait_for_timeout(100)
     if name:
         pg.fill("input[placeholder='VD: Bé Bo']", name)
