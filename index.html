@@ -1774,6 +1774,7 @@ function kidDobOK(){var u=S.user;if(!kidChild()||!u.dob)return false;var d=parse
 function kidAgeMo(){return kidDobOK()?ageMo(S.user.dob,nowISO()):null;}
 /* Có ngày sinh thì tuổi lấy từ ngày sinh (không gõ lại, không lệch với biểu đồ). */
 function syncKidAge(){var am=kidAgeMo();if(am==null)return;if(!S.m)S.m={};if(S.user.obj==="tre_0_12")S.m.months=String(Math.max(0,Math.round(am*10)/10));else S.m.age=String(Math.round(am/12*10)/10);}
+/* oninput bắt giá trị NGAY (Safari/iPhone/Zalo không bắn onchange đáng tin cho input[type=date] -> khách báo 13/10 "ngày sinh chỗ tư vấn ko nhập đc"); onchange vẽ lại để hiện tuổi + biểu đồ. */
 function setKidDob(v){S.user.dob=v||"";syncKidAge();draw();}
 function kidDobLine(){var am=kidAgeMo(),u=S.user;
  if(u.dob&&!kidDobOK())return '<span style="color:var(--red-d)">Ngày sinh không hợp lệ (không được ở tương lai).</span>';
@@ -1786,7 +1787,7 @@ function kidDobLine(){var am=kidAgeMo(),u=S.user;
 function kidAgeBox(){syncKidAge();return '<div style="background:var(--sec-fx);border-radius:11px;padding:9px 11px;font-size:13px;line-height:1.5;margin-bottom:11px">'+kidDobLine()+'</div>';}
 function kidBlock(){var u=S.user,ok=kidDobOK();
  var h='<label>Tên bé (không bắt buộc)</label><input value="'+esc(u.name||"")+'" oninput="S.user.name=this.value" placeholder="VD: Bé Bo">'
-  +'<label>Ngày sinh của bé</label><input type="date" value="'+esc(u.dob||"")+'" max="'+nowISO()+'" onchange="setKidDob(this.value)">'
+  +'<label>Ngày sinh của bé</label><input type="date" value="'+esc(u.dob||"")+'" max="'+nowISO()+'" oninput="S.user.dob=this.value" onchange="setKidDob(this.value)">'
   +'<div style="font-size:12px;line-height:1.5;margin:-2px 0 9px;color:var(--on-var)">'+kidDobLine()+'</div>';
  if(ok)h+='<div style="margin-top:6px;padding:11px 12px;border:1.5px solid var(--line);border-radius:14px;background:#F7F9FD">'
   +'<div style="font-size:12px;font-weight:700;color:var(--on-var);margin-bottom:5px">Đọc cho khách trước khi lưu SĐT</div>'

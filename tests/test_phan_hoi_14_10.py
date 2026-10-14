@@ -101,6 +101,26 @@ with sync_playwright() as p:
             check(T(f'Trình khách > {pid}: ảnh lớn không bị icon đè'), not cv, cv)
         pg.evaluate("(typeof closePresent==='function')?closePresent():document.getElementById('present').classList.remove('open')"); pg.wait_for_timeout(700)
 
+        # ---- ngày sinh ở bước tư vấn (khách 13/10: "ngày sinh chỗ tư vấn ko nhập đc") + SĐT không nhảy (19/9)
+        pg.evaluate("startTV();S.tab='tuvan';S.user.obj='tre_0_12';go('tuvan');draw();"); pg.wait_for_timeout(300)
+        has_dob = pg.query_selector("#view input[type=date]") is not None
+        pg.eval_on_selector("#view input[type=date]", "el=>{el.value='2026-02-16';el.dispatchEvent(new Event('input',{bubbles:true}))}"); pg.wait_for_timeout(150)
+        dobcap = pg.evaluate("S.user.dob")
+        check(T('bước tư vấn: ô ngày sinh của bé NHẬP ĐƯỢC (oninput bắt giá trị ngay, kể cả WebKit/Safari)'), has_dob and dobcap == '2026-02-16', (has_dob, dobcap))
+        pg.evaluate("startTV();S.tab='tuvan';S.user.obj='tre_0_12';S.user.dob='2026-02-16';syncKidAge();S.user.consent=true;go('tuvan');draw();"); pg.wait_for_timeout(300)
+        jumped = False
+        if pg.query_selector('#kid_phone'):
+            pg.evaluate("document.getElementById('kid_phone').scrollIntoView({block:'center'})"); pg.wait_for_timeout(150)
+            pg.click('#kid_phone')
+            for ch in '0912345678':
+                pg.keyboard.type(ch); pg.wait_for_timeout(30)
+                if pg.evaluate("document.activeElement&&document.activeElement.id") != 'kid_phone':
+                    jumped = True; break
+            v = pg.evaluate("[document.getElementById('kid_phone').value, S.user.phone]")
+            check(T('bước tư vấn: gõ SĐT 10 số không nhảy lên đầu trang, con trỏ giữ trong ô'), (not jumped) and v == ['0912345678', '0912345678'], (jumped, v))
+        else:
+            check(T('bước tư vấn: có ô SĐT khi khách đồng ý'), False)
+
         # ---- mẹ sau sinh
         r = result(pg, 'pregnant', {'w': 58, 'h': 160}, needs=['Lợi sữa'], extra={'postpartum': True})
         check(T('mẹ SAU SINH: đoạn tư vấn khoa học nói về sau sinh / cho con bú, không phải "mang thai" + nhắc tư vấn cho con'),
