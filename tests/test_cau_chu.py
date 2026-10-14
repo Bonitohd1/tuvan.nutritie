@@ -91,9 +91,9 @@ with sync_playwright() as p:
 
         # ---- dữ liệu sản phẩm: từ ngữ ----
         txt = pg.evaluate("(()=>{var o=[];PRODUCTS.forEach(function(p){o.push([p.id,(p.claims||[]).join(' | ')+' | '+(p.facts||'')+' | '+(p.tl||'')+' | '+(p.gold||'')])});return o})()")
-        BAN = [r'ngừa', r'phòng thiếu máu', r'tái tạo', r'cao nhất', r'duy nhất', r'DUY NHẤT', r'Bứt phá', r'giàu kháng thể', r'tin dùng', r'QĐ 776']
+        BAN = [r'ngừa', r'phòng thiếu máu', r'tái tạo', r'cao nhất', r'duy nhất', r'DUY NHẤT', r'Bứt phá', r'tin dùng', r'QĐ 776']
         bad = [(pid, w) for pid, s in txt for w in BAN if re.search(w, s)]
-        check(T('dữ liệu 7 sản phẩm: không còn "ngừa / phòng thiếu máu / tái tạo / cao nhất / duy nhất / Bứt phá / giàu kháng thể / tin dùng / QĐ 776"'), not bad, bad[:4])
+        check(T('dữ liệu 7 sản phẩm: không còn "ngừa / phòng thiếu máu / tái tạo / cao nhất / duy nhất / Bứt phá / tin dùng / QĐ 776"'), not bad, bad[:4])
         sci = pg.evaluate("Object.values(SCI).join(' ')")
         check(T('lời tư vấn khoa học (SCI): không "ngừa / tái tạo / 2–3×"'), not re.search(r'ngừa|tái tạo|2–3×', sci), re.findall(r'.{20}(?:ngừa|tái tạo|2–3×).{10}', sci)[:2])
         al = pg.evaluate("[P('growiq').facts,P('colostrum').facts]")

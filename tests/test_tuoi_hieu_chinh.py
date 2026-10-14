@@ -36,7 +36,7 @@ with sync_playwright() as p:
         check(T('nút Lên đơn chỉ chứa dòng ưu tiên (không lên đơn cả Bio lẫn Baby)'), "orderFromRec(['bio'])" in h and "'baby'" not in h.split('orderFromRec(')[1].split(')')[0], h.split('orderFromRec(')[1][:40] if 'orderFromRec(' in h else 'khong co nut')
         # (3) 8 tháng cân bình thường -> Baby mặc định
         t3, h3 = page(pg, '8', '8.6', '70')
-        check(T('bé 8 tháng bình thường: Baby A+ mặc định, không BioA+'), 'Nutritie Baby A+' in t3 and 'Nutritie BioA+' not in t3, t3[:200])
+        check(T('bé 8 tháng bình thường: 2 lựa chọn Baby A+ (mặc định) và BioA+ (khách 13/10)'), 'Nutritie Baby A+' in t3 and 'Nutritie BioA+' in t3, t3[:200])
         check(T('đủ tháng: không có dòng tuổi hiệu chỉnh'), 'tuổi sau hiệu chỉnh' not in t3)
         # (2) sinh non
         t2, h2 = page(pg, '14', '8', '60', preterm='2')

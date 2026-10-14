@@ -61,7 +61,7 @@ with sync_playwright() as p:
         n_click = pg.evaluate("[...document.querySelectorAll('#view .doc-row')].filter(r=>r.getAttribute('onclick')).length")
         n_pend = pg.evaluate("document.querySelectorAll('#view .doc-row.pend').length")
         check(T('hàng chưa có tệp KHÔNG bấm được (không onclick)'), n_pend >= 10 and pg.evaluate("[...document.querySelectorAll('#view .doc-row.pend')].every(r=>!r.getAttribute('onclick'))"), n_pend)
-        check(T('chỉ còn mục có nội dung thật bấm mở được (2 bài kiến thức + NĐ100 + 2 ảnh Aiwado + 7 ảnh chốt sale = 12)'), n_click == 12, n_click)
+        check(T('chỉ còn mục có nội dung thật bấm mở được (2 bài kiến thức + 2 ảnh Aiwado + 7 ảnh chốt sale = 11; bài NĐ100 đã bỏ theo khách 14/10)'), n_click == 11, n_click)
         pg.evaluate("document.querySelector('#view .doc-row:not(.pend)').click()"); pg.wait_for_timeout(250)
         rd = pg.evaluate("document.getElementById('docreader').innerHTML")
         check(T('trình đọc bài viết mở ra'), pg.evaluate("document.getElementById('docreader').classList.contains('open')"))
