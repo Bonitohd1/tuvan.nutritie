@@ -2042,7 +2042,7 @@ function openP(id){var p=P(id);if(!p)return;
  var pdtSize='<div class="szlbl">Chọn quy cách</div><div class="szsel">'+packs(p.id).map(function(q){return '<div class="sz'+(selPack===q?' on':'')+'" onclick="setDetailPack(\''+p.id+'\',\''+q.replace(/'/g,"\\'")+'\')">'+esc(q)+'</div>';}).join('')+'</div>';
  sheetin.innerHTML='<div class="ph"><div style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;background:'+p.grad+'">'+p.e+'</div><div><div style="font-family:var(--fd);font-weight:700;font-size:15px">'+esc(p.name)+'</div><div style="font-size:11px;color:var(--navy);font-weight:600">'+esc(p.tag)+'</div></div><button class="x" onclick="closeP()">'+ic('close')+'</button></div>'
   +'<div class="pb">'+hero+pdtHead+pdtSize+chipset
-  +(function(){var sb=stockBadge(p.id,true),q=stockLevel(p.id);return '<div class="plbl">'+ic('monitor_weight')+'Tồn kho tại quầy · '+esc(selPack)+'</div><div class="insight" style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">'+(sb?sb+'<span style="color:var(--on-var);font-size:12px">Còn '+q+' sản phẩm ('+esc(selPack)+') tại máy'+(SYNC_URL||STOCK_URL?' · đã nối kho':' · mô phỏng')+'</span>':'<span style="color:var(--on-var);font-size:12px">Chưa thiết lập tồn kho cho sản phẩm này.</span>')+'</div>';})()
+  +(function(){var sb=stockBadge(p.id,selPack,true),q=stockLevel(p.id,selPack);return '<div class="plbl">'+ic('monitor_weight')+'Tồn kho tại quầy · '+esc(selPack)+'</div><div class="insight" style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">'+(sb?sb+'<span style="color:var(--on-var);font-size:12px">Còn '+q+' '+esc(selPack)+' tại máy'+(SYNC_URL||STOCK_URL?' · đã nối kho':' · mô phỏng')+'</span>':'<span style="color:var(--on-var);font-size:12px">Chưa thiết lập tồn kho cho sản phẩm này.</span>')+'</div>';})()
   +'<div class="plbl">'+ic('workspace_premium')+'Điểm vàng</div><div class="insight">'+esc(p.gold)+'</div>'
   +'<div class="plbl">'+ic('check_circle')+'LỢI ÍCH SẢN PHẨM</div><div class="bul">'+bul+'</div>'
   +specHtml
@@ -2111,7 +2111,7 @@ function chotDon(){
  var a=orders();a.push(o);saveOrders(a);pushNotif('receipt_long','Đơn mới đã tạo',o.id+' · '+(S.orderName||'khách'));
  try{dailyMark('order');weeklyBump('order');}catch(e){}
  try{xuAdd(10,'Chốt đơn');}catch(e){}
- its.forEach(function(it){ stockDec(it.sku,it.qty); });
+ its.forEach(function(it){ stockDec(it.sku,it.qty,it.pack); });
  S.cart={};S.orderVar={};S.orderNote="";S.orderCtkm="";S.orderPhone="";S.orderName="";S.orderAddr="";S.orderDisc="";
  toast("Đã tạo đơn "+o.id+". Mời khách ra quầy hoàn tất.");
  celebrateOrder();go('orders');syncOrders();
@@ -2528,16 +2528,31 @@ function syncCatalog(){ if(!SYNC_URL)return; try{ fetch(NT_DEF.catalog,{headers:
 var STOCK_KEY="nt_stock";
 var STOCK_URL="/api/stock";        // ← điền endpoint tồn kho khi nối backend; rỗng = mô phỏng
 var STOCK_LOW=5;         // ngưỡng "sắp hết" (đồng nhất Wintop)
-var STOCK_SEED={baby:24,bio:18,pedia:30,growiq:12,colostrum:40,canxipro:9,mama:15};
+var STOCK_SEED={
+ baby:{"Lon 800g":24,"Lon 400g":12,"Thùng 12 lon x 800g":3,"Thùng 24 lon x 400g":1},
+ bio:{"Lon 800g":18,"Lon 400g":9,"Thùng 12 lon x 800g":2,"Thùng 24 lon x 400g":0},
+ pedia:{"Lon 800g":30,"Lon 400g":14,"Thùng 12 lon x 800g":4,"Thùng 24 lon x 400g":2},
+ growiq:{"Lon 800g":12,"Thùng 12 lon x 800g":2},
+ colostrum:{"Lốc 110ml":40,"Lốc 180ml":28,"Thùng 110ml x 48 hộp":2,"Thùng 180ml x 48 hộp":1},
+ canxipro:{"Lon 800g":9,"Thùng 12 lon x 800g":1},
+ mama:{"Lon 800g":15,"Lon 400g":8,"Thùng 12 lon x 800g":2,"Thùng 24 lon x 400g":1}
+};/* tồn kho THEO TỪNG QUY CÁCH — lon 800g / 400g / thùng mỗi loại 1 số (như kho thật của điểm bán) */
 function stockUrl(){ var b=integBase(); if(b)return b+NT_DEF.stock; return STOCK_URL||(SYNC_URL?(NT_DEF.base+NT_DEF.stock):""); }
 function stockData(){ var s=lsGet(STOCK_KEY,null); if(!s){ s={items:JSON.parse(JSON.stringify(STOCK_SEED)),at:Date.now()}; lsSet(STOCK_KEY,s); } if(!s.items)s.items={}; return s; }
-function stockLevel(id){ var s=stockData(); return s.items[id]!=null?s.items[id]:null; }
-function stockBadge(id,big){ var q=stockLevel(id); if(q==null)return ''; var bg,fg,tx;
+function packStock(id){ var s=stockData(),it=s.items[id]; if(it==null)return null;
+ if(typeof it==="number"){ var o={}; o[packs(id)[0]]=it; return o; }  /* server/bản cũ trả SỐ phẳng -> gán vào quy cách đầu, các quy cách khác coi như chưa thiết lập */
+ return it; }
+function stockLevel(id,pack){ var o=packStock(id); if(o==null)return null;
+ if(pack!=null)return (o[pack]!=null?o[pack]:null);
+ var t=0,any=false; for(var k in o){ if(o[k]!=null){ t+=o[k]; any=true; } } return any?t:null; }
+function stockBadge(id,pack,big){ if(pack===true){big=true;pack=null;} var q=stockLevel(id,pack); if(q==null)return ''; var bg,fg,tx;
  if(q<=0){bg='var(--red-s)';fg='var(--red-d)';tx='Hết hàng';}
  else if(q<=STOCK_LOW){bg='var(--warn-s)';fg='var(--warn-d)';tx='Sắp hết ('+q+')';}
  else {bg='var(--ok-s)';fg='var(--ok-d)';tx='Còn hàng';}
  return '<span class="badge" style="background:'+bg+';color:'+fg+(big?';font-size:12px;padding:4px 10px':'')+'">'+tx+'</span>'; }
-function stockDec(id,qty){ var s=stockData(); if(s.items[id]==null)return; var v=s.items[id]-(qty||0); s.items[id]=v<0?0:v; s.at=Date.now(); lsSet(STOCK_KEY,s); }
+function stockDec(id,qty,pack){ var s=stockData(),it=s.items[id]; if(it==null)return;
+ if(typeof it==="number"){ var o={}; o[packs(id)[0]]=it; it=o; s.items[id]=it; }
+ if(pack==null)pack=packs(id)[0]; if(it[pack]==null)return; var v=it[pack]-(qty||0); it[pack]=v<0?0:v; s.at=Date.now(); lsSet(STOCK_KEY,s); }
 function syncStock(){ var url=stockUrl();
  if(url&&navigator.onLine){ try{
    fetch(url+"?tenant="+encodeURIComponent(ntTenant()),{headers:ntHeaders()})
@@ -2632,15 +2647,17 @@ function adminRestockBlock(){ var s=stockData(),low=0,out=0;
 }
 /* PG chỉ XEM tồn kho (read-only) — không cấu hình/đồng bộ/bổ sung ở đây; việc đó do Quản trị. */
 function renderStock(){ var s=stockData();
- var tot=PRODUCTS.length,low=0,out=0;
- PRODUCTS.forEach(function(p){ var q=s.items[p.id]; if(q==null)return; if(q<=0)out++; else if(q<=STOCK_LOW)low++; });
+ var tot=0,low=0,out=0;
+ PRODUCTS.forEach(function(p){ packs(p.id).forEach(function(pk){ var q=stockLevel(p.id,pk); if(q==null)return; tot++; if(q<=0)out++; else if(q<=STOCK_LOW)low++; }); });
  var g=integ(),conn=!!(g.enabled&&g.baseUrl);
- var rows=PRODUCTS.map(function(p){ var q=s.items[p.id],isNull=(q==null);
-   var state=isNull?'':(q<=0?'out':(q<=STOCK_LOW?'low':'ok')),bd=(state==='out'||state==='low');
-   var hint=state==='out'?'<div class="rs-hint">Hết hàng — chưa nhận tư vấn/lên đơn</div>':(state==='low'?'<div class="rs-hint">Sắp hết — ưu tiên tư vấn sớm</div>':'');
-   return '<div class="rec-mini" style="margin-bottom:8px'+(bd?';background:var(--sc-low);border-left:3px solid '+(state==='out'?'var(--red)':'var(--warn)'):'')+'"><div class="e" style="background:'+p.grad+';width:44px;height:44px;font-size:22px;position:relative;overflow:hidden">'+p.e+(pimg(p.id)?'<img src="'+pimg(p.id)+'" alt="" style="position:absolute;inset:4px;width:calc(100% - 8px);height:calc(100% - 8px);object-fit:contain" onerror="this.remove()">':'')+'</div><div style="flex:1;min-width:0"><div style="font-family:var(--fd);font-weight:700;font-size:13px">'+esc(p.name)+'</div><div style="margin-top:3px">'+(isNull?'<span style="font-size:10.5px;color:var(--on-var)">chưa thiết lập</span>':stockBadge(p.id))+'</div>'+hint+'</div></div>'; }).join('');
+ var rows=PRODUCTS.map(function(p){
+   var pkrows=packs(p.id).map(function(pk){ var q=stockLevel(p.id,pk);
+     var st=q==null?'':(q<=0?'out':(q<=STOCK_LOW?'low':'ok'));
+     var val=q==null?'<span style="font-size:10.5px;color:var(--on-var)">chưa thiết lập</span>':('<span style="font-size:12px;font-weight:700;color:'+(st==='out'?'var(--red-d)':st==='low'?'var(--warn-d)':'var(--navy)')+'">'+q+'</span> '+stockBadge(p.id,pk));
+     return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:5px 0;border-top:1px solid var(--line)"><span style="font-size:12px;color:var(--on-var)">'+esc(pk)+'</span><span style="display:flex;align-items:center;gap:7px">'+val+'</span></div>'; }).join('');
+   return '<div class="rec-mini" style="margin-bottom:10px;display:block;padding:10px 12px"><div style="display:flex;align-items:center;gap:10px"><div class="e" style="background:'+p.grad+';width:40px;height:40px;font-size:20px;position:relative;overflow:hidden;flex-shrink:0">'+p.e+(pimg(p.id)?'<img src="'+pimg(p.id)+'" alt="" style="position:absolute;inset:4px;width:calc(100% - 8px);height:calc(100% - 8px);object-fit:contain" onerror="this.remove()">':'')+'</div><div style="font-family:var(--fd);font-weight:700;font-size:13px;flex:1;min-width:0">'+esc(p.name)+'</div>'+stockBadge(p.id)+'</div><div style="margin-top:6px">'+pkrows+'</div></div>'; }).join('');
  return '<div class="sec" style="margin-bottom:12px"><div class="sec-l"><div class="sec-ic">'+ic('monitor_weight')+'</div><div><h3>Tồn kho tại quầy</h3><div class="sub">'+(conn?('Nối kho · '+esc(g.provider)):'Mô phỏng')+' · cập nhật '+new Date(s.at).toLocaleString('vi-VN')+'</div></div></div></div>'
-  +'<div class="ord-strip"><div class="ord-stat" style="--tc:var(--navy)"><div class="n">'+tot+'</div><div class="l">Tổng SKU</div></div><div class="ord-stat" style="--tc:var(--warn-d)"><div class="n">'+low+'</div><div class="l">Sắp hết</div></div><div class="ord-stat" style="--tc:var(--red-d)"><div class="n">'+out+'</div><div class="l">Hết hàng</div></div></div>'
+  +'<div class="ord-strip"><div class="ord-stat" style="--tc:var(--navy)"><div class="n">'+tot+'</div><div class="l">Quy cách</div></div><div class="ord-stat" style="--tc:var(--warn-d)"><div class="n">'+low+'</div><div class="l">Sắp hết</div></div><div class="ord-stat" style="--tc:var(--red-d)"><div class="n">'+out+'</div><div class="l">Hết hàng</div></div></div>'
   +'<div class="stack">'+rows+'</div>'
   +'<div class="card" style="margin-top:12px"><div class="sec-l" style="margin-bottom:0"><div class="sec-ic">'+ic('info')+'</div><div style="flex:1;min-width:0"><div style="font-size:12.5px;color:var(--on-var);line-height:1.6">Tồn kho đồng bộ từ hệ thống kho — do Quản trị cấu hình.</div></div></div></div>'; }
 /* -- Bộ đếm KPI + Cấp bậc -- */

@@ -158,6 +158,27 @@ with sync_playwright() as p:
         r = result(pg, 'tre_1_10', {'age': 2, 'w': 12.4, 'h': 87}, needs=['Tiêu hóa kém'])
         check(T('bé 2 tuổi bình thường + tiêu hóa kém: BioA+ (giữ như cũ)'), r['ids'] == ['bio'], r['ids'])
 
+        # ---- tồn kho theo TỪNG quy cách (khách 19/9: link tồn kho real từng tab)
+        pg.evaluate("localStorage.removeItem('nt_stock')")
+        sk = pg.evaluate("[stockLevel('pedia','Lon 800g'),stockLevel('pedia','Lon 400g'),stockLevel('pedia','Thùng 12 lon x 800g'),stockLevel('pedia')]")
+        check(T('tồn kho tách theo quy cách: Pedia Lon800/Lon400/Thùng khác nhau, tổng = cộng dồn'), sk[0]!=sk[1] and sk[0]==30 and sk[1]==14 and sk[3]==sk[0]+sk[1]+sk[2]+pg.evaluate("stockLevel('pedia','Thùng 24 lon x 400g')"), sk)
+        pg.evaluate("openP('pedia')"); pg.wait_for_timeout(400)
+        d1 = pg.evaluate("document.getElementById('sheetin').innerText")
+        pg.evaluate("setDetailPack('pedia','Lon 400g')"); pg.wait_for_timeout(400)
+        d2 = pg.evaluate("document.getElementById('sheetin').innerText")
+        check(T('trang chi tiết: đổi tab quy cách thì SỐ TỒN đổi theo (Lon 800g=30 → Lon 400g=14)'), 'Còn 30 Lon 800g' in d1 and 'Còn 14 Lon 400g' in d2, (('30' in d1), ('14' in d2)))
+        pg.evaluate("closeP()")
+        # đặt đơn trừ đúng quy cách
+        b0 = pg.evaluate("stockLevel('baby','Thùng 12 lon x 800g')"); l0 = pg.evaluate("stockLevel('baby','Lon 800g')")
+        pg.evaluate("S.cart={baby:2};S.orderVar={baby:'Thùng 12 lon x 800g'};S.orderPhone='0912345678';S.orderName='T';chotDon()"); pg.wait_for_timeout(300)
+        b1 = pg.evaluate("stockLevel('baby','Thùng 12 lon x 800g')"); l1 = pg.evaluate("stockLevel('baby','Lon 800g')")
+        check(T('đặt đơn 2 Thùng: trừ đúng kho Thùng (3→1), kho Lon 800g GIỮ NGUYÊN'), b1==b0-2 and l1==l0, (b0,b1,l0,l1))
+        # tab tồn kho liệt kê từng quy cách
+        pg.evaluate("go('stock');draw()"); pg.wait_for_timeout(300)
+        stx = pg.evaluate("document.getElementById('view').innerText")
+        check(T('tab Tồn kho: liệt kê từng quy cách của mỗi SKU'), 'Lon 800g' in stx and 'Lon 400g' in stx and 'Thùng 12 lon x 800g' in stx and 'Lốc 110ml' in stx, stx[:60])
+        pg.evaluate("localStorage.removeItem('nt_stock')")
+
         # ---- số liệu pha theo NHÃN (bảng thành phần): Pedia 205ml/247kcal, Grow IQ 230ml
         us = pg.evaluate("Object.fromEntries(PRODUCTS.map(p=>[p.id,p.usage||'']))")
         check(T('Pedia: cách pha đúng nhãn 55,5g + 170ml → 205ml, 247 kcal (trước sai 195ml/238kcal)'), '205ml' in us['pedia'] and '247 kcal' in us['pedia'] and '195ml' not in us['pedia'], us['pedia'][:90])
