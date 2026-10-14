@@ -1,7 +1,7 @@
 """Phép thử Nutritie 13/10/2026 (chị Thúy, màn kết quả tư vấn):
  (1) THỨ TỰ cố định: chỉ số BMI/thước đo -> TƯ VẤN KHOA HỌC -> sản phẩm (trước đó sản phẩm đứng trước tư vấn khoa học).
  (2) thẻ sản phẩm phụ dùng ẢNH thật khi có (trước chỉ vẽ biểu tượng), và BẤM vào thẻ (cả thẻ chính) mở trang sản phẩm.
- Pedia A+ có ảnh từ 13/10/2026 (Drive 'Ảnh sản phẩm' → DIMG.pedia); mất ảnh là đỏ.
+ Pedia A+ có ảnh từ 14/10/2026 (products/pedia.png, cắt nền từ Drive 'Ảnh sản phẩm'); mất ảnh là đỏ.
 Dùng: python tests/test_thu_tu_ket_qua.py [thư-mục]   (chạy trên bản cũ phải ĐỎ)"""
 import sys, os, shutil, tempfile, threading, functools, http.server, socketserver
 from playwright.sync_api import sync_playwright
@@ -33,7 +33,7 @@ with sync_playwright() as p:
         t = page(pg, 'tre_1_10', {'age': 7, 'w': 16, 'h': 116}, ['Tăng cân', 'Hay ốm / miễn dịch kém'])
         a, s, pr = t.find('Thước đo tăng trưởng'), t.find('TƯ VẤN KHOA HỌC'), t.find('Nutritie Pedia A+')
         check(T('thứ tự: Thước đo (BMI) -> Tư vấn khoa học -> Sản phẩm'), -1 < a < s < pr, (a, s, pr))
-        check(T('Pedia A+ (thẻ chính) có ảnh sản phẩm thật, không còn biểu tượng bát cơm'), pg.evaluate("(()=>{const i=document.querySelector('.sku-img img');return !!i&&i.src.indexOf('data:image/jpeg')===0})()"))
+        check(T('Pedia A+ (thẻ chính) có ảnh sản phẩm thật, không còn biểu tượng bát cơm'), pg.evaluate("(()=>{const i=document.querySelector('.sku-img img');return !!i&&i.complete&&i.naturalWidth>0&&/products\/pedia\.png/.test(i.getAttribute('src')||'')})()"))
         check(T('khối Cảnh báo/Lên đơn nằm SAU sản phẩm'), 0 < pr < t.find('Lên đơn sản phẩm gợi ý'))
         check(T('thẻ phụ Colostrum DHA có ẢNH sản phẩm (không chỉ biểu tượng)'), pg.evaluate("(()=>{const r=document.querySelector('.rec-mini .e');return !!(r&&r.querySelector('img'))})()"))
         pg.evaluate("document.querySelector('.rec-mini').click()"); pg.wait_for_timeout(300)

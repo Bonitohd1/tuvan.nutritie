@@ -92,6 +92,14 @@ with sync_playwright() as p:
         ov = pg.evaluate("""()=>{window.scrollTo(0,document.documentElement.scrollHeight);var c=document.querySelector('.mo-cta').getBoundingClientRect(),n=document.getElementById('nav').getBoundingClientRect(),i=document.getElementById('mo_phone').getBoundingClientRect();return {ctaBelowPhone:c.top>=i.bottom-1,ctaAboveNav:c.bottom<=n.top+1}}""")
         check(T('Lên đơn: kéo tới cuối — nút Chốt đơn nằm DƯỚI ô SĐT và không chui dưới thanh điều hướng'), ov['ctaBelowPhone'] and ov['ctaAboveNav'], ov)
 
+        # ---- ảnh sản phẩm "cùng 1 nền" (khách 13/10 + 23/9: Pedia + ảnh cùng nền)
+        pg.evaluate("go('sp');draw()"); pg.wait_for_timeout(300)
+        gr = pg.evaluate("""async()=>{document.querySelectorAll('img').forEach(i=>i.loading='eager');await new Promise(r=>setTimeout(r,700));var im=[...document.querySelectorAll('#view .sku-img img, #view .pcard img')];return {n:im.length,broken:im.filter(i=>!(i.complete&&i.naturalWidth>0)).length,allPng:im.every(i=>/products\/\w+\.png/.test(i.getAttribute('src')||'')),base64:im.some(i=>/^data:/.test(i.getAttribute('src')||''))}}""")
+        check(T('lưới SP: cả 7 lon có ảnh, tất cả dùng products/*.png (cùng kiểu cắt nền), KHÔNG còn ảnh base64 nền cảnh'), gr['n']>=7 and gr['broken']==0 and gr['allPng'] and not gr['base64'], gr)
+        pd = pg.evaluate("""async()=>{openP('pedia');await new Promise(r=>setTimeout(r,600));var im=document.querySelector('#sheetin .hero-cut, #sheetin .phero img');var ok=im&&im.complete&&im.naturalWidth>0&&/products\/pedia\.png/.test(im.getAttribute('src')||'');closeP();return ok}""")
+        check(T('Pedia: trang chi tiết có ảnh lon (products/pedia.png), không còn bắt cơm'), pd, pd)
+        check(T('mã nguồn: đã gỡ ảnh nhúng base64 nền cảnh (DIMG rỗng) để nhẹ file + đồng bộ nền'), pg.evaluate("Object.keys(DIMG).length")==0, pg.evaluate("Object.keys(DIMG).length"))
+
         # ---- Trình khách
         pg.evaluate("openPresent()"); pg.wait_for_timeout(500)
         lst = pg.evaluate("""async()=>{presGo('sanpham');await new Promise(r=>setTimeout(r,600));var bad=[];document.querySelectorAll('#present .pr-pcard').forEach(c=>{var im=c.querySelector('img');if(!im)return;var r=im.getBoundingClientRect();[[.5,.5],[.25,.25],[.75,.75]].forEach(p=>{var e=document.elementFromPoint(r.left+r.width*p[0],r.top+r.height*p[1]);if(e&&e!==im)bad.push((c.getAttribute('onclick')||'')+':'+(e.className||e.tagName))})});return bad}""")
