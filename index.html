@@ -306,7 +306,7 @@
   .qz2-badge.on .qz2-bic{background:var(--gold);color:#fff}
   .qz2-bn{font-family:var(--fd);font-weight:700;font-size:10.5px;color:var(--navy);line-height:1.15}
   .qz2-badge:not(.on) .qz2-bn{color:var(--on-var)}
-  .qz2-bd{font-size:8.8px;color:var(--on-var);margin-top:2px;line-height:1.2}
+  .qz2-bd{font-size:11px;color:var(--on-var);margin-top:2px;line-height:1.2}
   .qz2-hud .qz2-hudtop{display:flex;align-items:center;gap:10px}
   .qz2-x{width:30px;height:30px;border-radius:9px;border:0;background:var(--sc-low);color:var(--navy);display:flex;align-items:center;justify-content:center;font-size:17px;cursor:pointer;flex-shrink:0}
   .qz2-hearts{flex:1;display:flex;gap:5px;font-size:19px}
@@ -329,7 +329,7 @@
   /* INPUTS/CHIPS */
   label{display:block;font-size:12px;font-weight:600;color:var(--on);margin:12px 0 6px}
   input{width:100%;height:48px;border:1.5px solid var(--line);border-radius:var(--r-sm);padding:0 13px;font-family:var(--fh);font-size:14px;color:var(--on);outline:0;background:#fff;transition:border-color var(--t) var(--ease),box-shadow var(--t) var(--ease)}
-  input::placeholder{color:#9aa3ba}
+  input::placeholder{color:#6B7280}
   input:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(31,45,107,.12)}
   .row{display:flex;gap:10px}.row>div{flex:1}
   .chips{display:flex;flex-wrap:wrap;gap:7px}
@@ -484,7 +484,7 @@
   .drow{font-size:12.5px;color:var(--on-var);margin-bottom:8px}.drow b{color:var(--on)}
   .bul .b{display:flex;gap:8px;font-size:12.5px;color:#3a4257;margin-bottom:8px}
   .bul .b .ic{color:var(--red);font-size:17px;flex-shrink:0;margin-top:1px}
-  .dis{font-size:11px;color:#909aad;text-align:center;margin-top:12px}
+  .dis{font-size:11px;color:#5B6473;text-align:center;margin-top:12px}
   /* ==== Chi tiết SP (premium) ==== */
   .phero{position:relative;height:200px;border-radius:16px;overflow:hidden;margin-bottom:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 14px 34px -14px rgba(38,50,122,.42)}
   .phero .emo{font-size:92px;filter:drop-shadow(0 8px 14px rgba(0,0,0,.18))}
@@ -800,12 +800,12 @@
   .bo-ban img{display:block;width:100%;height:auto}
   .dr-article{background:#fff;margin:12px;border-radius:16px;padding:18px;box-shadow:0 8px 22px rgba(0,0,0,.25)}
   .dr-foot{flex-shrink:0;display:flex;align-items:center;gap:12px;padding:11px 15px;background:#111834}
-  .dr-foot .dis{font-size:11px;color:#aeb7d0;flex:1;line-height:1.45}
+  .dr-foot .dis{font-size:11px;color:#5B6473;flex:1;line-height:1.45}
   .dr-drive{color:#8ec5ff;font-weight:700;font-size:12px;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
   .lg-field{position:relative;margin-bottom:2px}
   .lg-field .lg-ic{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--navy);font-size:20px;pointer-events:none;display:flex}
   .lg-field input{width:100%;height:54px;border:1.6px solid var(--line);border-radius:15px;padding:0 15px 0 46px;font-size:16px;font-weight:600;letter-spacing:.06em;font-family:var(--fd);color:var(--on);background:var(--sc-low);outline:0;text-transform:uppercase;transition:border-color .18s,background .18s,box-shadow .18s}
-  .lg-field input::placeholder{color:#9aa3ba;font-weight:500;letter-spacing:0}
+  .lg-field input::placeholder{color:#6B7280;font-weight:500;letter-spacing:0}
   .lg-field input:focus{border-color:var(--navy);background:#fff;box-shadow:0 0 0 4px rgba(38,50,122,.1)}
   .lg-btn{width:100%;height:54px;border:0;border-radius:999px;background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;font-family:var(--fd);font-weight:700;font-size:15.5px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 12px 26px -8px rgba(31,45,107,.6);transition:transform .1s}
   .lg-btn:active{transform:scale(.98)}
@@ -1208,6 +1208,10 @@
   .nt-item .nt-time{font-size:10.5px;color:var(--on-var);opacity:.75;margin-top:3px}
   .nt-item .nt-dot{position:absolute;top:12px;right:12px;width:9px;height:9px;border-radius:50%;background:var(--red)}
   @media (prefers-reduced-motion:reduce){.nt-item{transition:none}.nt-item.tap:active{transform:none}}
+
+  /* 15/10/2026: nới VÙNG CHẠM >= 44px cho các nút nhỏ (bấm tại quầy đỡ trượt) — giữ nguyên hình, chỉ nới vùng nhận chạm */
+  .mo-del,.mo-step button,.rs-step button,.ph .x,.qz2-x,.pcard .pheart,.go2,.as-x{position:relative}
+  .mo-del::after,.mo-step button::after,.rs-step button::after,.ph .x::after,.qz2-x::after,.pcard .pheart::after,.go2::after,.as-x::after{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;min-width:44px;min-height:44px}
 </style>
 </head>
 <body>
@@ -1546,7 +1550,7 @@ function sendOrder(o){
  return fetch(url,{method:"POST",headers:(typeof ntHeaders==="function")?ntHeaders():{"Content-Type":"application/json"},body:JSON.stringify(payload)})
    .then(function(r){
      if(!r.ok)return {ok:false,err:"HTTP "+r.status};
-     return r.json().then(function(d){return {ok:true,ref:(d&&(d.kiotvietId||d.ref))||null};},function(){return {ok:true};});
+     return r.json().then(function(d){return {ok:true,ref:(d&&(d.kiotvietId||d.ref))||null};},function(){return {ok:false,err:"Máy chủ trả dữ liệu không hợp lệ"};});
    })
    .catch(function(e){return {ok:false,err:String((e&&e.message)||e)};});
 }
@@ -1940,7 +1944,7 @@ function patientSummary(){var u=S.user,bits=[];if(u.name&&u.name.trim())bits.pus
 function gaugeCard(c,noRx){var st=(c.status==="pregnant")?(c.bmiSt||"normal"):c.status;var col=st==="low"?"var(--red)":st==="high"?"#D97706":"var(--ok)";
  var interp=noRx?"Chỉ số để theo dõi. Chưa tư vấn sữa vì tình trạng sức khỏe ở trên.":c.status==="pregnant"?("BMI trước mang thai "+(st==="low"?"dưới chuẩn":st==="high"?"trên chuẩn":"trong chuẩn")+" — mức tăng cân khuyến nghị: "+c.metric+"."):c.status==="low"?(c.mild?"Thấp hơn mức trung bình nhưng vẫn trong chuẩn WHO — có thể bù năng lượng nhẹ và theo dõi thêm.":"Dưới chuẩn — ưu tiên bù năng lượng."):c.status==="high"?"Trên chuẩn — theo dõi khẩu phần, chọn theo nhu cầu.":"Đạt chuẩn — chọn sản phẩm theo nhu cầu.";
  var badge=st==="low"?'b-low':st==="high"?'b-high':'b-ok';
- return '<div class="gauge"><div class="top"><b>Thước đo tăng trưởng</b><span class="badge '+badge+'">'+esc(c.label)+'</span></div>'
+ return '<div class="gauge"><div class="top"><b>'+(kidChild()?"Thước đo tăng trưởng":"Thước đo thể trạng (BMI)")+'</b><span class="badge '+badge+'">'+esc(c.label)+'</span></div>'
   +'<div class="gwrap"><div class="gmark gmark-in" data-pct="'+(c.pct||50)+'" style="left:'+(c.pct||50)+'%"><span style="background:'+col+';box-shadow:0 4px 14px -2px '+col+'">'+esc(c.metric)+'</span><i style="border-top-color:'+col+'"></i></div>'
    +'<div class="gtrack bar-anim"><i style="width:16.6%;background:#EF6C6C"></i><i style="width:16.6%;background:#F5C24B"></i><i style="width:33.4%;background:#3BB273"></i><i style="width:16.6%;background:#54C6C0"></i><i style="width:16.8%;background:#E0A93B"></i></div>'
    +'<div class="glbl"><span>Thiếu</span><span>Chuẩn WHO</span><span>Thừa</span></div></div>'
@@ -3496,15 +3500,15 @@ var _ll=document.getElementById('loginlogo');if(_ll)_ll.src=LOGO;
  var iconAbs=abs(LOGO);
  function addLink(rel,href,attrs){ var l=document.createElement('link'); l.setAttribute('rel',rel); l.setAttribute('href',href); if(attrs){ for(var k in attrs)l.setAttribute(k,attrs[k]); } document.head.appendChild(l); }
  function addMeta(name,content){ var m=document.createElement('meta'); m.setAttribute('name',name); m.setAttribute('content',content); document.head.appendChild(m); }
- addLink('apple-touch-icon',iconAbs);
- addLink('apple-touch-icon',iconAbs,{sizes:'180x180'});
- addLink('icon',iconAbs,{type:'image/png'});
+ addLink('apple-touch-icon',abs('assets/apple-touch-icon.png'),{sizes:'180x180'});
+ addLink('icon',abs('assets/icon-192.png'),{type:'image/png',sizes:'192x192'});
+ addLink('icon',abs('assets/icon-512.png'),{type:'image/png',sizes:'512x512'});
  addMeta('apple-mobile-web-app-capable','yes');
  addMeta('mobile-web-app-capable','yes');
  addMeta('apple-mobile-web-app-status-bar-style','default');
  addMeta('apple-mobile-web-app-title','Nutritie');
  var mf={ name:"Nutritie — Tư vấn Dinh dưỡng", short_name:"Nutritie", start_url:abs("."), scope:abs("."), display:"standalone", orientation:"portrait", background_color:"#FBFCFE", theme_color:"#1F2D6B",
-   icons:[ {src:iconAbs,sizes:"192x192",type:"image/png",purpose:"any"}, {src:iconAbs,sizes:"512x512",type:"image/png",purpose:"any"}, {src:iconAbs,sizes:"512x512",type:"image/png",purpose:"maskable"} ] };
+   icons:[ {src:abs("assets/icon-192.png"),sizes:"192x192",type:"image/png",purpose:"any"}, {src:abs("assets/icon-512.png"),sizes:"512x512",type:"image/png",purpose:"any"}, {src:abs("assets/icon-maskable.png"),sizes:"512x512",type:"image/png",purpose:"maskable"} ] };
  addLink('manifest','data:application/manifest+json,'+encodeURIComponent(JSON.stringify(mf)));
 }catch(e){} })();
 S.pg=getPG();
