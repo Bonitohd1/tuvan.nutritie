@@ -158,6 +158,12 @@ with sync_playwright() as p:
         r = result(pg, 'tre_1_10', {'age': 2, 'w': 12.4, 'h': 87}, needs=['Tiêu hóa kém'])
         check(T('bé 2 tuổi bình thường + tiêu hóa kém: BioA+ (giữ như cũ)'), r['ids'] == ['bio'], r['ids'])
 
+        # ---- số liệu pha theo NHÃN (bảng thành phần): Pedia 205ml/247kcal, Grow IQ 230ml
+        us = pg.evaluate("Object.fromEntries(PRODUCTS.map(p=>[p.id,p.usage||'']))")
+        check(T('Pedia: cách pha đúng nhãn 55,5g + 170ml → 205ml, 247 kcal (trước sai 195ml/238kcal)'), '205ml' in us['pedia'] and '247 kcal' in us['pedia'] and '195ml' not in us['pedia'], us['pedia'][:90])
+        check(T('Grow IQ: cách pha đúng nhãn 44g + 200ml → 230ml (trước sai 220ml)'), '230ml' in us['growiq'] and '200ml' in us['growiq'], us['growiq'][:90])
+        check(T('Canxi Pro giữ đúng nhãn 190ml; Mama 210ml'), '190ml' in us['canxipro'] and '210ml' in us['mama'], (us['canxipro'][:40], us['mama'][:40]))
+
         # ---- trang sản phẩm
         for pid in ('baby', 'bio', 'pedia', 'growiq', 'colostrum', 'canxipro', 'mama'):
             pr = pg.evaluate("""async(id)=>{go('sp');openP(id);await new Promise(r=>setTimeout(r,500));var s=document.getElementById('sheetin');var t=s.innerText.replace(/\\s+/g,' ');
