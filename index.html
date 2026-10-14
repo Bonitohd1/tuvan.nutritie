@@ -640,7 +640,7 @@
   .lg-note .ic{font-size:17px;flex-shrink:0;color:var(--navy)}
   .lg-ver{text-align:center;font-size:10px;color:#9aa3ba;margin-top:auto;padding-top:16px;letter-spacing:.02em}
   /* Doc reader (full-screen, giống Wintop, có Quay lại) */
-  #docreader{position:fixed;inset:0;z-index:120;background:#0F1633;display:none;flex-direction:column}
+  #docreader{position:fixed;inset:0;z-index:150;background:#0F1633;display:none;flex-direction:column}
   #docreader.open{display:flex}
   /* ===== TRÌNH KHÁCH (Present / customer-facing) — toàn màn hình, hình lớn ===== */
   #present{position:fixed;inset:0;z-index:140;background:#0F1633;display:none;flex-direction:column}
@@ -1212,6 +1212,12 @@
   /* 15/10/2026: nới VÙNG CHẠM >= 44px cho các nút nhỏ (bấm tại quầy đỡ trượt) — giữ nguyên hình, chỉ nới vùng nhận chạm */
   .mo-del,.mo-step button,.rs-step button,.ph .x,.qz2-x,.pcard .pheart,.go2,.as-x{position:relative}
   .mo-del::after,.mo-step button::after,.rs-step button::after,.ph .x::after,.qz2-x::after,.pcard .pheart::after,.go2::after,.as-x::after{content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;min-width:44px;min-height:44px}
+
+  .pr-dosswrap{margin-top:12px;border-top:1px solid rgba(255,255,255,.14);padding-top:10px}
+  .pr-dosst{display:flex;align-items:center;gap:7px;font-family:var(--fd);font-weight:700;font-size:13.5px;color:#fff;margin-bottom:7px}
+  .pr-doss{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.08);color:#EAF1FF;font-size:13px;margin-bottom:7px;cursor:pointer}
+  .pr-doss span{flex:1;min-width:0}
+  .pr-doss em{font-style:normal;font-size:11px;color:#9fb0c8}
 </style>
 </head>
 <body>
@@ -1950,6 +1956,30 @@ function gaugeCard(c,noRx){var st=(c.status==="pregnant")?(c.bmiSt||"normal"):c.
    +'<div class="glbl"><span>Thiếu</span><span>Chuẩn WHO</span><span>Thừa</span></div></div>'
   +'<div class="ginterp" style="border-left:4px solid '+col+'"><span style="color:'+col+';flex-shrink:0">'+ic('analytics')+'</span><div><b>'+esc(c.label)+'</b><p>'+interp+'</p></div></div></div>';}
 
+function portionEstimate(id){ var u=(P(id)&&P(id).usage)||'';
+ var gm=/≈\s*([\d.,]+)\s*g\)/.exec(u)||/\(≈([\d.,]+)\s*g/.exec(u)||/tương đương\s*([\d.,]+)\s*g/.exec(u);
+ var ly=/(\d+)(?:[–-](\d+))?\s*ly\/ngày/.exec(u); if(!gm||!ly)return '';
+ var g=parseFloat(String(gm[1]).replace(',','.')); if(!g)return '';
+ var servings=Math.round(800/g); var lo=parseInt(ly[1],10),hi=ly[2]?parseInt(ly[2],10):lo;
+ var dLo=Math.floor(servings/hi),dHi=Math.floor(servings/lo); if(dLo<1)dLo=1; if(dHi<1)dHi=1;
+ var days=dLo===dHi?(''+dLo):(dLo+'–'+dHi);
+ var cLo=Math.max(1,Math.round(30/dHi)),cHi=Math.max(1,Math.round(30/dLo));
+ var cans=cLo===cHi?(''+cLo):(cLo+'–'+cHi);
+ var lyt=lo===hi?(''+lo):(lo+'–'+hi);
+ return 'Mỗi lon 800g pha được ~'+servings+' ly → dùng ~'+days+' ngày (ở mức '+lyt+' ly/ngày) → khoảng <b>'+cans+' lon/tháng</b>.'; }
+function portionCard(id){ var t=portionEstimate(id); if(!t)return '';
+ return '<div class="card" style="padding:12px 13px"><div class="sec-l" style="margin-bottom:6px"><div class="sec-ic">'+ic('nutrition')+'</div><h3 style="font-size:14px">Khẩu phần &amp; số lượng gợi ý</h3></div><div style="font-size:13px;line-height:1.6;color:var(--on)">'+t+'</div><div style="font-size:11px;color:var(--on-var);margin-top:4px">Chỉ mang tính tham khảo — dùng theo hướng dẫn trên nhãn / cán bộ y tế.</div></div>'; }
+var CLOSE={
+ pedia:["Bé biếng ăn / chậm tăng cân: nhấn đậm độ 1,2 kcal/ml + 5 enzyme hỗ trợ tiêu hóa, hấp thu.","“Để con lớn hơn hẵng dùng”: giai đoạn này bù năng lượng kịp thời giúp bé theo kịp đà tăng trưởng — hẹn cân đo lại sau 2–4 tuần để thấy thay đổi.","Khách so giá: tính ra mỗi ly chỉ bằng một phần bữa phụ mà đủ dưỡng chất."],
+ growiq:["Mục tiêu chiều cao / trí não: nhấn Canxi + D3 + MK-7 (đưa canxi vào xương) và DHA.","Dùng khi bé đã đạt cân nặng chuẩn — kết hợp vận động và ngủ đủ.","Hẹn đo chiều cao mỗi tháng để khách thấy hiệu quả."],
+ bio:["Bé mới chuyển sữa / tiêu hóa nhạy: nhấn FOS/Inulin + đậm độ vừa phải; pha loãng hơn lúc đầu.","Vai trò chuyển tiếp giữa Baby và Pedia — bé quen dần rồi tăng dần."],
+ mama:["Mẹ bầu / sau sinh: nhấn Axit Folic, Sắt, DHA, Canxi + MK-7, Lactium hỗ trợ ngủ ngon.","Sau sinh cho con bú: dùng tiếp 6 tháng đầu để mẹ đủ dưỡng chất.","Hỏi thêm về bé để tư vấn kèm dòng phù hợp cho con."],
+ canxipro:["Người lớn / cao tuổi xương khớp: nhấn Canxi Nano 688mg + MK-7 + Glucosamine.","BMI thấp cần tăng cân: đậm độ 1,0 kcal/ml hỗ trợ phục hồi thể trạng.","Uống sau ăn, cách sắt/kẽm liều cao ít nhất 2 giờ."],
+ colostrum:["Pha sẵn tiện dùng ngay — hợp bé hay ốm, đi học, đi chơi.","Kết hợp cùng Pedia / Grow IQ cho bé từ 1 tuổi."],
+ baby:["Trẻ dưới 24 tháng: LUÔN nhắc “Sữa mẹ là thức ăn tốt nhất cho sức khỏe và sự phát triển toàn diện của trẻ nhỏ”. Tư vấn đúng độ tuổi, pha đúng nhãn.","Hỏi tình trạng tiêu hóa / đề kháng của bé để tư vấn phù hợp."]
+};
+function closeTips(id){ var a=CLOSE[id]; if(!a||!a.length)return '';
+ return '<div class="card"><div class="sec-l" style="margin-bottom:6px"><div class="sec-ic">'+ic('forum')+'</div><h3 style="font-size:14px">Gợi ý câu tư vấn / chốt <span style="font-weight:600;color:var(--on-var);font-size:11px">(cho tư vấn viên)</span></h3></div>'+a.map(function(t){return '<div class="b" style="align-items:flex-start;gap:7px"><span style="flex-shrink:0;color:var(--navy)">'+ic('check_circle')+'</span><span style="font-size:12.5px;line-height:1.55">'+esc(t)+'</span></div>';}).join('')+'</div>'; }
 function skuCard(p,why){
  var b=p.claims.slice(0,3).map(function(cl){var q=cl.split(':');return '<div class="v">'+ic('check_circle')+'<span>'+(q.length>1?'<b>'+esc(q[0])+':</b>'+esc(q.slice(1).join(':')):esc(cl))+'</span></div>';}).join('');
  var w=why.map(function(x){return '<li>'+ic('check_circle')+'<span>'+esc(x)+'</span></li>';}).join('');
@@ -1991,7 +2021,7 @@ function tvStep4(){var contra=contraCheck();
  if(c&&(c.label==="Suy dinh dưỡng nặng"||c.label==="Gầy nặng"))h+='<div class="danger" style="display:flex;gap:8px"><span style="flex-shrink:0">'+ic('warning')+'</span><div><b>Cần đưa đi khám:</b> Suy dinh dưỡng nặng — nên đến bác sĩ/chuyên gia dinh dưỡng đánh giá trước. Sản phẩm chỉ hỗ trợ, không thay điều trị.</div></div>';
  /* Thứ tự cố định (khách chốt 13/10/2026): chỉ số BMI -> tư vấn khoa học -> tư vấn sản phẩm */
   h+='<div class="card"><div class="sec-l" style="margin-bottom:8px"><div class="sec-ic">'+ic('science')+'</div><h3>TƯ VẤN KHOA HỌC</h3></div><div class="sci">'+esc(sciAdvice())+'</div></div>';
-  if(main){h+=skuCard(main,r.why);
+  if(main){h+=skuCard(main,r.why);h+=portionCard(main.id);h+=closeTips(main.id);
   r.ids.slice(1).forEach(function(oid){var p2=P(oid);h+='<div class="rec-mini press" style="cursor:pointer" onclick="openP(\''+p2.id+'\')"><div class="e" style="background:'+p2.grad+';position:relative">'+(pimg(p2.id)?pImgTag(p2.id):p2.e)+'</div><div style="flex:1;min-width:0"><div style="font-family:var(--fd);font-size:10px;color:var(--navy);font-weight:700;text-transform:uppercase">'+(S.user.obj==="tre_0_12"?"Lựa chọn khác cùng độ tuổi":"Phối hợp tăng hiệu quả")+'</div><div style="font-family:var(--fd);font-weight:700;font-size:13px">'+esc(p2.name)+'</div><div style="font-size:11px;color:var(--on-var);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(p2.tl)+'</div></div><div class="go">'+ic('chevron_right')+'</div></div>';});
  }else{h+='<div class="danger">'+esc(r.why.join(" "))+'</div>';}
   if(main)h+='<div class="warn">'+ic('warning')+'<div>'+esc(WARN[main.id])+'</div></div>';
@@ -3156,6 +3186,17 @@ function closePresent(){ var p=document.getElementById('present'); if(p){ p.clas
 function presFb(im){var sp=document.createElement('span');sp.className=im.getAttribute('data-fb')||'pr-pe';sp.textContent=im.getAttribute('data-e')||'';im.replaceWith(sp);}   /* ảnh lỗi -> hiện emoji thay thế (emoji KHÔNG được đè lên ảnh còn tốt) */
 function presGo(s){ presSec=s; presProd=null; presRender(); var b=document.querySelector('#present .pr-body'); if(b)b.scrollTop=0; }
 function presProduct(id){ presProd=id; presRender(); var b=document.querySelector('#present .pr-body'); if(b)b.scrollTop=0; }
+function presDossier(id){ if(PRES_HIDE.indexOf(id)>=0)return '';
+ var dd=DOSSIER[id]||{},rows=[];
+ if(dd.hscb)rows.push({ic:'verified_user',t:'Giấy công bố sản phẩm',f:dd.hscb});
+ if(dd.kn)rows.push({ic:'science',t:'Kết quả kiểm nghiệm',f:dd.kn});
+ rows.push({ic:'science',t:'Kiểm nghiệm sản phẩm Nutritie',f:KN_CHUNG});
+ var certs=(id==='colostrum')?CERT_NUOC:CERT_BOT; certs.forEach(function(f,i){rows.push({ic:'verified',t:'Chứng nhận nhà máy'+(certs.length>1?' ('+(i+1)+')':''),f:f});});
+ rows.push({ic:'workspace_premium',t:'Chứng nhận & Giải thưởng',f:AWARD});
+ var html=rows.map(function(d){ var t=/\.pdf$/i.test(d.f)?'PDF':'Ảnh',okf=fileReady(d.f);
+   if(!okf)return '<div class="pr-doss" style="opacity:.6;cursor:default">'+ic(d.ic)+'<span>'+esc(d.t)+'</span><em>đang cập nhật</em></div>';
+   return '<div class="pr-doss" onclick="openFileDoc('+jq(d.f)+','+jq(d.t)+','+jq(t)+')">'+ic(d.ic)+'<span>'+esc(d.t)+'</span>'+ic('chevron_right')+'</div>'; }).join('');
+ return '<div class="pr-dosswrap"><div class="pr-dosst">'+ic('verified')+'Hồ sơ &amp; Chứng nhận chính hãng</div>'+html+'<div style="font-size:11.5px;color:#9fb0c8;margin-top:2px">Giấy tờ công bố &amp; kiểm nghiệm thật — chạm để xem.</div></div>'; }
 function presProductView(id){ var pr=P(id); if(!pr)return ''; var im=pimg(id);
  var claims=(pr.claims||[]).map(function(c){return '<li>'+ic('check_circle')+'<span>'+esc(c)+'</span></li>';}).join('');
  var note=PRES_INFANT.indexOf(id)>=0?'<div class="pr-nd100">'+ic('info')+'<span>'+esc(SME_VI)+'</span></div>':'';
@@ -3167,6 +3208,7 @@ function presProductView(id){ var pr=P(id); if(!pr)return ''; var im=pimg(id);
   +'<div class="pr-adu">'+ic('person')+'<span>'+esc(pr.audience)+'</span></div>'
   +'<ul class="pr-claims">'+claims+'</ul>'
   +'<div class="pr-pack">'+ic('nutrition')+'<span>'+esc(pr.pack)+'</span></div>'
+  +presDossier(id)
   +note+'</div></div>';
 }
 function presRender(){ var p=document.getElementById('present'); if(!p)return;
