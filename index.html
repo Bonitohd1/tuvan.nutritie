@@ -1611,11 +1611,13 @@ function pretermWeeks(){var x=parseFloat(S.user.preterm);return (isFinite(x)&&x>
 /* Tuổi SAU HIỆU CHỈNH (bé sinh non) = tuổi thật trừ số tuần sinh sớm. MỘT nguồn cho: điểm Z, chọn sản phẩm, dòng hiển thị. 13/10/2026: điểm Z từng tính theo tuổi thật còn chọn SP theo tuổi hiệu chỉnh -> hai nơi lệch nhau. */
 function corrMonths(){var mo=num("months");if(mo==null)return null;var c=mo-pretermWeeks()/4.345;return c<0?0:c;}
 function corrTxt(c){return String(c.toFixed(1)).replace(".",",");}
+function hfaZof(months,h){ if(months==null||h==null)return null; var z=whoZ("h",months,h); return isFinite(z)?z:null; }
+function markStunt(c,months,h){ if(!c)return c; var z=hfaZof(months,h); if(z!=null){ c.hfaZ=z; if(z<-2)c.stunt=true; } return c; }
 function classify(){var o=S.user.obj,w=num("w"),h=num("h");
  /* 13/10/2026 (agent test): thước đo tư vấn từng dùng bảng thô + SD = 12% trung vị + ngưỡng BMI cứng 15/20 -> lệch biểu đồ WHO ngay dưới nó (nhãn trái ngược ở ~8% ca; bé 6 tuổi BMI 19 "Bình thường" trong khi WHO "Béo phì").
     Nay cả hai dùng CÙNG bảng WHO LMS (whoZ). */
- if(o==="tre_0_12"){var mo=corrMonths();if(mo==null||w==null)return null;return childW(whoZ("w",mo,w));}
- if(o==="tre_1_10"){var age=num("age");if(age==null||w==null||h==null)return null;if(age<5)return childW(whoZ("w",age*12,w));var b=w/Math.pow(h/100,2),zb=whoZ("b",Math.max(61,age*12),b),lbb=zClass(zb,"b").lb;return {status:/^Gầy/.test(lbb)?"low":(lbb==="Thừa cân"||lbb==="Béo phì")?"high":"normal",label:lbb,metric:"BMI = "+b.toFixed(1)+" (Z ≈ "+zf(zb)+")",pct:Math.max(4,Math.min(96,50+zb*16))};}
+ if(o==="tre_0_12"){var mo=corrMonths();if(mo==null||w==null)return null;return markStunt(childW(whoZ("w",mo,w)),mo,h);}
+ if(o==="tre_1_10"){var age=num("age");if(age==null||w==null||h==null)return null;if(age<5){var mo1=age*12;if(mo1<24)mo1=Math.max(0,mo1-pretermWeeks()/4.345);return markStunt(childW(whoZ("w",mo1,w)),mo1,h);}var b=w/Math.pow(h/100,2),zb=whoZ("b",Math.max(61,age*12),b),lbb=zClass(zb,"b").lb;return {status:/^Gầy/.test(lbb)?"low":(lbb==="Thừa cân"||lbb==="Béo phì")?"high":"normal",label:lbb,metric:"BMI = "+b.toFixed(1)+" (Z ≈ "+zf(zb)+")",pct:Math.max(4,Math.min(96,50+zb*16))};}
  if(o==="adult"){if(w==null||h==null)return null;var ba=w/Math.pow(h/100,2),st,lb;if(ba<17){st="low";lb="Gầy độ 2";}else if(ba<18.5){st="low";lb="Gầy độ 1";}else if(ba<23){st="normal";lb="Bình thường";}else if(ba<25){st="high";lb="Thừa cân";}else{st="high";lb="Béo phì";}return {status:st,label:lb,metric:"BMI = "+ba.toFixed(1),pct:Math.max(4,Math.min(96,(ba-14)/(32-14)*100))};}
  if(S.user.postpartum){if(w==null||h==null)return null;var bp=w/Math.pow(h/100,2);return {status:bp<18.5?"low":bp<23?"normal":"high",label:"Mẹ sau sinh — BMI "+bp.toFixed(1),metric:"BMI = "+bp.toFixed(1),pct:Math.max(4,Math.min(96,(bp-14)/(32-14)*100)),postpartum:true};}
  var pw=num("pw");if(pw==null||h==null)return null;var pb=pw/Math.pow(h/100,2);return {status:"pregnant",bmiSt:pb<18.5?"low":pb<23?"normal":"high",label:"BMI trước thai "+pb.toFixed(1),metric:pb<18.5?"Nên tăng 12.5–18 kg":pb<23?"Nên tăng 11.5–16 kg":"Nên tăng 7–11.5 kg",pct:Math.max(4,Math.min(96,(pb-14)/(32-14)*100))};}
@@ -1862,7 +1864,7 @@ function progHead(){var seg='';for(var i=1;i<=4;i++)seg+='<div class="'+(S.step>
  var side=S.step===4?'<div class="done-chip">'+ic('check_circle')+'Hoàn thành</div>':'<div class="prog-num">'+S.step+'<span>/4</span></div>';
  return '<div class="prog-h"><div class="prog-top"><div class="prog-ic">'+ic(SICS[S.step-1])+'</div><div class="prog-tx"><div class="lab">Quy trình tư vấn</div><h1>'+STEPTT[S.step-1]+'</h1><div class="prog-sub">'+SSUB[S.step-1]+'</div></div>'+side+'</div><div class="step">'+seg+'</div></div>';}
 /* Đổi đối tượng giữa chừng = xoá số đo / nhu cầu / thông tin bé của đối tượng cũ (từng còn nguyên: người lớn hiện "Bo · sinh non 6T · 60kg", huy hiệu nhu cầu cũ). */
-function setObj(v){var old=S.user.obj;S.user.obj=v;if(v!=="tre_0_12")S.user.preterm="";if(old&&old!==v){S.m={};S.needs=[];S._gSaved=false;S._gBabyId="";if(v!=="tre_0_12"&&v!=="tre_1_10"){S.user.dob="";S.user.consent=null;S.user.phone="";S.user.name="";}else if(S.user.dob){syncKidAge();}}draw();}
+function setObj(v){var old=S.user.obj;S.user.obj=v;if(v!=="tre_0_12"&&v!=="tre_1_10")S.user.preterm="";if(old&&old!==v){S.m={};S.needs=[];S._gSaved=false;S._gBabyId="";if(v!=="tre_0_12"&&v!=="tre_1_10"){S.user.dob="";S.user.consent=null;S.user.phone="";S.user.name="";}else if(S.user.dob){syncKidAge();}}draw();}
 function toggleHist(v){var u=S.user;if(v==="Không có"){u.hist=["Không có"];}else{u.hist=u.hist.filter(function(x){return x!=="Không có";});var i=u.hist.indexOf(v);if(i<0)u.hist.push(v);else u.hist.splice(i,1);}draw();}
 function chip(on,txt,click){return '<div class="chip'+(on?' on':'')+'" onclick="'+click+'">'+txt+'</div>';}
 function chk(on,txt,click){return '<div class="chk'+(on?' on':'')+'" onclick="'+click+'"><span class="bx">'+(on?ic('check'):'')+'</span>'+txt+'</div>';}
@@ -1873,7 +1875,7 @@ function tvStep1(){var u=S.user,dyn='';
  var cards='<div class="objgrid">'+OBJS.map(function(o){var on=u.obj===o.v;return '<div class="objcard'+(on?' on':'')+'" onclick="setObj(\''+o.v+'\')"><div class="otick">'+ic('check')+'</div><div class="oi">'+ic(OIC[o.v]||'person')+'</div><div class="ol">'+esc(o.l)+'</div></div>';}).join('')+'</div>';
  if(u.obj){if(u.obj==="pregnant"&&u.gender!=="Nữ")u.gender="Nữ";var GSEX=(u.obj==="pregnant")?["Nữ"]:["Nam","Nữ"];dyn+='<label>Giới tính</label><div class="chips gsex">'+GSEX.map(function(g){return chip(u.gender===g,ic('person')+g,"S.user.gender=\'"+g+"\';draw()");}).join('')+'</div>';
   if(u.obj==="pregnant")dyn+='<label>Tình trạng</label><div class="chips gsex">'+[["Đang mang thai",false],["Sau sinh / cho con bú",true]].map(function(x){return chip(!!u.postpartum===x[1],x[0],"S.user.postpartum="+x[1]+";draw()");}).join('')+'</div>';
-  if(u.obj==="tre_0_12")dyn+='<label>Sinh non? Số TUẦN SINH SỚM so với 40 tuần (trống nếu đủ tháng)</label><input type="number" inputmode="numeric" min="0" max="16" value="'+esc(u.preterm)+'" onchange="setPreterm(this)" oninput="S.user.preterm=this.value" placeholder="VD: 4 (sinh lúc 36 tuần = sớm 4 tuần)">';
+  if(u.obj==="tre_0_12"||u.obj==="tre_1_10")dyn+='<label>Sinh non? Số TUẦN SINH SỚM so với 40 tuần (trống nếu đủ tháng'+(u.obj==="tre_1_10"?"; chỉ áp dụng khi bé dưới 2 tuổi":"")+')</label><input type="number" inputmode="numeric" min="0" max="16" value="'+esc(u.preterm)+'" onchange="setPreterm(this)" oninput="S.user.preterm=this.value" placeholder="VD: 4 (sinh lúc 36 tuần = sớm 4 tuần)">';
   if(u.obj==="tre_0_12"||u.obj==="tre_1_10")dyn+=kidBlock();
   dyn+='<label>Tiền sử bệnh lý</label>'+HISTS.map(function(hh){var dg=HDNG[hh]?1:0;var tx=dg?'<span style="color:var(--red-d)">'+ic('warning')+' '+esc(hh)+'</span>':esc(hh);return '<div class="'+(dg?'hi-dng':'')+'">'+chk(u.hist.indexOf(hh)>=0,tx,"toggleHist(\'"+hh.replace(/'/g,"\\'")+"\')")+'</div>';}).join('');
   dyn+='<label>Sản phẩm đang dùng (nếu có)</label><input value="'+esc(u.cur)+'" oninput="S.user.cur=this.value" placeholder="Tên sữa đang dùng...">';}
@@ -2033,6 +2035,7 @@ function tvStep4(){var contra=contraCheck();
  var c=S.cls,r=recommend(),main=r.ids.length?P(r.ids[0]):null;
  try{if(!S._cMarked){S._cMarked=true;dailyMark('consult');weeklyBump('consult');}}catch(e){}
  var h='<div class="stack">'+patientSummary()+gaugeCard(c)+consultGrowthCard();
+ if(c&&c.stunt)h+='<div class="warn"><span style="flex-shrink:0">'+ic('warning')+'</span><div><b>Chiều cao theo tuổi đang thấp hơn chuẩn WHO</b> (dấu hiệu thấp còi, Z chiều cao/tuổi \u2248 '+zf(c.hfaZ)+'). Nên theo dõi chiều cao định kỳ và hỏi ý kiến chuyên gia dinh dưỡng để hỗ trợ bé bắt kịp đà tăng trưởng.</div></div>';
  if(c&&(c.label==="Suy dinh dưỡng nặng"||c.label==="Gầy nặng"))h+='<div class="danger" style="display:flex;gap:8px"><span style="flex-shrink:0">'+ic('warning')+'</span><div><b>Cần đưa đi khám:</b> Suy dinh dưỡng nặng — nên đến bác sĩ/chuyên gia dinh dưỡng đánh giá trước. Sản phẩm chỉ hỗ trợ, không thay điều trị.</div></div>';
  /* Thứ tự cố định (khách chốt 13/10/2026): chỉ số BMI -> tư vấn khoa học -> tư vấn sản phẩm */
   h+='<div class="card"><div class="sec-l" style="margin-bottom:8px"><div class="sec-ic">'+ic('science')+'</div><h3>TƯ VẤN KHOA HỌC</h3></div><div class="sci">'+esc(sciAdvice())+'</div></div>';
