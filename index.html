@@ -3627,8 +3627,9 @@ function growthReminderCheck(){ try{ var due=(typeof dueBabies==="function")?due
 try{if(typeof refreshNotifs==='function'){refreshNotifs();}else{growthReminderCheck();updateBell();}}catch(e){try{growthReminderCheck();updateBell();}catch(e2){}}
 
 /* ===== TRỢ LÝ NUTRITIE (AI Assistant · offline-first) ===== */
-/* Đầu chờ online: đặt ASST_URL để gọi API /assistant. Để trống = chạy offline thuần bằng asstReply(). */
-var ASST_URL="";
+/* 16/10: nối Trợ lý AI THẬT (backend api.wintop.vn, như app Wintop). Mất mạng / máy chủ lỗi -> tự về asstReply() offline.
+   Header X-Tenant:nutritie (ntHeaders) đủ để qua cổng; CORS cho tuvan-nutritie đã mở. */
+var ASST_URL="https://api.wintop.vn/api/wintop/nutritie-assistant";
 var asstOpen=false;
 var asstLog=(function(){ try{ var a=lsGet('nt_asst',[]); return Array.isArray(a)?a.slice(-40):[]; }catch(e){ return []; } })();
 function saveAsst(){ try{ lsSet('nt_asst', asstLog.slice(-40)); }catch(e){} }
@@ -3657,7 +3658,7 @@ function asstSend(t){ t=(t||'').trim(); if(!t)return; asstLog.push({r:'u',t:t});
  var typ=asstTyping();
  function finish(ans){ if(typ&&typ.parentNode)typ.parentNode.removeChild(typ); asstLog.push({r:'a',t:ans}); asstAppend('a',ans); saveAsst(); var l=document.getElementById('asstlog'); if(l)l.scrollTop=l.scrollHeight; }
  if(ASST_URL && navigator.onLine){
-   var done=false, to=setTimeout(function(){ if(done)return; done=true; finish(asstReply(t)); },12000);
+   var done=false, to=setTimeout(function(){ if(done)return; done=true; finish(asstReply(t)); },30000);
    try{
      fetch(ASST_URL,{method:'POST',headers:ntHeaders(),body:JSON.stringify({q:t,context:{pg:S.pg,tab:S.tab}})})
       .then(function(r){ return r.ok?r.json():Promise.reject(new Error('http')); })
