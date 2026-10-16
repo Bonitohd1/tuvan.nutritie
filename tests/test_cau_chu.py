@@ -57,8 +57,9 @@ with sync_playwright() as p:
         check(T('Trình khách: cả 7 sản phẩm đều có ảnh'), len([g for g in grid if g['img']]) == 7, [g['n'] for g in grid if g['img']])
         for pid in ('baby', 'bio'):
             pg.evaluate("(i)=>presProduct(i)", pid); pg.wait_for_timeout(200)
-            v = pg.evaluate("(()=>{const e=document.querySelector('#present .pr-body');return {t:e.textContent,img:!!e.querySelector('img'),claims:e.querySelectorAll('.pr-claims li').length}})()")
-            check(T(f'Trình khách, trang {pid}: nay có ảnh + lợi ích, VẪN giữ câu sữa mẹ chuẩn'), v['img'] and v['claims'] > 0 and SME in v['t'], v)
+            v = pg.evaluate("(()=>{const e=document.querySelector('#present .pr-body');return {t:e.textContent,img:!!e.querySelector('img'),claims:e.querySelectorAll('.bul .b').length}})()")
+            # 16/10: Trình khách hiện ĐẦY ĐỦ như trang SP (lợi ích + Thành phần nguyên liệu + Thông tin nhãn); vẫn giữ câu sữa mẹ
+            check(T(f'Trình khách, trang {pid}: đầy đủ (lợi ích + thành phần + thông tin nhãn), VẪN giữ câu sữa mẹ'), v['img'] and v['claims'] > 0 and 'Thành phần nguyên liệu' in v['t'] and 'Thông tin nhãn' in v['t'] and SME in v['t'], v)
         for pid in ('pedia', 'growiq', 'colostrum'):
             pg.evaluate("(i)=>presProduct(i)", pid); pg.wait_for_timeout(200)
             v = pg.evaluate("document.querySelector('#present .pr-body').textContent")

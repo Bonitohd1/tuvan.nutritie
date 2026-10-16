@@ -3238,7 +3238,14 @@ function presDossier(id){ if(PRES_HIDE.indexOf(id)>=0)return '';
    return '<div class="pr-doss" onclick="openFileDoc('+jq(d.f)+','+jq(d.t)+','+jq(t)+')">'+ic(d.ic)+'<span>'+esc(d.t)+'</span>'+ic('chevron_right')+'</div>'; }).join('');
  return '<div class="pr-dosswrap"><div class="pr-dosst">'+ic('verified')+'Hồ sơ &amp; Chứng nhận chính hãng</div>'+html+'<div style="font-size:11.5px;color:#9fb0c8;margin-top:2px">Giấy tờ công bố &amp; kiểm nghiệm thật — chạm để xem.</div></div>'; }
 function presProductView(id){ var pr=P(id); if(!pr)return ''; var im=pimg(id);
- var claims=(pr.claims||[]).map(function(c){return '<li>'+ic('check_circle')+'<span>'+esc(c)+'</span></li>';}).join('');
+ /* 16/10/2026: Trình khách hiện ĐẦY ĐỦ như trang sản phẩm (khách Dương Yến: "chỉ lên 1 phần key, tưởng liên kết luôn") —
+    Điểm vàng + Lợi ích + Bảng thành phần + Thành phần nguyên liệu + Thông tin nhãn + Bảng lượng ăn. KHÔNG kèm phần nội bộ
+    (tồn kho / chốt sale / lên đơn). Markup giống openP, dùng chung lớp .bul/.plbl/.insight/.pinfo. */
+ var bul=pr.claims.map(function(c){var i=c.indexOf(':');var lab=i>-1?c.slice(0,i):'';var rest=(i>-1?c.slice(i+1):c).replace(/^\s+/,'');return '<div class="b">'+ic('check_circle')+'<span>'+(lab?'<b>'+esc(lab)+':</b> ':'')+esc(rest)+'</span></div>';}).join('');
+ function prow(icn,k,v){return '<div class="row">'+ic(icn)+'<div><div class="k">'+k+'</div><div class="v">'+esc(v)+'</div></div></div>';}
+ var info=prow('person','Đối tượng',pr.audience)+prow('nutrition','Quy cách',packs(pr.id).join(' · '))+prow('straighten','Cách dùng',pr.usage)+prow('shield','Bảo quản',pr.storage);
+ var specArr=SPEC_IMG[pr.id]||[];
+ var specHtml='<div class="plbl">'+ic('image')+'Bảng thành phần (theo nhãn)</div>'+(specArr.length?'<div class="spec-imgs">'+specArr.map(function(sp){return '<div class="spec-img press" onclick="openFileDoc('+jq(sp)+','+jq('Bảng thành phần — '+pr.name)+',\'Ảnh\')"><img src="'+rimg(sp)+'" alt="Bảng thành phần '+esc(pr.name)+'" onerror="this.style.display=\'none\';this.parentNode.querySelector(\'.spec-fb\').style.display=\'block\'"><div class="spec-fb" style="display:none">'+esc(pr.facts)+'</div><span class="spec-zoom">'+ic('open_in_new')+'Xem lớn</span></div>';}).join('')+'</div>':'<div class="insight">'+esc(pr.facts)+'</div>');
  var note=PRES_INFANT.indexOf(id)>=0?'<div class="pr-nd100">'+ic('info')+'<span>'+esc(SME_VI)+'</span></div>':'';
  if(PRES_HIDE.indexOf(id)>=0)return '<button class="pr-back" onclick="presGo(\'sanpham\')">'+ic('chevron_left')+'Tất cả sản phẩm</button>'
   +'<div class="pr-card"><div class="pr-cbody"><span class="pr-tag" style="background:var(--navy)">Dành cho trẻ nhỏ</span><div class="pr-ct" style="font-size:20px">'+esc(pr.name)+'</div><div class="pr-cd" style="font-size:14.5px">Sản phẩm dinh dưỡng công thức. Vui lòng hỏi tư vấn viên hoặc cán bộ y tế để được hướng dẫn sử dụng phù hợp với độ tuổi của bé.</div>'+note+'</div></div>';
@@ -3246,8 +3253,12 @@ function presProductView(id){ var pr=P(id); if(!pr)return ''; var im=pimg(id);
   +'<div class="pr-card"><div class="pr-phero" style="background:'+pr.grad+'">'+(im?'<img src="'+im+'" alt="'+esc(pr.name)+'" data-fb="pr-pe big" data-e="'+esc(pr.e)+'" onerror="presFb(this)">':'<span class="pr-pe big">'+esc(pr.e)+'</span>')+'</div>'
   +'<div class="pr-cbody"><span class="pr-tag" style="background:var(--navy)">'+esc(pr.tag)+'</span><div class="pr-ct" style="font-size:20px">'+esc(pr.name)+'</div><div class="pr-cd" style="font-size:14.5px">'+esc(pr.tl)+'</div>'
   +'<div class="pr-adu">'+ic('person')+'<span>'+esc(pr.audience)+'</span></div>'
-  +'<ul class="pr-claims">'+claims+'</ul>'
-  +'<div class="pr-pack">'+ic('nutrition')+'<span>'+esc(pr.pack)+'</span></div>'
+  +'<div class="plbl">'+ic('workspace_premium')+'Điểm vàng</div><div class="insight">'+esc(pr.gold)+'</div>'
+  +'<div class="plbl">'+ic('check_circle')+'LỢI ÍCH SẢN PHẨM</div><div class="bul">'+bul+'</div>'
+  +specHtml
+  +(pr.ing?'<div class="plbl">'+ic('article')+'Thành phần nguyên liệu</div><div class="insight" style="font-size:12.5px;line-height:1.65">'+esc(pr.ing)+'</div>':'')
+  +'<div class="plbl">'+ic('article')+'Thông tin nhãn</div><div class="pinfo">'+info+'</div>'
+  +(pr.usageImg?'<div class="plbl">'+ic('nutrition')+'Lượng ăn đề nghị</div><img class="usage-img" src="'+pr.usageImg+'" alt="Bảng lượng ăn đề nghị '+esc(pr.name)+'" style="width:100%;display:block;border-radius:12px;border:1px solid var(--line)">':'')
   +presDossier(id)
   +note+'</div></div>';
 }
