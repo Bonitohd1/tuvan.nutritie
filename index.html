@@ -700,7 +700,14 @@
   .pr-back{display:inline-flex;align-items:center;gap:4px;min-height:44px;padding:0 15px 0 9px;border:0;border-radius:14px;background:rgba(255,255,255,.16);color:#fff;font-family:var(--fd);font-weight:700;font-size:13.5px;cursor:pointer;margin-bottom:14px}
   .pr-back .ic{font-size:21px}
   .pr-back:active{transform:scale(.97)}
-  @media (prefers-reduced-motion:reduce){#present.open,.pr-card,.pr-shop,.pr-pcard{animation:none!important}}
+  /* 16/10: ảnh lon CÓ NỀN phủ kín khung (cover) — hero 1:1 cho đẹp; hiệu ứng phóng nhẹ (Ken Burns) cho nổi bật */
+  .pr-pimg img.bgi,.pr-phero img.bgi{inset:0;width:100%;height:100%;object-fit:cover}
+  .pr-phero.bg{aspect-ratio:1/1;max-height:360px}
+  .phero .hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
+  .pr-pimg .bgi,.pr-phero .bgi,.phero .hero-bg{animation:bgZoom 7.5s var(--ease) both;will-change:transform}
+  .pr-pcard:hover .bgi,.pr-pcard:active .bgi{transform:scale(1.05);transition:transform .5s var(--ease)}
+  @keyframes bgZoom{from{transform:scale(1.07)}to{transform:scale(1)}}
+  @media (prefers-reduced-motion:reduce){#present.open,.pr-card,.pr-shop,.pr-pcard,.pr-pimg .bgi,.pr-phero .bgi,.phero .hero-bg{animation:none!important}}
   /* ===== HƯỚNG DẪN SỬ DỤNG (GUIDE) + TOUR — thêm mới, offline ===== */
   #guide{position:fixed;inset:0;z-index:130;display:none;align-items:flex-end;justify-content:center;background:rgba(15,22,32,.5)}
   #guide.open{display:flex;animation:gdFade var(--t) var(--ease)}
@@ -1417,6 +1424,10 @@ var IMG={baby:"Nutritie Baby 800g (1).jpg",bio:"Nutritie Bio A+800g (1).jpg",gro
 var DIMG={};/* 14/10: gỡ ảnh nhúng nền cảnh (236KB) — dùng ảnh cắt nền products/*.png đồng bộ cho mọi màn, hết "không cùng 1 nền" */function pimg(id){return PNG_PRODUCTS[id]?"products/"+id+".png":"";}
 /* Ảnh cắt đứng trong products/ chỉ có 6 SKU (Pedia chưa có -> dùng ảnh nhúng pimg, đỡ 404 mỗi lần mở Sản phẩm). */
 var PNG_PRODUCTS={baby:1,bio:1,pedia:1,canxipro:1,colostrum:1,growiq:1,mama:1};
+/* 16/10: ảnh lon CHỤP CÓ NỀN (hoa anh đào, cùng 1 tông) cho Trình khách + hero trang SP — khách Dương Yến:
+   "ảnh sản phẩm để background cho nổi bật". Dùng làm nền phủ (cover); lỗi/máy chủ cũ -> rơi về ảnh cắt nền + gradient. */
+var BG_PRODUCTS={baby:1,bio:1,pedia:1,growiq:1,canxipro:1,mama:1,colostrum:1};
+function bgimg(id){return BG_PRODUCTS[id]?'assets/bg/'+id+'.jpg':'';}
 function prodSrc(id){return PNG_PRODUCTS[id]?'products/'+id+'.png':(pimg(id)||'');}
 function pImgTag(id){var s=pimg(id);return s?'<img src="'+s+'" style="position:absolute;inset:7%;width:86%;height:86%;object-fit:contain" onerror="this.remove()">':"";}
 var ASSET="App Nutritie-20260912T150953Z-1-001/App Nutritie/Nhân vật+Icon/";
@@ -3250,7 +3261,7 @@ function presProductView(id){ var pr=P(id); if(!pr)return ''; var im=pimg(id);
  if(PRES_HIDE.indexOf(id)>=0)return '<button class="pr-back" onclick="presGo(\'sanpham\')">'+ic('chevron_left')+'Tất cả sản phẩm</button>'
   +'<div class="pr-card"><div class="pr-cbody"><span class="pr-tag" style="background:var(--navy)">Dành cho trẻ nhỏ</span><div class="pr-ct" style="font-size:20px">'+esc(pr.name)+'</div><div class="pr-cd" style="font-size:14.5px">Sản phẩm dinh dưỡng công thức. Vui lòng hỏi tư vấn viên hoặc cán bộ y tế để được hướng dẫn sử dụng phù hợp với độ tuổi của bé.</div>'+note+'</div></div>';
  return '<button class="pr-back" onclick="presGo(\'sanpham\')">'+ic('chevron_left')+'Tất cả sản phẩm</button>'
-  +'<div class="pr-card"><div class="pr-phero" style="background:'+pr.grad+'">'+(im?'<img src="'+im+'" alt="'+esc(pr.name)+'" data-fb="pr-pe big" data-e="'+esc(pr.e)+'" onerror="presFb(this)">':'<span class="pr-pe big">'+esc(pr.e)+'</span>')+'</div>'
+  +'<div class="pr-card"><div class="pr-phero'+(bgimg(id)?' bg':'')+'"'+(bgimg(id)?'':' style="background:'+pr.grad+'"')+'>'+(bgimg(id)?'<img class="bgi" src="'+bgimg(id)+'" alt="'+esc(pr.name)+'" onerror="this.onerror=null;this.classList.remove(\'bgi\');this.parentNode.className=\'pr-phero\';this.src=\''+im+'\'">':(im?'<img src="'+im+'" alt="'+esc(pr.name)+'" data-fb="pr-pe big" data-e="'+esc(pr.e)+'" onerror="presFb(this)">':'<span class="pr-pe big">'+esc(pr.e)+'</span>'))+'</div>'
   +'<div class="pr-cbody"><span class="pr-tag" style="background:var(--navy)">'+esc(pr.tag)+'</span><div class="pr-ct" style="font-size:20px">'+esc(pr.name)+'</div><div class="pr-cd" style="font-size:14.5px">'+esc(pr.tl)+'</div>'
   +'<div class="pr-adu">'+ic('person')+'<span>'+esc(pr.audience)+'</span></div>'
   +'<div class="plbl">'+ic('workspace_premium')+'Điểm vàng</div><div class="insight">'+esc(pr.gold)+'</div>'
@@ -3283,7 +3294,7 @@ function presRender(){ var p=document.getElementById('present'); if(!p)return;
  }
  else {
    body='<div class="pr-h">Sản phẩm Nutritie 🥛</div><div class="pr-sub">Chạm vào từng sản phẩm để xem chi tiết</div>'
-    +'<div class="pr-pgrid">'+PRODUCTS.map(function(pr){var hid=PRES_HIDE.indexOf(pr.id)>=0,im=hid?'':pimg(pr.id);return '<div class="pr-pcard" onclick="presProduct(\''+pr.id+'\')"><div class="pr-pimg" style="background:'+pr.grad+'">'+(im?'<img src="'+im+'" alt="" data-fb="pr-pe" data-e="'+esc(pr.e)+'" onerror="presFb(this)">':'<span class="pr-pe">'+esc(pr.e)+'</span>')+'</div><div class="pr-pbody"><div class="pr-pn">'+esc(pr.name)+'</div><div class="pr-ptag">'+esc(hid?'Dành cho trẻ nhỏ':pr.tag)+'</div><div class="pr-ptl">'+esc(hid?'Hỏi tư vấn viên để được hướng dẫn':pr.tl)+'</div></div></div>';}).join('')+'</div>';
+    +'<div class="pr-pgrid">'+PRODUCTS.map(function(pr,pi){var hid=PRES_HIDE.indexOf(pr.id)>=0,bg=hid?'':bgimg(pr.id),im=hid?'':pimg(pr.id);var pic=bg?'<img class="bgi" src="'+bg+'" alt="'+esc(pr.name)+'" onerror="this.onerror=null;this.classList.remove(\'bgi\');this.src=\''+im+'\'">':(im?'<img src="'+im+'" alt="" data-fb="pr-pe" data-e="'+esc(pr.e)+'" onerror="presFb(this)">':'<span class="pr-pe">'+esc(pr.e)+'</span>');return '<div class="pr-pcard" onclick="presProduct(\''+pr.id+'\')" style="animation-delay:'+(pi*55)+'ms"><div class="pr-pimg"'+(bg?'':' style="background:'+pr.grad+'"')+'>'+pic+'</div><div class="pr-pbody"><div class="pr-pn">'+esc(pr.name)+'</div><div class="pr-ptag">'+esc(hid?'Dành cho trẻ nhỏ':pr.tag)+'</div><div class="pr-ptl">'+esc(hid?'Hỏi tư vấn viên để được hướng dẫn':pr.tl)+'</div></div></div>';}).join('')+'</div>';
  }
  p.innerHTML='<div class="pr-top"><div class="pr-topbar"><img class="pr-logo" src="'+LOGO+'" alt="Nutritie" onerror="this.remove()"><div class="pr-brand">Nutritie<span>Dinh dưỡng chuẩn công bố cho cả nhà</span></div><button class="pr-close" onclick="closePresent()">'+ic('close')+'Đóng</button></div><div class="pr-nav">'+nav+'</div></div><div class="pr-body">'+body+'</div>';
  if(typeof fillIcons==="function")fillIcons();
