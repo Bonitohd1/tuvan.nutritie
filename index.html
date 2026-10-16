@@ -3198,7 +3198,7 @@ var presSec='uudai', presProd=null;
 var SME_VI="Sữa mẹ là thức ăn tốt nhất cho sức khỏe và sự phát triển toàn diện của trẻ nhỏ.";   /* câu khuyến cáo chuẩn (một nguồn) */
 var LEGAL_CAT={baby:"Sản phẩm dinh dưỡng công thức",bio:"Sản phẩm dinh dưỡng công thức",pedia:"Sản phẩm dinh dưỡng",growiq:"Sản phẩm dinh dưỡng",mama:"Thực phẩm dùng cho chế độ ăn đặc biệt",canxipro:"Thực phẩm bổ sung",colostrum:"Thực phẩm bổ sung"};   /* nhóm theo bản công bố từng sản phẩm (trước: cả 7 SP đều ghi "Thực phẩm bổ sung") */
 function legalText(id){var c=LEGAL_CAT[id]||"Sản phẩm dinh dưỡng";return esc(c)+", không phải là thuốc và không thay thế thuốc chữa bệnh."+(PRES_INFANT.indexOf(id)>=0?" "+esc(SME_VI):"");}
-var PRES_HIDE=['baby','bio'];   /* sản phẩm dinh dưỡng công thức cho trẻ <24 tháng: Trình khách KHÔNG hiện ảnh lon / lợi ích (NĐ 100/2014) — chỉ chỉ dẫn hỏi tư vấn viên */
+var PRES_HIDE=[];   /* 16/10/2026: khách (chị Thúy/Dương Yến) QUYẾT mở FULL Baby/Bio trong Trình khách — "app là hỗ trợ tư vấn, không quảng cáo", khách chịu trách nhiệm (đã được cảnh báo rủi ro NĐ100/2014 với SP <24 tháng). Câu khuyến cáo sữa mẹ VẪN giữ (PRES_INFANT). Muốn ẩn lại SP <24 tháng: thêm ['baby','bio'] vào đây. */
 var PRES_INFANT=['baby','bio','pedia','growiq','colostrum']; /* SP liên quan trẻ <24 tháng → kèm khuyến cáo NĐ100 */
 function openPresent(){ presSec='uudai'; presProd=null; var p=document.getElementById('present'); if(!p)return; presRender(); p.classList.add('open'); document.body.style.overflow='hidden'; }
 function custScience(){ var o=S.user.obj,c=S.cls,low=c&&c.status==="low";

@@ -52,12 +52,13 @@ with sync_playwright() as p:
         pg.evaluate("openPresent();presGo('sanpham')"); pg.wait_for_timeout(250)
         grid = pg.evaluate("""(()=>{const c=[...document.querySelectorAll('#present .pr-pcard')];return c.map(x=>({n:x.querySelector('.pr-pn').textContent,img:!!x.querySelector('img'),tl:x.querySelector('.pr-ptl').textContent}))})()""")
         hid = [g for g in grid if 'Baby' in g['n'] or 'Bio' in g['n']]
-        check(T('Trình khách, lưới sản phẩm: Baby + Bio KHÔNG có ảnh lon / lợi ích (chỉ "hỏi tư vấn viên")'), len(hid) == 2 and all((not g['img']) and 'Hỏi tư vấn viên' in g['tl'] for g in hid), hid)
-        check(T('Trình khách: 5 sản phẩm còn lại vẫn có ảnh'), len([g for g in grid if g['img']]) == 5, [g['n'] for g in grid if g['img']])
+        # 16/10/2026: khách QUYẾT mở FULL Baby/Bio ở Trình khách (PRES_HIDE=[]) — có ảnh + lợi ích; câu sữa mẹ VẪN giữ
+        check(T('Trình khách, lưới: Baby + Bio nay HIỆN FULL (khách chốt 16/10) — có ảnh, bỏ "hỏi tư vấn viên"'), len(hid) == 2 and all(g['img'] and 'Hỏi tư vấn viên' not in g['tl'] for g in hid), hid)
+        check(T('Trình khách: cả 7 sản phẩm đều có ảnh'), len([g for g in grid if g['img']]) == 7, [g['n'] for g in grid if g['img']])
         for pid in ('baby', 'bio'):
             pg.evaluate("(i)=>presProduct(i)", pid); pg.wait_for_timeout(200)
             v = pg.evaluate("(()=>{const e=document.querySelector('#present .pr-body');return {t:e.textContent,img:!!e.querySelector('img'),claims:e.querySelectorAll('.pr-claims li').length}})()")
-            check(T(f'Trình khách, trang {pid}: không ảnh lon, không lợi ích, có câu sữa mẹ chuẩn + hướng dẫn hỏi tư vấn viên'), (not v['img']) and v['claims'] == 0 and SME in v['t'] and 'tư vấn viên' in v['t'], v)
+            check(T(f'Trình khách, trang {pid}: nay có ảnh + lợi ích, VẪN giữ câu sữa mẹ chuẩn'), v['img'] and v['claims'] > 0 and SME in v['t'], v)
         for pid in ('pedia', 'growiq', 'colostrum'):
             pg.evaluate("(i)=>presProduct(i)", pid); pg.wait_for_timeout(200)
             v = pg.evaluate("document.querySelector('#present .pr-body').textContent")

@@ -29,7 +29,8 @@ with sync_playwright() as p:
         tp=pg.evaluate("document.getElementById('present').innerText")
         check(T('F8: Trình khách > Pedia có "Hồ sơ & Chứng nhận chính hãng" (Giấy công bố + Giải thưởng)'),'Hồ sơ & Chứng nhận chính hãng' in tp and 'Giấy công bố sản phẩm' in tp and 'Giải thưởng' in tp, tp[:0])
         pg.evaluate("presProduct('baby')"); pg.wait_for_timeout(250)
-        check(T('F8: Baby (<24th) KHÔNG hiện khối hồ sơ ở Trình khách'),'Hồ sơ & Chứng nhận chính hãng' not in pg.evaluate("document.getElementById('present').innerText"))
+        # 16/10/2026: khách QUYẾT mở FULL Baby/Bio ở Trình khách (PRES_HIDE=[]) — có lợi ích; câu sữa mẹ VẪN giữ
+        check(T('F8: Baby (<24th) nay HIỆN FULL ở Trình khách (khách chốt 16/10) — có lợi ích + câu sữa mẹ'), pg.evaluate("(()=>{var e=document.querySelector('#present .pr-body');return e.querySelectorAll('.pr-claims li').length>0})()") and 'Sữa mẹ là thức ăn tốt nhất' in pg.evaluate("document.getElementById('present').innerText"))
         pg.evaluate("closePresent()"); pg.wait_for_timeout(200)
         # F14 + F5 ở màn kết quả
         setup(pg,'tre_1_10',{'age':4,'w':12,'h':98})
@@ -46,7 +47,7 @@ with sync_playwright() as p:
         setup(pg,'tre_0_12',{'months':8,'w':8.6,'h':70})
         pg.evaluate("presResult()"); pg.wait_for_timeout(300)
         pt=pg.evaluate("document.getElementById('present').innerText")
-        check(T('F1: bé <24th present KHÔNG nêu tên/công dụng SP + có câu sữa mẹ'),'Baby' not in pt and 'Sữa mẹ là thức ăn tốt nhất' in pt and 'tư vấn viên sẽ tư vấn' in pt.lower())
+        check(T('F1: bé <24th present nay HIỆN SP (khách chốt 16/10) + GIỮ câu sữa mẹ'),'SẢN PHẨM PHÙ HỢP' in pt.upper() and 'Sữa mẹ là thức ăn tốt nhất' in pt)
         pg.evaluate("closePresent()"); pg.wait_for_timeout(150)
         # F4 + F13
         pg.evaluate("""(()=>{var os=[{id:'NTOLD',phone:'0912345678',name:'Chị Lan',items:[{sku:'pedia',name:'Nutritie Pedia A+',qty:2,pack:'Lon 800g'}],total:910000,at:Date.now()-25*86400000,status:'da_xac_nhan'}];localStorage.setItem('nt_order_queue',JSON.stringify(os));})()""")
