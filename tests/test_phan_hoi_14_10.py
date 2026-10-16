@@ -199,7 +199,11 @@ with sync_playwright() as p:
         # ---- kết quả tư vấn vẫn còn cảnh báo (chỉ bỏ ở trang sản phẩm)
         r = result(pg, 'tre_1_10', {'age': 6, 'w': 17, 'h': 112})
         check(T('kết quả tư vấn: VẪN còn cảnh báo dị ứng đạm bò (chỉ bỏ ở trang sản phẩm)'), 'Dị ứng đạm bò' in r['t'], r['t'][:80])
-        errs[:] = [e for e in errs if 'Response served by service worker' not in e]
+        # Lọc lỗi mạng DỰ KIẾN: chotDon -> sendOrder fetch sang api.wintop.vn (đơn thật về backend) bị harness CHẶN
+        # external -> WebKit báo "access control". KHÔNG phải lỗi app (đơn vẫn vào hàng đợi offline gửi lại).
+        errs[:] = [e for e in errs if 'Response served by service worker' not in e
+                   and 'nutritie-order' not in e and 'access control' not in e.lower()
+                   and 'api.wintop.vn' not in e]
         check(T('không lỗi JS'), not errs, errs)
         pg.close(); b.close()
 

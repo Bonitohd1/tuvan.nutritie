@@ -1567,7 +1567,9 @@ var OST={cho_gui:["Chờ gửi","#C9932E","#FFF7E6"],da_gui:["Đã gửi hệ th
    SYNC_URL rỗng → chế độ MÔ PHỎNG (demo vòng đời, coi như server đã nhận).
    SYNC_URL có   → chế độ THẬT: POST đơn lên server Isopharma / KiotViet (Sprint 3).
    Cả 2 chế độ đi chung qua sendOrder(); syncOrders() lo đếm retry (tối đa MAX_TRIES) rồi báo "Lỗi gửi". */
-var SYNC_URL="/api/orders";        // ← điền endpoint khi nối backend; để rỗng = mô phỏng
+/* 16/10: đơn GỬI VỀ BACKEND THẬT (api.wintop.vn, bảng nutritie_orders) — trước là serverless demo in-memory MẤT đơn khi
+   server ngủ. Idempotent theo localId; mất mạng -> hàng đợi offline tự gửi lại. Header X-Tenant:nutritie (ntHeaders) đủ qua cổng. */
+var SYNC_URL="https://api.wintop.vn/api/wintop/nutritie-order";
 var MAX_TRIES=3;        // số lần thử tối đa trước khi chuyển 'loi_gui'
 
 /* Gửi 1 đơn. Luôn trả Promise -> {ok:true, ref?} hoặc {ok:false, err?}. Không tự đổi trạng thái. */
