@@ -3709,12 +3709,19 @@ function asstAge(d){
  if(/(duoi 1 tuoi|chua day tuoi|chua duoc 1 tuoi|chua day 1 tuoi)/.test(d))return 6;
  return null;
 }
+/* Bé <12 tháng: GỢI Ý ĐÚNG ĐỘ TUỔI (Baby A+ / BioA+ — nhóm 0–12), KHÔNG đẩy Pedia/Grow IQ (từ 1 tuổi — lỗi bé 9 tháng ra Pedia).
+   Khách chốt 16/10: "app là hỗ trợ tư vấn, không quảng cáo" -> trợ lý tư vấn cho cả nhóm <12 tháng; câu sữa mẹ VẪN giữ. */
 function asstUnder12(d, age, prod){
  var sme='💛 '+SME_VI;
- var warn=(prod&&['pedia','growiq','colostrum'].indexOf(prod.id)>=0)?('⚠️ **'+prod.name+'** dành cho bé TỪ 1 TUỔI — chưa phù hợp với bé '+age+' tháng.\n'):'';
- if(age<6) return warn+'👶 Bé '+age+' tháng (dưới 6 tháng) nên **bú mẹ hoàn toàn**, chưa bổ sung sữa công thức trừ khi có chỉ định của bác sĩ. Nếu bé nhẹ cân/chậm tăng cân, hãy cho bé đi khám bác sĩ hoặc chuyên gia dinh dưỡng.\n'+sme;
- var need=/(bieng an|nhe can|suy dinh duong|tang can|cham tang can|cham lon|coi coc|thap coi|tao bon|tieu hoa|day hoi|om vat|de khang|mien dich|chieu cao|tri nao)/.test(d);
- return warn+'👶 Bé '+age+' tháng thuộc nhóm **dưới 12 tháng**: nền tảng vẫn là sữa mẹ; sản phẩm dinh dưỡng công thức cho nhóm 0–12 tháng cần dùng theo hướng dẫn và nên hỏi tư vấn viên/chuyên gia dinh dưỡng.'+(need?' Các vấn đề như biếng ăn, nhẹ cân, tiêu hóa, đề kháng ở nhóm tuổi này nên để bác sĩ/chuyên gia đánh giá trực tiếp.':'')+'\n'+sme;
+ var warn=(prod&&['pedia','growiq'].indexOf(prod.id)>=0)?('⚠️ **'+prod.name+'** dành cho bé TỪ 1 TUỔI — chưa phù hợp với bé '+age+' tháng; gợi ý đúng độ tuổi như dưới đây.\n'):'';
+ if(age<6) return warn+'👶 Bé '+age+' tháng (dưới 6 tháng): ưu tiên **bú mẹ hoàn toàn**. Nếu sữa mẹ không đủ và cần bổ sung, **Nutritie Baby A+** là dòng công thức cho trẻ 0–12 tháng — với bé nhỏ tháng nên hỏi bác sĩ/chuyên gia trước khi dùng.\n'+sme;
+ var dig=/(tao bon|tieu hoa|day hoi|doi sua|chuyen sua|di ngoai|hap thu kem)/.test(d);
+ var need=/(bieng an|nhe can|suy dinh duong|tang can|cham tang can|cham lon|coi coc|thap coi)/.test(d);
+ var r='👶 Bé '+age+' tháng (nhóm 0–12 tháng): sau sữa mẹ, dòng phù hợp độ tuổi là **Nutritie Baby A+** (nền tảng miễn dịch & phát triển đầu đời)';
+ if(dig||need) r+=', kèm **Nutritie BioA+** (sữa non + HMO + chất xơ FOS/Inulin — hỗ trợ tiêu hóa, hấp thu, phù hợp bé nhẹ cân / táo bón)';
+ r+='.';
+ if(need) r+=' Các dòng tăng cân đậm độ cao như Pedia A+ chỉ dùng cho bé **từ 1 tuổi**.';
+ return warn+r+'\n'+sme;
 }
 function asstReply(raw){ var d=asstNorm(raw);
  var preg=/(me bau|mang thai|thai ky|bau bi)/.test(d);

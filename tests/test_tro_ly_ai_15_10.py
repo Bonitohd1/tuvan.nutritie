@@ -51,13 +51,16 @@ with sync_playwright() as p:
         def ask(q):
             return pg.evaluate("(q)=>asstReply(q)", q)
 
+        # 16/10: khách chốt trợ lý TƯ VẤN cho bé <12 tháng (Baby A+/BioA+ đúng nhóm 0-12), VẪN chặn Pedia/Grow IQ (từ 1 tuổi)
         r = ask('bé 9 tháng nhẹ cân nên uống gì')
-        check(T('bé 9 tháng nhẹ cân: KHÔNG gợi ý Pedia/Grow IQ'), ('Pedia' not in r) and ('Grow IQ' not in r), r)
-        check(T('bé 9 tháng: nhắc nhóm dưới 12 tháng + khám chuyên gia'), ('dưới 12 tháng' in r) and ('Sữa mẹ' in r), r)
+        check(T('bé 9 tháng nhẹ cân: KHÔNG đẩy Pedia/Grow IQ (Pedia nếu có chỉ trong cảnh báo "từ 1 tuổi")'),
+              ('Grow IQ' not in r) and ('từ 1 tuổi' in r.lower()), r)
+        check(T('bé 9 tháng nhẹ cân: GỢI Ý Baby A+ / BioA+ (đúng nhóm 0-12) + câu sữa mẹ'),
+              ('Baby A+' in r or 'BioA+' in r) and ('Sữa mẹ' in r), r)
 
         r = ask('bé 3 tháng nên uống gì')
-        check(T('bé 3 tháng: bú mẹ hoàn toàn, KHÔNG "chưa rõ ý", KHÔNG đẩy SP'),
-              ('bú mẹ hoàn toàn' in r) and ('chưa rõ ý' not in r) and ('Pedia' not in r), r)
+        check(T('bé 3 tháng: bú mẹ hoàn toàn + Baby A+ (0-12), KHÔNG "chưa rõ ý", KHÔNG Pedia'),
+              ('bú mẹ hoàn toàn' in r) and ('chưa rõ ý' not in r) and ('Baby A+' in r) and ('Pedia A+' not in r), r)
 
         r = ask('bé 3 tháng muốn bổ sung sữa công thức thì nên uống loại nào')
         check(T('bé 3 tháng bổ sung sữa công thức: nhận diện được (không "chưa rõ ý")'),
