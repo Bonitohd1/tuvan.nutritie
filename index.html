@@ -1612,6 +1612,36 @@ function syncOrders(){
 }
 
 
+/* ===== 16/10: nối Data Hub + XP/Leaderboard THẬT (api.wintop.vn, tenant=nutritie qua ntHeaders) ===== */
+var NT_BE="https://api.wintop.vn/api/wintop";
+function _ntHdr(){ return (typeof ntHeaders==="function")?ntHeaders():{"Content-Type":"application/json","X-Tenant":"nutritie"}; }
+/* Chỉ gọi máy chủ khi ONLINE và KHÔNG chạy trên localhost/127.0.0.1 (máy chủ tĩnh của phép thử) — tránh lỗi mạng giả trong test */
+function _ntOnline(){ try{ return navigator.onLine && !/^(127\.0\.0\.1|localhost)$/.test(location.hostname); }catch(e){ return false; } }
+function _ntPost(path,body){ try{ return fetch(NT_BE+path,{method:"POST",headers:_ntHdr(),body:JSON.stringify(body||{})}); }catch(e){ return Promise.reject(e); } }
+/* XP: đẩy điểm PG lên để xếp hạng toàn đội (fire-and-forget; máy chủ CHỈ tăng, không lùi) */
+function pushNtXp(){ if(!_ntOnline()||!S.pg)return; try{ var q=quizStats(),c=ntCounters();
+  _ntPost("/nutritie-xp",{pg:S.pg,xp:c.points||0,plays:q.plays||0,best_streak:q.best||0,badges:(q.badges||[]).length}).catch(function(){}); }catch(e){} }
+/* Leaderboard thật từ máy chủ (hoà điểm MỚI của mình trên máy). _ntLb=null = chưa tải. */
+var _ntLb=null;
+function fetchNtLb(){ if(!_ntOnline())return; try{
+  fetch(NT_BE+"/nutritie-leaderboard",{headers:_ntHdr()}).then(function(r){return r.ok?r.json():null;})
+   .then(function(d){ if(d&&d.items){ _ntLb=d.items; if(S.tab==="rank")draw(); } }).catch(function(){}); }catch(e){} }
+/* Phiên tư vấn -> Data Hub: gom số liệu tư vấn về máy chủ. SĐT chỉ gửi khi khách ĐỒNG Ý (NĐ100). Hàng đợi offline tự gửi lại. */
+var NT_SQ_KEY="nt_sess_queue_v1",_ntSFlushing=false;
+function sendTvSession(){ if(!S.user||!S.user.obj||S._sessSent)return; S._sessSent=true; try{
+   var rec; try{ rec=recommend(); }catch(e){ rec=null; }
+   var names=((rec&&rec.ids)||[]).map(function(id){var p=P(id);return p?p.name:id;}).join(", ");
+   var o={ clientId:(S._sessId||("s"+Date.now().toString(36)+Math.random().toString(36).slice(2,6))),
+     pg:S.pg||"", buyerName:(S.user.name||""), phone:(S.user.consent===true?kidPhone(S.user.phone):""),
+     objective:S.user.obj, recommended:names,
+     payload:{obj:S.user.obj,gender:S.user.gender,cls:(S.cls&&S.cls.label)||"",needs:S.needs||[],m:S.m||{},at:Date.now()} };
+   var q=lsGet(NT_SQ_KEY,[]); q.push(o); if(q.length>80)q=q.slice(-80); lsSet(NT_SQ_KEY,q); flushNtSess();
+ }catch(e){} }
+function flushNtSess(){ if(_ntSFlushing||!_ntOnline())return; var q=lsGet(NT_SQ_KEY,[]); if(!q.length)return; _ntSFlushing=true;
+ var left=[],done=0;
+ q.forEach(function(o){ _ntPost("/nutritie-session",o).then(function(r){ if(!(r&&r.ok))left.push(o); },function(){left.push(o);})
+   .then(function(){ if(++done===q.length){ lsSet(NT_SQ_KEY,left); _ntSFlushing=false; } }); }); }
+
 /* ENGINE */
 function interp(t,x){var ks=Object.keys(t).map(Number).sort(function(a,b){return a-b;});if(x<=ks[0])return t[ks[0]];if(x>=ks[ks.length-1])return t[ks[ks.length-1]];for(var i=0;i<ks.length-1;i++){if(x>=ks[i]&&x<=ks[i+1]){var r=(x-ks[i])/(ks[i+1]-ks[i]);return t[ks[i]]+r*(t[ks[i+1]]-t[ks[i]]);}}return t[ks[0]];}
 var WB={0:3.3,3:6.4,6:7.9,9:8.9,12:9.6,24:12.2,36:14.3,48:16.3,60:18.3},WG={0:3.2,3:5.8,6:7.3,9:8.2,12:8.9,24:11.5,36:13.9,48:16.1,60:18.2};
@@ -1869,7 +1899,7 @@ function consultGrowthCard(){if(!kidChild())return "";
  h+='</div>'+growthAssess(b,ms)+growthSyncBlock(b)
   +'<button class="btn btnO" onclick="S.growth.baby=\''+b.id+'\';go(\'growth\')">'+ic('trending_up')+'Xem đầy đủ lịch sử đo của bé</button>';
  return h;}
-function startTV(){clearSess();S.step=1;S._cMarked=false;S._gSaved=false;S._gBabyId="";S.user={obj:"",gender:"",senior:false,postpartum:false,preterm:"",hist:[],cur:"",name:"",dob:"",consent:null,phone:""};S.m={};S.cls=null;S.needs=[];go('tuvan');}
+function startTV(){clearSess();S.step=1;S._cMarked=false;S._gSaved=false;S._gBabyId="";S._sessId="s"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);S._sessSent=false;S.user={obj:"",gender:"",senior:false,postpartum:false,preterm:"",hist:[],cur:"",name:"",dob:"",consent:null,phone:""};S.m={};S.cls=null;S.needs=[];go('tuvan');}
 function renderTV(){return progHead()+(S.step===1?tvStep1():S.step===2?tvStep2():S.step===3?tvStep3():tvStep4());}
 function progHead(){var seg='';for(var i=1;i<=4;i++)seg+='<div class="'+(S.step>i?'on':S.step===i?'cur':'')+'"></div>';
  var SICS=["person","straighten","checklist","check_circle"];
@@ -2039,6 +2069,7 @@ function contraLater(ct){
  }
  return h+'</div>';}
 function tvStep4(){var contra=contraCheck();
+ try{sendTvSession();}catch(e){}   /* gửi phiên tư vấn về Data Hub (1 lần/phiên, có hàng đợi offline) */
  if(contra){var cc=S.cls;
   return '<div class="stack">'+patientSummary()
    +'<div class="card"><div class="sec-l" style="margin-bottom:10px"><div class="sec-ic" style="background:var(--red-s);color:var(--red)">'+ic('block')+'</div><h3 style="color:var(--red)">'+esc(contra.title)+'</h3></div><div class="danger">'+esc(contra.b)+'</div></div>'
@@ -2792,9 +2823,16 @@ var NT_PEERS=[
 var LB_AV=["linear-gradient(135deg,#8FA6FF,#26327A)","linear-gradient(135deg,#7FC8A9,#16A34A)","linear-gradient(135deg,#C9B6FF,#7C5CE0)","linear-gradient(135deg,#FFD36E,#E0A93B)","linear-gradient(135deg,#F0A0A4,#E01F26)","linear-gradient(135deg,#9AA4C7,#5A6072)"];
 function lbInitials(n){ var p=(""+(n||"")).trim().split(/\s+/); if(p.length<2)return (""+(n||"?")).slice(0,2).toUpperCase(); return (p[0].charAt(0)+p[p.length-1].charAt(0)).toUpperCase(); }
 function renderLeaderboard(){
- var me=S.pg||"Bạn", myPts=ntCounters().points, medals=["🥇","🥈","🥉"];
- var rows=NT_PEERS.map(function(p){return {name:p.name,code:p.code,pts:p.pts,me:false};});
- rows.push({name:me,code:(S.pg?"Tài khoản của bạn":"—"),pts:myPts,me:true});
+ if(_ntOnline()){ pushNtXp(); if(_ntLb===null)fetchNtLb(); }   /* đẩy điểm mình + tải bảng thật nếu chưa có */
+ var me=S.pg||"Bạn", myPts=ntCounters().points, medals=["🥇","🥈","🥉"], live=!!(_ntLb&&_ntLb.length), rows;
+ if(live){   /* dữ liệu THẬT từ máy chủ (toàn đội), hoà điểm mới của mình */
+   rows=_ntLb.map(function(p){return {name:p.pg_name||"—",code:"",pts:p.xp||0,me:(!!S.pg&&p.pg_name===S.pg)};});
+   var mine=null; for(var _i=0;_i<rows.length;_i++){ if(rows[_i].me){mine=rows[_i];break;} }
+   if(mine){ mine.pts=Math.max(mine.pts,myPts); } else if(S.pg){ rows.push({name:me,code:"Tài khoản của bạn",pts:myPts,me:true}); }
+ } else {   /* chưa kết nối -> demo như cũ */
+   rows=NT_PEERS.map(function(p){return {name:p.name,code:p.code,pts:p.pts,me:false};});
+   rows.push({name:me,code:(S.pg?"Tài khoản của bạn":"—"),pts:myPts,me:true});
+ }
  rows.sort(function(a,b){return b.pts-a.pts;});
  var myRank=0;
  var lis=rows.map(function(x,i){
@@ -2809,7 +2847,7 @@ function renderLeaderboard(){
  return '<div class="card" style="margin-top:12px"><div class="sec-l" style="margin-bottom:4px"><div class="sec-ic">'+ic('leaderboard')+'</div><div style="flex:1;min-width:0"><h3 style="font-size:15px">Xếp hạng tư vấn viên</h3><div style="font-size:11px;color:var(--on-var);margin-top:1px">Tuần này · toàn đội</div></div></div>'
   +'<div class="lb-teaser" style="margin:10px 0 12px"><span style="font-size:24px;flex-shrink:0;display:inline-flex">'+ic('stars')+'</span><div style="flex:1;min-width:0"><div class="tl">Vị trí của bạn</div><div class="ts">Hạng <b>#'+myRank+'</b> / '+rows.length+' · '+myPts+' điểm</div></div><div class="tn">#'+myRank+'</div></div>'
   +'<div class="lb-list">'+lis+'</div>'
-  +'<div style="font-size:11px;color:var(--on-var);margin-top:11px;line-height:1.55;display:flex;gap:6px"><span style="flex-shrink:0;color:var(--navy);display:inline-flex">'+ic('info')+'</span><span>Danh sách đồng nghiệp là dữ liệu <b>mô phỏng (demo)</b> đến khi kết nối máy chủ. Điểm của bạn là số thật trên máy này.</span></div></div>';
+  +'<div style="font-size:11px;color:var(--on-var);margin-top:11px;line-height:1.55;display:flex;gap:6px"><span style="flex-shrink:0;color:var(--navy);display:inline-flex">'+ic('info')+'</span><span>'+(live?'Xếp hạng <b>toàn đội</b> — cập nhật từ máy chủ. Điểm của bạn là số thật trên máy này.':'Danh sách đồng nghiệp là dữ liệu <b>mô phỏng (demo)</b> đến khi kết nối máy chủ. Điểm của bạn là số thật trên máy này.')+'</span></div></div>';
 }
 function renderRank(){ var r=rankInfo();
  var ladder=RLEVELS.map(function(L,i){ var on=i===r.i,done=r.pts>=L.m&&i!==r.i,locked=r.pts<L.m,need=L.m-r.pts;
@@ -3622,6 +3660,10 @@ if(window.__appUp)window.__appUp();
 setTimeout(function(){document.getElementById('splash').classList.add('hide');if(!S.pg){renderLogin();document.getElementById('login').style.display='flex';}},1900);
 window.addEventListener('online',syncOrders);setInterval(syncOrders,30000);
 window.addEventListener('online',function(){growthFlush();});setInterval(growthFlush,30000);setTimeout(growthFlush,3000);
+/* 16/10: đẩy XP + gửi phiên tư vấn về máy chủ (Data Hub), tải bảng xếp hạng thật */
+setTimeout(function(){pushNtXp();flushNtSess();fetchNtLb();},3500);
+setInterval(function(){pushNtXp();flushNtSess();},30000);
+window.addEventListener('online',function(){pushNtXp();flushNtSess();fetchNtLb();});
 /* Link cấp sẵn mã NPP: ?token=<mã> (giống App Wintop). Cất vào máy rồi xoá khỏi thanh địa chỉ ngay. */
 try{var _tkq=new URLSearchParams(location.search).get('token');if(_tkq&&_tkq.trim()){lsSet(NPP_TOKEN_KEY,_tkq.trim());history.replaceState(null,'',location.pathname+location.hash);}}catch(e){}/* retry ~30s/lần, tối đa MAX_TRIES */
 /* Nhắc cân đo cho bé qua chuông thông báo (tận dụng biểu đồ tăng trưởng) */
