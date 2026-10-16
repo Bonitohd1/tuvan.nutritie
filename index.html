@@ -3765,5 +3765,7 @@ function asstReply(raw){ var d=asstNorm(raw);
  return 'Mình chưa rõ ý này 🤔. Bạn thử hỏi:\n• Tên sản phẩm (vd "Pedia A+", "Grow IQ")\n• "đơn hàng" · "còn hàng Colostrum"\n• Chủ đề dinh dưỡng: biếng ăn, tăng cân, chiều cao, táo bón, miễn dịch…\nHoặc chạm các gợi ý bên dưới nhé!';
 }
 </script>
+<script>/* 16/10: Service worker (nhân từ Wintop) — offline + ảnh không vỡ khi mạng chập chờn; network-first nên không kẹt bản cũ */
+if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}</script>
 </body>
 </html>
