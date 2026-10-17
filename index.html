@@ -3812,5 +3812,55 @@ function asstReply(raw){ var d=asstNorm(raw);
 </script>
 <script>/* 16/10: Service worker (nhân từ Wintop) — offline + ảnh không vỡ khi mạng chập chờn; network-first nên không kẹt bản cũ */
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}</script>
+<!-- Loi chuc 20/10 (Ngay Phu nu Viet Nam) — CANH toan man hien 1 lan/ngay trong 17-20/10, sau splash roi TU TROI vao app (cham de bo qua). Chan khi chay tu dong (navigator.webdriver). -->
+<style>
+#occ2010{position:fixed;inset:0;z-index:9998;display:none;opacity:0;transition:opacity .6s ease;background:#0c3327 center/cover no-repeat;overflow:hidden;cursor:pointer}
+#occ2010.on{display:block;opacity:1}
+.o2010-img{position:absolute;inset:0;background-size:cover;background-position:center;transform:scale(1.07);animation:o2010zoom 6s ease-out forwards}
+@keyframes o2010zoom{to{transform:scale(1)}}
+.o2010-scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.3),rgba(0,0,0,0) 32%,rgba(0,0,0,0) 54%,rgba(0,0,0,.45))}
+.o2010-txt{position:absolute;left:0;right:0;top:15%;text-align:center;padding:0 18px;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+.o2010-hi{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:42px;color:#fbe9cf;line-height:1}
+.o2010-nm{font-family:Georgia,serif;font-size:21px;letter-spacing:2px;margin-top:11px}
+.o2010-dt{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:11px;color:#ecd79a;font-size:14px;letter-spacing:3px}
+.o2010-dt i{width:26px;height:1px;background:currentColor;opacity:.6;display:inline-block}
+.o2010-wish{position:absolute;left:22px;right:22px;top:40%;text-align:center;color:#fff;font-size:14px;line-height:1.6;text-shadow:0 2px 8px rgba(0,0,0,.6)}
+.o2010-hint{position:absolute;left:0;right:0;bottom:30px;text-align:center;color:rgba(255,255,255,.72);font-size:12px;letter-spacing:1px}
+.o2010-sp{position:absolute;border-radius:50%;background:radial-gradient(circle,#fff,#f3d992 45%,rgba(243,217,146,0) 72%);box-shadow:0 0 6px 1px rgba(243,217,146,.8);animation:o2010tw 2.6s ease-in-out infinite alternate}
+@keyframes o2010tw{from{opacity:.25;transform:scale(.7)}to{opacity:1;transform:scale(1.2)}}
+@media (prefers-reduced-motion:reduce){.o2010-sp,.o2010-img{animation:none}#occ2010{transition:none}}
+</style>
+<div id="occ2010" aria-label="Chuc mung Ngay Phu nu Viet Nam 20/10">
+  <div class="o2010-img" style="background-image:url('assets/occ-2010.webp')"></div>
+  <div class="o2010-scrim"></div>
+  <span class="o2010-sp" style="left:16%;top:9%;width:4px;height:4px"></span>
+  <span class="o2010-sp" style="left:78%;top:7%;width:3px;height:3px;animation-delay:1s"></span>
+  <span class="o2010-sp" style="left:60%;top:13%;width:3px;height:3px;animation-delay:.5s"></span>
+  <span class="o2010-sp" style="left:30%;top:17%;width:3px;height:3px;animation-delay:1.6s"></span>
+  <div class="o2010-txt">
+    <div class="o2010-hi">Chúc mừng</div>
+    <div class="o2010-nm">NGÀY PHỤ NỮ VIỆT NAM</div>
+    <div class="o2010-dt"><i></i>20.10<i></i></div>
+  </div>
+  <div class="o2010-wish">Kính chúc các bà, các mẹ và chị em<br>luôn mạnh khoẻ, xinh đẹp và hạnh phúc.</div>
+  <div class="o2010-hint">Chạm để tiếp tục</div>
+</div>
+<script>(function(){try{
+  if(navigator.webdriver)return;
+  var d=new Date();
+  if(d.getMonth()===9 && d.getDate()>=17 && d.getDate()<=20){
+    var seen=null;try{seen=localStorage.getItem('occ2010_seen')}catch(e){}
+    if(seen!==d.toDateString()){
+      setTimeout(function(){
+        var o=document.getElementById('occ2010');if(!o)return;
+        o.classList.add('on');
+        try{localStorage.setItem('occ2010_seen',d.toDateString())}catch(e){}
+        var hide=function(){o.classList.remove('on');setTimeout(function(){o.style.display='none'},700)};
+        var t=setTimeout(hide,3200);
+        o.addEventListener('click',function(){clearTimeout(t);hide()},{once:true});
+      },2300);
+    }
+  }
+}catch(e){}})();</script>
 </body>
 </html>
