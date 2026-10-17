@@ -47,19 +47,18 @@
   .hdr-tt{display:flex;flex-direction:column;line-height:1.12;min-width:0}
   .hdr-tt b{font-family:var(--fd);font-size:16px;font-weight:700;color:var(--navy);letter-spacing:-.01em}
   .hdr-tt span{font-size:11px;color:var(--on-var);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px}
-  .avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:var(--sh1);flex-shrink:0}
+  .avatar{width:38px;height:38px;border-radius:50%;object-fit:contain;background:radial-gradient(circle at 50% 36%,#eef7fe,#bfe3f5);border:2px solid #fff;box-shadow:var(--sh1);flex-shrink:0}
   /* DRAWER */
   #dtog{display:none}
   .backdrop{position:fixed;inset:0;z-index:50;background:rgba(24,28,32,.42);opacity:0;pointer-events:none;transition:opacity .3s}
   #dtog:checked~.backdrop{opacity:1;pointer-events:auto}
-  .drawer{position:fixed;top:0;left:0;bottom:0;z-index:51;width:80%;max-width:308px;background:#fff;box-shadow:0 8px 32px rgba(24,28,32,.18);transform:translateX(-100%);transition:transform .3s ease-out;display:flex;flex-direction:column;overflow-y:auto}
+  .drawer{position:fixed;top:0;left:0;bottom:0;z-index:51;width:84%;max-width:320px;background:#fff;border-radius:0 20px 20px 0;box-shadow:0 10px 40px rgba(24,28,32,.26);transform:translateX(-102%);transition:transform .38s cubic-bezier(.2,.9,.25,1);display:flex;flex-direction:column;overflow-y:auto;padding-bottom:env(safe-area-inset-bottom)}
   #dtog:checked~.drawer{transform:translateX(0)}
   .dh{padding:16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
   .drawer nav{padding:10px}
   .drawer a{position:relative;display:flex;align-items:center;gap:13px;padding:11px 12px;border-radius:var(--r-sm);color:var(--on);text-decoration:none;font-family:var(--fd);font-weight:600;font-size:14px;cursor:pointer;transition:background var(--t) var(--ease),transform var(--t) var(--ease),color var(--t) var(--ease)}
   .drawer a .ic{transition:color var(--t) var(--ease),transform var(--t) var(--ease)}
-  .drawer a:hover{background:var(--sc-low);transform:translateX(3px)}
-  .drawer a:hover .ic{transform:scale(1.08)}
+  @media(hover:hover){.drawer a:hover{background:var(--sc-low);transform:translateX(3px)}.drawer a:hover .ic{transform:scale(1.08)}}
   .drawer a:active{background:var(--sc-high);transform:translateX(1px) scale(.99)}
   .drawer a.dact{background:var(--sec-fx);color:var(--navy);box-shadow:inset 3px 0 0 var(--navy)}
   .drawer a.dact .ic{color:var(--navy)}
@@ -72,7 +71,7 @@
   .drawer a .ic{color:var(--navy);font-size:22px}
   .drawer a .soon{margin-left:auto;font-size:9px;font-weight:700;color:var(--on-var);background:var(--sc);padding:2px 7px;border-radius:999px}
   /* VIEW + MOTION */
-  #view{padding:var(--pad-screen)}
+  #view{padding:var(--pad-screen);padding-bottom:calc(74px + env(safe-area-inset-bottom))}
   #view{animation:fadeUp .28s var(--ease) both}
   @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   .stack{display:flex;flex-direction:column;gap:var(--gap)}
@@ -3821,8 +3820,10 @@ if("serviceWorker" in navigator){window.addEventListener("load",function(){navig
 #o2010petals.pause .o2010-petal{animation-play-state:paused}
 @keyframes o2010fall{0%{transform:translate3d(0,-7vh,0) rotate(0);opacity:0}8%{opacity:.78}92%{opacity:.78}100%{transform:translate3d(var(--x,24px),112vh,0) rotate(600deg);opacity:0}}
 /* Nen hoa 20/10 (nam SAU noi dung): lop co dinh z:-1 + body trong suot -> the trang van doc ro. Lop mo nhe cho chac. */
-#o2010bg{position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(255,247,250,.30),rgba(255,247,250,.30) 42%,rgba(255,247,250,.48)),url('assets/bg-2010.webp') center/cover no-repeat}
+#o2010bg{position:fixed;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(236,246,255,.16),rgba(236,246,255,.16) 44%,rgba(236,246,255,.32)),url('assets/bg-2010.webp') center/cover no-repeat;opacity:0;animation:o2010bgin 1s ease .15s forwards}
+@keyframes o2010bgin{to{opacity:1}}
 body.has2010bg{background:transparent}
+/* Nutritie tong XANH (hop brand navy/cyan): chrome giu navy/trang goc, lop phu nen ngả xanh nhe */
 /* Loi chuc tren man chao hoi (splash navy toi -> chu sang) */
 .o2010-sg{text-align:center;margin:10px auto 2px;animation:o2010up .9s ease-out both}
 .o2010-sg .l1{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:21px;color:#fbe9cf;line-height:1}
@@ -3846,7 +3847,7 @@ body.has2010bg{background:transparent}
 @keyframes o2010up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 @keyframes o2010fade{to{opacity:1}}
 @keyframes o2010tw{from{opacity:.25;transform:scale(.7)}to{opacity:1;transform:scale(1.2)}}
-@media (prefers-reduced-motion:reduce){.o2010-petal,.o2010-fp{display:none}.o2010-sp,.o2010-img{animation:none}#occ2010{transition:none}.o2010-txt>div,.o2010-wish,.o2010-hint,.o2010-sg{animation:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.o2010-petal,.o2010-fp{display:none}.o2010-sp,.o2010-img,#o2010bg{animation:none}#o2010bg{opacity:1}#occ2010{transition:none}.o2010-txt>div,.o2010-wish,.o2010-hint,.o2010-sg{animation:none;opacity:1}}
 </style>
 <div id="o2010petals"></div>
 <div id="occ2010" aria-label="Chuc mung Ngay Phu nu Viet Nam 20/10">
