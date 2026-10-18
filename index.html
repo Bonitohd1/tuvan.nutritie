@@ -2090,7 +2090,7 @@ function tvStep4(){var contra=contraCheck();
    +'<button class="btn btnO" style="margin-top:4px" onclick="startTV()">↻ Tư vấn khách khác</button></div>';}
  var c=S.cls,r=recommend(),main=r.ids.length?P(r.ids[0]):null;
  try{if(!S._cMarked){S._cMarked=true;dailyMark('consult');weeklyBump('consult');}}catch(e){}
- var h='<div class="stack">'+patientSummary()+gaugeCard(c)+consultGrowthCard();
+ var h='<div class="stack">'+patientSummary()+(c?gaugeCard(c):'')+consultGrowthCard();
  if(c&&c.stunt)h+='<div class="warn"><span style="flex-shrink:0">'+ic('warning')+'</span><div><b>Chiều cao theo tuổi đang thấp hơn chuẩn WHO</b> (dấu hiệu thấp còi, Z chiều cao/tuổi \u2248 '+zf(c.hfaZ)+'). Nên theo dõi chiều cao định kỳ và hỏi ý kiến chuyên gia dinh dưỡng để hỗ trợ bé bắt kịp đà tăng trưởng.</div></div>';
  if(c&&(c.label==="Suy dinh dưỡng nặng"||c.label==="Gầy nặng"))h+='<div class="danger" style="display:flex;gap:8px"><span style="flex-shrink:0">'+ic('warning')+'</span><div><b>Cần đưa đi khám:</b> Suy dinh dưỡng nặng — nên đến bác sĩ/chuyên gia dinh dưỡng đánh giá trước. Sản phẩm chỉ hỗ trợ, không thay điều trị.</div></div>';
  /* Thứ tự cố định (khách chốt 13/10/2026): chỉ số BMI -> tư vấn khoa học -> tư vấn sản phẩm */
