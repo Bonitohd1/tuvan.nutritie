@@ -84,6 +84,9 @@ with sync_playwright() as p:
         check(T('bé 0–12 tháng + tiểu đường: không nút lên đơn'), r['ids'] == [] and not r['order'], (r['ids'], r['order']))
         r = result(pg, 'pregnant', {'pw': 50, 'h': 160}, [], ['Tiền sản giật'], 'Nữ')
         check(T('mẹ bầu + tiền sản giật (không tiểu đường): vẫn Mama (chỉ cảnh báo khám bác sĩ như cũ)'), r['ids'] == ['mama'], r['ids'])
+        # 03/11: SKU thứ 8 Glupro — người lớn + tiểu đường nay CÓ gợi ý (hỗ trợ dinh dưỡng, không thay thuốc); trẻ em / mẹ bầu vẫn KHÔNG
+        r = result(pg, 'adult', {'w': 62, 'h': 168}, [], ['Tiểu đường'], 'Nam')
+        check(T('người lớn + tiểu đường: gợi ý Glupro + có nút lên đơn + "KHÔNG thay thế thuốc" trong tư vấn khoa học'), r['ids'] == ['glupro'] and r['order'] and 'Glupro' in r['sci'] and 'KHÔNG thay thế thuốc' in r['sci'], (r['ids'], r['order'], r['sci'][:80]))
 
         # ---- người lớn ----
         r = result(pg, 'adult', {'w': 95, 'h': 165}, ['Ăn kiêng / kiểm soát cân nặng'])

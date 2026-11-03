@@ -1695,11 +1695,12 @@ var SCI={
  pregnant:"Mẹ mang thai / cho con bú: DHA cho não & võng mạc thai nhi; Axit Folic cần cho giai đoạn đầu thai kỳ; Sắt hỗ trợ tạo máu; Canxi + D3 + MK-7 hỗ trợ xương; Lactium hỗ trợ thư giãn, ngủ ngon.",
  adultBase:"Người lớn đã đạt BMI chuẩn: Canxi Pro A+ dùng để BỔ SUNG canxi + D3/K2 cho xương khớp, không nhằm tăng cân. Khuyến khích vận động và ăn đủ đạm.",
  adultHigh:"BMI trên chuẩn: không cần bổ sung năng lượng. Nutritie chưa có sản phẩm kiểm soát cân nặng — hướng dẫn khách cân đối khẩu phần, vận động và gặp chuyên gia dinh dưỡng. Chỉ khi khách cần canxi cho xương khớp mới cân nhắc Canxi Pro A+.",
- diabetNo:"Nutritie hiện CHƯA có SKU công thức GI thấp cho tiểu đường. KHÔNG dùng SKU thường thay điều trị — hướng dẫn khách khám bác sĩ/chuyên gia dinh dưỡng."
+ diabetNo:"Nhóm này (trẻ em / mẹ bầu) chưa có SKU GI thấp phù hợp — Nutritie Glupro chỉ dành cho người trưởng thành. KHÔNG dùng SKU thường thay điều trị — hướng dẫn khách khám bác sĩ/chuyên gia dinh dưỡng.",
+ diabetAdult:"Người trưởng thành quan tâm đường huyết / tiểu đường, tiền tiểu đường: có thể tham khảo Nutritie Glupro — dinh dưỡng cân bằng, hệ bột đường Isomalt + Isomaltulose (GI thấp) hấp thu chậm, tỷ lệ Đạm : Béo : Đường theo ADA/EASD. HỖ TRỢ dinh dưỡng, KHÔNG thay thế thuốc điều trị — khách vẫn theo chỉ định bác sĩ và tự theo dõi đường huyết."
 };
 function hasDiabetes(){return S.user.hist.indexOf("Tiểu đường")>=0||S.needs.indexOf("Tiểu đường")>=0;}
 function sciAdvice(){var o=S.user.obj,c=S.cls,n=S.needs,parts=[],low=c&&c.status==="low";
- if(hasDiabetes())return SCI.diabetNo;   /* trước đây chỉ nhóm người lớn biết tiểu đường: mẹ bầu / trẻ vẫn được "ưu tiên số 1" kèm nút lên đơn */
+ if(hasDiabetes())return (S.user.obj==="adult")?SCI.diabetAdult:SCI.diabetNo;   /* người lớn -> Glupro (hỗ trợ dinh dưỡng, không thay thuốc); trẻ em / mẹ bầu vẫn chưa có SKU phù hợp */
  if(low&&o!=="tre_0_12")parts.push(SCI.energy);
  if(o==="tre_0_12"){parts.push(SCI.infant);}
  else if(o==="tre_1_10"){if(n.indexOf("Tiêu hóa kém")>=0)parts.push(SCI.digest);if(!low&&n.indexOf("Tăng chiều cao")>=0)parts.push(SCI.height);if(n.indexOf("Phát triển trí não")>=0)parts.push(SCI.brain);if(n.indexOf("Hay ốm / miễn dịch kém")>=0)parts.push(SCI.immune);if(!parts.length)parts.push(SCI.childBase);}
@@ -1709,8 +1710,8 @@ function sciAdvice(){var o=S.user.obj,c=S.cls,n=S.needs,parts=[],low=c&&c.status
  return parts.join("\n\n");}
 var HISTS=["Không có","Dị ứng đạm bò","Không dung nạp Lactose","Đang bị tiêu chảy cấp / Viêm ruột cấp","Viêm loét dạ dày - tá tràng","Hội chứng ruột kích thích (IBS)","Tiểu đường","Loãng xương","Vừa phẫu thuật/ốm dậy","Tiền sản giật","Bệnh thận / sỏi thận","Đang dùng thuốc chống đông","Khác"];
 function contraCheck(){var h=S.user.hist||[];function has(x){return h.indexOf(x)>=0;}
- if(has("Dị ứng đạm bò"))return{title:"Chống chỉ định — Dị ứng đạm sữa bò",b:"Khách dị ứng đạm sữa bò: TUYỆT ĐỐI không tư vấn sản phẩm có sữa bò. Cả 7 SKU Nutritie đều chứa sữa bột → không phù hợp. Hướng dẫn khách chọn giải pháp không đạm bò và khám bác sĩ."};
- if(has("Không dung nạp Lactose"))return{title:"Chống chỉ định — Bất dung nạp Lactose",b:"Bất dung nạp Lactose (phổ biến ở người châu Á): lactose lên men gây đầy hơi, tiêu chảy. Không tư vấn SKU chứa lactose (cả 7 SKU); hướng dẫn khách chọn giải pháp phù hợp."};
+ if(has("Dị ứng đạm bò"))return{title:"Chống chỉ định — Dị ứng đạm sữa bò",b:"Khách dị ứng đạm sữa bò: TUYỆT ĐỐI không tư vấn sản phẩm có sữa bò. Cả 8 SKU Nutritie đều chứa sữa bột → không phù hợp. Hướng dẫn khách chọn giải pháp không đạm bò và khám bác sĩ."};
+ if(has("Không dung nạp Lactose"))return{title:"Chống chỉ định — Bất dung nạp Lactose",b:"Bất dung nạp Lactose (phổ biến ở người châu Á): lactose lên men gây đầy hơi, tiêu chảy. Không tư vấn SKU chứa lactose (cả 8 SKU); hướng dẫn khách chọn giải pháp phù hợp."};
  if(has("Đang bị tiêu chảy cấp / Viêm ruột cấp"))return{title:"Chống chỉ định — Tiêu chảy/Viêm ruột cấp",b:"Đang tiêu chảy / viêm ruột cấp: tạm dừng tư vấn sữa; ưu tiên bù nước–điện giải và hỏi bác sĩ về chế độ bú / ăn phù hợp. Khỏi rồi tư vấn theo lứa tuổi."};
  if(has("Viêm loét dạ dày - tá tràng"))return{title:"Chống chỉ định — Viêm loét dạ dày–tá tràng",b:"Trong đợt đau cấp: protein & canxi kích thích tiết axit, có thể làm loét nặng thêm. Không tư vấn sữa giai đoạn này; hướng dẫn khám chuyên khoa."};
  if(has("Hội chứng ruột kích thích (IBS)"))return{title:"Chống chỉ định — IBS",b:"Lactose & một số protein sữa có thể kích hoạt cơn đau/rối loạn đại tiện ở người IBS. Không tư vấn; hướng dẫn khách theo dõi & hỏi bác sĩ."};
@@ -1818,7 +1819,7 @@ function weeklyCardHTML(){
   +'<div class="ms-list">'+rows+'</div></div>';
 }
 /* Banner bộ 7 sản phẩm (ảnh chị Thúy gửi). Chỉ PG thấy; không đưa vào chế độ Trình khách vì có hình lon Baby/Bio (trẻ dưới 24 tháng, NĐ 100). */
-function boBanner(go_){ return '<div class="bo-ban'+(go_?' press':'')+'"'+(go_?' onclick="go(\'sp\')" style="cursor:pointer"':'')+'><img src="assets/bo-nutritie.jpg" alt="Bộ 7 sản phẩm Nutritie" onerror="this.parentNode.remove()"></div>'; }
+function boBanner(go_){ return '<div class="bo-ban'+(go_?' press':'')+'"'+(go_?' onclick="go(\'sp\')" style="cursor:pointer"':'')+'><img src="assets/bo-nutritie.jpg" alt="Bộ sản phẩm Nutritie" onerror="this.parentNode.remove()"></div>'; }
 function renderHome(){
  var zr=ZONES.map(function(z){return '<div class="zcard press" onclick="startTV()" style="--zc:'+z[3]+'"><div class="zi"><img src="'+zicon(z[0])+'" alt="" onerror="this.style.display=\'none\'"></div><div class="zn">'+z[0]+'</div><div class="zd">'+z[1]+'</div><span class="zbadge">'+z[2]+'</span></div>';}).join('');
  var tr=TRUST.map(function(t){return '<div class="trust-it"><div class="ti" style="background:'+t[4]+'">'+ic(t[3])+'</div><div style="flex:1"><b>'+t[1]+'</b><span>'+t[2]+'</span></div><span class="chk">'+ic('check_circle')+'</span></div>';}).join('');
@@ -1839,7 +1840,7 @@ function renderHome(){
    +'<div class="hero-in"><span class="hero-tag">'+ic('clinical_notes')+'Theo chuẩn công bố</span>'
     +'<h2>Chuyên gia Dinh dưỡng Nutritie</h2><p>Đo chỉ số (BMI/Z-score) → gợi ý đúng sản phẩm trong ~2 phút.</p></div>'
    +'<div class="hero-btns"><button class="btn btnP press" onclick="startTV()">'+ic('stethoscope')+'Bắt đầu tư vấn</button>'
-    +'<button class="btn btnW press" onclick="go(\'sp\')">'+ic('nutrition')+'Xem 7 sản phẩm</button></div></div>'
+    +'<button class="btn btnW press" onclick="go(\'sp\')">'+ic('nutrition')+'Xem '+PRODUCTS.length+' sản phẩm</button></div></div>'
   +boBanner(true)
   +'<div class="card" style="padding:15px 13px"><div class="qgrid">'+qg+'</div></div>'
   +rwHomeCard()
@@ -2120,7 +2121,7 @@ function tvStep4(){var contra=contraCheck();
  return h;}
 
 /* ===== SẢN PHẨM ===== */
-function renderSP(){var h=boBanner(false)+'<div class="sec" style="margin:12px 0"><div class="sec-l"><div class="sec-ic">'+ic('nutrition')+'</div><div><h3>7 sản phẩm Nutritie</h3><div class="sub">Chạm để xem chi tiết & tư vấn</div></div></div></div><div class="grid">';
+function renderSP(){var h=boBanner(false)+'<div class="sec" style="margin:12px 0"><div class="sec-l"><div class="sec-ic">'+ic('nutrition')+'</div><div><h3>'+PRODUCTS.length+' sản phẩm Nutritie</h3><div class="sub">Chạm để xem chi tiết & tư vấn</div></div></div></div><div class="grid">';
  for(var i=0;i<PRODUCTS.length;i++){var p=PRODUCTS[i];
   var chips=(p.claims||[]).slice(0,2).map(function(c){return '<span>'+esc(c.split(':')[0])+'</span>';}).join('');
   var kcal=p.kcalml?'<span class="kcal">'+p.kcalml+' kcal/ml</span>':'';
@@ -2190,7 +2191,7 @@ var QA=[
  {q:"Người lớn dùng dòng nào?",a:"Người trưởng thành và người cao tuổi dùng Nutritie Canxi Pro A+: hỗ trợ xương khớp (Canxi Nano 688mg + MK-7 + Glucosamine) và tăng cân/phục hồi (1.0 kcal/ml)."},
  {q:"MK-7 là gì mà quan trọng?",a:"MK-7 (Vitamin K2) giúp đưa Canxi vào xương thay vì lắng ở mạch máu. Canxi thiếu MK-7 thì hấp thu vào xương kém hiệu quả hơn."},
  {q:"Khách dị ứng đạm bò / không dung nạp lactose?",a:"Không tư vấn bất kỳ SKU nào (cả 7 đều chứa sữa bột). Khuyên khám chuyên khoa Dị ứng–Miễn dịch."},
- {q:"Tiểu đường / tiểu đường thai kỳ?",a:"Nutritie chưa có SKU GI thấp cho tiểu đường → khám bác sĩ. Tiểu đường thai kỳ: KHÔNG dùng Mama A+, đi khám ngay."}
+ {q:"Tiểu đường / tiểu đường thai kỳ?",a:"Người trưởng thành: có thể tham khảo Nutritie Glupro (GI thấp — HỖ TRỢ dinh dưỡng, KHÔNG thay thế thuốc, vẫn khám bác sĩ). Trẻ em: chưa có SKU phù hợp. Tiểu đường thai kỳ: KHÔNG dùng Mama A+, đi khám ngay."}
 ];
 function faqTog(q){var it=q.parentNode,open=it.classList.contains('open'),box=it.parentNode,os=box.querySelectorAll('.item.open');for(var i=0;i<os.length;i++)os[i].classList.remove('open');if(!open)it.classList.add('open');}
 function renderQA(){return '<div class="card faq-intro"><div class="sec-l"><div class="sec-ic">'+ic('forum')+'</div><div><h3>Hỏi &amp; Đáp nhanh</h3><div class="sub">Giải đáp nhanh khi tư vấn khách tại quầy</div></div></div></div><button class="btn btnP press" style="margin-bottom:12px" onclick="openAsst()">'+ic('neurology')+'Đặt câu hỏi cho trợ lý AI</button><div class="faq">'+QA.map(function(x){return '<div class="item"><div class="q" onclick="faqTog(this)"><span class="faq-qic">'+ic('quiz')+'</span><span class="faq-qt">'+esc(x.q)+'</span>'+ic('expand_more')+'</div><div class="a"><div>'+esc(x.a)+'</div></div></div>';}).join('')+'</div>';}
@@ -3014,7 +3015,7 @@ function saveQuiz(s){ lsSet(QZ_KEY,s); }
 var QUIZQS=[
  {q:"Sản phẩm Nutritie nào có đậm độ năng lượng 1.2 kcal/ml?",o:["Baby A+","Pedia A+","Grow IQ A+"],c:1,e:"Pedia A+ đạt 1.2 kcal/ml, ưu tiên cho bé biếng ăn/nhẹ cân."},
  {q:"Khi nào tư vấn Grow IQ A+ (tăng chiều cao)?",o:["Ngay khi bé nhẹ cân","Chỉ khi cân nặng đã đạt chuẩn","Cho mọi lứa tuổi"],c:1,e:"Chỉ tư vấn Grow IQ khi Z-score/BMI đạt chuẩn; nếu nhẹ cân phải bù năng lượng trước."},
- {q:"Khách dị ứng đạm bò thì tư vấn SKU nào?",o:["BioA+","Không SKU nào (cả 7 đều chứa sữa bột)","Colostrum DHA"],c:1,e:"Cả 7 SKU đều chứa sữa bột → chống chỉ định; hướng dẫn khám chuyên khoa."},
+ {q:"Khách dị ứng đạm bò thì tư vấn SKU nào?",o:["BioA+","Không SKU nào (cả 8 đều chứa sữa bột)","Colostrum DHA"],c:1,e:"Cả 8 SKU đều chứa sữa bột → chống chỉ định; hướng dẫn khám chuyên khoa."},
  {q:"MK-7 (Vitamin K2) có vai trò gì?",o:["Tăng đề kháng","Đưa Canxi vào xương","Hỗ trợ tiêu hóa"],c:1,e:"MK-7 giúp canxi lắng vào xương thay vì mạch máu — hỗ trợ phát triển chiều cao."},
  {q:"WHO khuyến cáo thời điểm bắt đầu ăn dặm?",o:["Tròn 4 tháng","Tròn 6 tháng","Tròn 8 tháng"],c:1,e:"Sau 6 tháng sữa mẹ không còn đáp ứng đủ 100% nhu cầu; hệ tiêu hóa đã sẵn sàng hơn."},
  {q:"Khách tiểu đường thai kỳ thì Mama A+?",o:["Dùng bình thường","KHÔNG tư vấn — đi khám ngay","Tăng liều"],c:1,e:"Chống chỉ định — hướng dẫn khám chuyên khoa ngay."}
@@ -3768,7 +3769,7 @@ function asstNutri(d){
  if(/(loang xuong|xuong khop|nguoi lon|nguoi gia|cao tuoi)/.test(d)) return '🦴 Xương khớp / người lớn: '+SCI.bone+'\n👉 **Nutritie Canxi Pro A+** (Canxi Nano 688mg + MK-7 + Glucosamine).';
  if(/(me bau|mang thai|thai ky|cho con bu|sau sinh|bau bi)/.test(d)) return '🤰 Mẹ bầu & sau sinh: '+SCI.pregnant+'\n👉 **Nutritie Mama A+** (DHA + Axit Folic + Sắt + Canxi/MK-7 + Lactium).\n\n💛 Lưu ý: Sữa mẹ là thức ăn tốt nhất cho sức khỏe và sự phát triển toàn diện của trẻ nhỏ.';
  if(/(so sinh|tre 0|0.?12 thang|em be moi sinh|tre duoi 1)/.test(d)) return '👶 Trẻ 0–12 tháng: '+SCI.infant+'\n👉 **Nutritie Baby A+** là nền tảng dinh dưỡng đầu đời.\n\n💛 Lưu ý: Sữa mẹ là thức ăn tốt nhất cho sức khỏe và sự phát triển toàn diện của trẻ nhỏ.';
- if(/(tieu duong|duong huyet|gi thap)/.test(d)) return '⚕️ Về tiểu đường: '+SCI.diabetNo;
+ if(/(tieu duong|duong huyet|gi thap)/.test(d)) return '⚕️ Về tiểu đường: '+SCI.diabetAdult+'\n(Trẻ em / mẹ bầu: chưa có SKU phù hợp — hướng dẫn khám bác sĩ.)';
  if(/(mk.?7|vitamin k2|k2)/.test(d)) return '💡 MK-7 (Vitamin K2) giúp đưa Canxi vào xương thay vì lắng ở mạch máu — nên đi cùng Canxi + Vitamin D3. Có trong Grow IQ A+, Canxi Pro A+, Mama A+.';
  if(/(hmo|2.?fl)/.test(d)) return '💡 2\'-FL HMO là dưỡng chất quý trong sữa mẹ, nuôi lợi khuẩn đường ruột & hỗ trợ miễn dịch. Có trong Baby A+, BioA+, Pedia A+, Grow IQ A+.';
  if(/(z.?score|bmi|chi so|do chi so|nguyen tac)/.test(d)) return '📐 Nguyên tắc vàng: **đo Z-score/BMI trước** rồi mới gợi ý. Nếu dưới chuẩn → ưu tiên tăng cân (Pedia A+). Khi đã đạt chuẩn → mới đẩy chiều cao (Grow IQ A+).';
@@ -3801,7 +3802,7 @@ function asstReply(raw){ var d=asstNorm(raw);
  var preg=/(me bau|mang thai|thai ky|bau bi)/.test(d);
  var babyAge=preg?null:asstAge(d);
  /* Cảnh báo an toàn / cần thăm khám — giữ nguyên thông điệp tuân thủ */
- if(/(di ung dam bo|di ung dam sua|dam bo|bat dung nap lactose|khong dung nap lactose|tieu chay|viem ruot|da day|ta trang|ruot kich thich|\bibs\b|tieu duong thai ky)/.test(d)) return '⚠️ Trường hợp này (dị ứng đạm bò/sữa, bất dung nạp lactose, tiêu chảy/viêm ruột cấp, viêm loét dạ dày–tá tràng, IBS, hoặc tiểu đường thai kỳ) cần THĂM KHÁM bác sĩ chuyên khoa trước. Hãy tạm dừng tư vấn sữa để đảm bảo an toàn — cả 7 SKU Nutritie đều chứa sữa bột.';
+ if(/(di ung dam bo|di ung dam sua|dam bo|bat dung nap lactose|khong dung nap lactose|tieu chay|viem ruot|da day|ta trang|ruot kich thich|\bibs\b|tieu duong thai ky)/.test(d)) return '⚠️ Trường hợp này (dị ứng đạm bò/sữa, bất dung nạp lactose, tiêu chảy/viêm ruột cấp, viêm loét dạ dày–tá tràng, IBS, hoặc tiểu đường thai kỳ) cần THĂM KHÁM bác sĩ chuyên khoa trước. Hãy tạm dừng tư vấn sữa để đảm bảo an toàn — cả 8 SKU Nutritie đều chứa sữa bột.';
  /* Đơn hàng */
  if(/(don hang|don cua toi|kiem tra don|tra cuu don|bao nhieu don|tinh trang don|\border\b)/.test(d)){
    var os=(typeof orders==='function')?orders():[]; if(!os.length) return '📦 Hiện chưa có đơn nào. Bấm nút giỏ hàng trên đầu hoặc "Lên đơn" để tạo đơn mới nhé.';
