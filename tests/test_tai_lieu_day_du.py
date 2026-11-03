@@ -25,7 +25,7 @@ srv = socketserver.TCPServer(('127.0.0.1', 0), functools.partial(Q, directory=d)
 threading.Thread(target=srv.serve_forever, daemon=True).start()
 URL = f'http://127.0.0.1:{srv.server_address[1]}/'
 res = []
-PRODS = ['baby', 'bio', 'pedia', 'growiq', 'mama', 'canxipro', 'colostrum']
+PRODS = ['baby', 'bio', 'pedia', 'growiq', 'mama', 'canxipro', 'colostrum', 'glupro']
 
 
 def check(n, ok, det=''):
@@ -123,7 +123,7 @@ with sync_playwright() as p:
         check(T('Trang chủ có banner Bộ sản phẩm, ảnh tải được, vừa khổ màn'), bn and bn['w'] > 500 and 300 < bn['vis'] <= 390, bn)
         pg.evaluate("document.querySelector('#view .bo-ban').click()"); pg.wait_for_timeout(250)
         check(T('bấm banner ở Trang chủ -> sang tab Sản phẩm'), pg.evaluate("S.tab") == 'sp', pg.evaluate("S.tab"))
-        check(T('tab Sản phẩm có banner + đủ 7 thẻ sản phẩm'), pg.evaluate("!!document.querySelector('#view .bo-ban img')&&document.querySelectorAll('#view .grid > *').length===7"), pg.evaluate("document.querySelectorAll('#view .grid > *').length"))
+        check(T('tab Sản phẩm có banner + đủ 8 thẻ sản phẩm'), pg.evaluate("!!document.querySelector('#view .bo-ban img')&&document.querySelectorAll('#view .grid > *').length===8"), pg.evaluate("document.querySelectorAll('#view .grid > *').length"))
         ovf = pg.evaluate("document.documentElement.scrollWidth>window.innerWidth")
         check(T('không tràn ngang'), not ovf)
         pg.evaluate("openPresent()"); pg.wait_for_timeout(400)

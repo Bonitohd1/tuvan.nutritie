@@ -77,7 +77,7 @@ with sync_playwright() as p:
         rowimg = pg.evaluate("[...document.querySelectorAll('#view .mo-item .mo-th img')].filter(i=>i.naturalWidth>0).length")
         check(T('Lên đơn: mỗi sản phẩm trong giỏ có ẢNH lon (không chỉ emoji)'), rowimg == 2, rowimg)
         chip = pg.evaluate("[...document.querySelectorAll('#view .mo-add .chip img')].filter(i=>i.naturalWidth>0).length")
-        check(T('Lên đơn: các nút "Thêm nhanh" có ảnh sản phẩm'), chip == 7, chip)
+        check(T('Lên đơn: các nút "Thêm nhanh" có ảnh sản phẩm'), chip == 8, chip)
         pg.evaluate("document.getElementById('mo_phone').scrollIntoView({block:'center'})"); pg.wait_for_timeout(300)
         cov = pg.evaluate("""()=>{var i=document.getElementById('mo_phone').getBoundingClientRect();var pts=[[.5,.5],[.15,.5],[.85,.5],[.5,.2],[.5,.8]];var bad=[];pts.forEach(p=>{var e=document.elementFromPoint(i.left+i.width*p[0],i.top+i.height*p[1]);if(e&&e.id!=='mo_phone')bad.push((e.className||e.tagName)+'')});return bad}""")
         check(T('Lên đơn: ô "SĐT khách" KHÔNG bị nút Chốt đơn / thanh dưới đè lên'), not cov, cov)
@@ -186,7 +186,7 @@ with sync_playwright() as p:
         check(T('Canxi Pro giữ đúng nhãn 190ml; Mama 210ml'), '190ml' in us['canxipro'] and '210ml' in us['mama'], (us['canxipro'][:40], us['mama'][:40]))
 
         # ---- trang sản phẩm
-        for pid in ('baby', 'bio', 'pedia', 'growiq', 'colostrum', 'canxipro', 'mama'):
+        for pid in ('baby', 'bio', 'pedia', 'growiq', 'colostrum', 'canxipro', 'mama', 'glupro'):
             pr = pg.evaluate("""async(id)=>{go('sp');openP(id);await new Promise(r=>setTimeout(r,500));var s=document.getElementById('sheetin');var t=s.innerText.replace(/\\s+/g,' ');
               return {n:s.querySelectorAll('.bul .b').length,ing:t.includes('THÀNH PHẦN NGUYÊN LIỆU')||t.includes('Thành phần nguyên liệu'),warn:s.querySelectorAll('.warn').length,t:t}}""", pid)
             check(T(f'{pid}: LỢI ÍCH ≥ 5 ý + có mục Thành phần nguyên liệu + không còn khối cảnh báo tư vấn'), pr['n'] >= 5 and pr['ing'] and pr['warn'] == 0, (pr['n'], pr['ing'], pr['warn']))

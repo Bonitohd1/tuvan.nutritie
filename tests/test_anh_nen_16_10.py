@@ -26,7 +26,7 @@ srv = socketserver.TCPServer(('127.0.0.1', 0), functools.partial(Q, directory=d)
 threading.Thread(target=srv.serve_forever, daemon=True).start()
 URL = f'http://127.0.0.1:{srv.server_address[1]}/'
 res = []
-BG = ['baby', 'bio', 'pedia', 'growiq', 'canxipro', 'mama', 'colostrum']
+BG = ['baby', 'bio', 'pedia', 'growiq', 'canxipro', 'mama', 'colostrum', 'glupro']
 
 
 def check(n, ok, det=''):
@@ -52,8 +52,8 @@ with sync_playwright() as p:
         pg.evaluate("openPresent(); presGo('sanpham')"); pg.wait_for_timeout(700)
         grid = pg.evaluate("""(()=>[...document.querySelectorAll('#present .pr-pcard .pr-pimg img.bgi')]
           .map(i=>({src:i.getAttribute('src'),ok:i.complete&&i.naturalWidth>0})))()""")
-        check(T('lưới Trình khách: cả 7 lon dùng ảnh NỀN (class bgi, assets/bg/*.jpg) + load được'),
-              len(grid) == 7 and all(g['ok'] and g['src'].startswith('assets/bg/') for g in grid), grid)
+        check(T('lưới Trình khách: cả 8 lon dùng ảnh NỀN (class bgi, assets/bg/*.jpg) + load được'),
+              len(grid) == 8 and all(g['ok'] and g['src'].startswith('assets/bg/') for g in grid), grid)
 
         pg.evaluate("presProduct('pedia')"); pg.wait_for_timeout(600)
         hero = pg.evaluate("""(()=>{var i=document.querySelector('#present .pr-phero.bg img.bgi');

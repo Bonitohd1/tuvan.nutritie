@@ -54,7 +54,7 @@ with sync_playwright() as p:
         hid = [g for g in grid if 'Baby' in g['n'] or 'Bio' in g['n']]
         # 16/10/2026: khách QUYẾT mở FULL Baby/Bio ở Trình khách (PRES_HIDE=[]) — có ảnh + lợi ích; câu sữa mẹ VẪN giữ
         check(T('Trình khách, lưới: Baby + Bio nay HIỆN FULL (khách chốt 16/10) — có ảnh, bỏ "hỏi tư vấn viên"'), len(hid) == 2 and all(g['img'] and 'Hỏi tư vấn viên' not in g['tl'] for g in hid), hid)
-        check(T('Trình khách: cả 7 sản phẩm đều có ảnh'), len([g for g in grid if g['img']]) == 7, [g['n'] for g in grid if g['img']])
+        check(T('Trình khách: cả 8 sản phẩm đều có ảnh'), len([g for g in grid if g['img']]) == 8, [g['n'] for g in grid if g['img']])
         for pid in ('baby', 'bio'):
             pg.evaluate("(i)=>presProduct(i)", pid); pg.wait_for_timeout(200)
             v = pg.evaluate("(()=>{const e=document.querySelector('#present .pr-body');return {t:e.textContent,img:!!e.querySelector('img'),claims:e.querySelectorAll('.bul .b').length}})()")
@@ -82,7 +82,7 @@ with sync_playwright() as p:
 
         # ---- chân trang theo nhóm sản phẩm (theo HSCB) ----
         want = {'baby': 'Sản phẩm dinh dưỡng công thức', 'bio': 'Sản phẩm dinh dưỡng công thức', 'pedia': 'Sản phẩm dinh dưỡng,', 'growiq': 'Sản phẩm dinh dưỡng,',
-                'mama': 'chế độ ăn đặc biệt', 'canxipro': 'Thực phẩm bổ sung', 'colostrum': 'Thực phẩm bổ sung'}
+                'mama': 'chế độ ăn đặc biệt', 'canxipro': 'Thực phẩm bổ sung', 'colostrum': 'Thực phẩm bổ sung', 'glupro': 'Thực phẩm bổ sung'}
         bad = []
         for pid, key in want.items():
             pg.evaluate("(i)=>openP(i)", pid); pg.wait_for_timeout(150)

@@ -23,7 +23,7 @@ srv = socketserver.TCPServer(('127.0.0.1', 0), functools.partial(Q, directory=d)
 threading.Thread(target=srv.serve_forever, daemon=True).start()
 URL = f'http://127.0.0.1:{srv.server_address[1]}/'
 res = []
-IDS = ['baby', 'bio', 'pedia', 'growiq', 'mama', 'canxipro', 'colostrum']
+IDS = ['baby', 'bio', 'pedia', 'growiq', 'mama', 'canxipro', 'colostrum', 'glupro']
 
 
 def check(n, ok, det=''):
@@ -52,7 +52,7 @@ with sync_playwright() as p:
 
         # (1) tệp có thật, giải mã được
         ok = pg.evaluate("""async(ids)=>Promise.all(ids.map(i=>new Promise(r=>{const m=new Image();m.onload=()=>r(m.naturalWidth>300&&m.naturalHeight>400);m.onerror=()=>r(false);m.src='assets/chotsale/'+i+'.jpg';})))""", IDS)
-        check(T('7 ảnh chốt sale có thật và giải mã được'), all(ok), ok)
+        check(T('8 ảnh chốt sale có thật và giải mã được'), all(ok), ok)
         check(T('mọi sản phẩm đều có hướng dẫn trong CHOT_SALE'), pg.evaluate("(ids)=>ids.every(i=>!!CHOT_SALE[i]&&fileReady(CHOT_SALE[i]))", IDS))
 
         # (2) Tài liệu
@@ -62,7 +62,7 @@ with sync_playwright() as p:
         rows = pg.evaluate("[...document.querySelectorAll('#view .doc-row')].filter(r=>/Chốt sale —/.test(r.textContent))")
         n_rows = pg.evaluate("[...document.querySelectorAll('#view .doc-row')].filter(r=>/Chốt sale —/.test(r.textContent)).length")
         n_ok = pg.evaluate("[...document.querySelectorAll('#view .doc-row')].filter(r=>/Chốt sale —/.test(r.textContent)&&!r.classList.contains('pend')&&r.getAttribute('onclick')).length")
-        check(T('đủ 7 mục chốt sale, cả 7 đều mở được (không "chờ cập nhật")'), n_rows == 7 and n_ok == 7, (n_rows, n_ok))
+        check(T('đủ 8 mục chốt sale, cả 8 đều mở được (không "chờ cập nhật")'), n_rows == 8 and n_ok == 8, (n_rows, n_ok))
         pg.evaluate("[...document.querySelectorAll('#view .doc-row')].find(r=>/Chốt sale — Pedia/.test(r.textContent)).click()")
         pg.wait_for_timeout(500)
         img = pg.evaluate("(()=>{const i=document.querySelector('#docreader .dr-img');return i?{src:i.getAttribute('src'),w:i.naturalWidth}:null})()")
