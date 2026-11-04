@@ -1710,6 +1710,15 @@ function sciAdvice(){var o=S.user.obj,c=S.cls,n=S.needs,parts=[],low=c&&c.status
  if(!parts.length)parts.push(SCI.childBase);
  return parts.join("\n\n");}
 var HISTS=["Không có","Dị ứng đạm bò","Không dung nạp Lactose","Đang bị tiêu chảy cấp / Viêm ruột cấp","Viêm loét dạ dày - tá tràng","Hội chứng ruột kích thích (IBS)","Tiểu đường","Loãng xương","Vừa phẫu thuật/ốm dậy","Tiền sản giật","Bệnh thận / sỏi thận","Đang dùng thuốc chống đông","Khác"];
+/* #5 (phan hoi 4.11): tien su benh ly theo TUNG nhom doi tuong (truoc 1 list chung) — theo Nutritie.xlsx Section A/B.
+   Di ung/khong dung nap + tieu hoa cap: moi nhom. Loang xuong/tieu duong/hau phau/than/chong dong: nguoi lon.
+   Tien san giat + tieu duong (thai ky): me bau. Tre: chi di ung + tieu hoa cap (sinh non la o rieng). */
+var HIST_COMMON=["Không có","Dị ứng đạm bò","Không dung nạp Lactose","Đang bị tiêu chảy cấp / Viêm ruột cấp","Viêm loét dạ dày - tá tràng","Hội chứng ruột kích thích (IBS)"];
+function histsFor(obj){
+ if(obj==="tre_0_12"||obj==="tre_1_10")return HIST_COMMON.concat(["Khác"]);
+ if(obj==="pregnant")return HIST_COMMON.concat(["Tiểu đường","Tiền sản giật","Bệnh thận / sỏi thận","Đang dùng thuốc chống đông","Khác"]);
+ return HIST_COMMON.concat(["Tiểu đường","Loãng xương","Vừa phẫu thuật/ốm dậy","Bệnh thận / sỏi thận","Đang dùng thuốc chống đông","Khác"]);
+}
 function contraCheck(){var h=S.user.hist||[];function has(x){return h.indexOf(x)>=0;}
  if(has("Dị ứng đạm bò"))return{title:"Chống chỉ định — Dị ứng đạm sữa bò",b:"Khách dị ứng đạm sữa bò: TUYỆT ĐỐI không tư vấn sản phẩm có sữa bò. Cả 8 SKU Nutritie đều chứa sữa bột → không phù hợp. Hướng dẫn khách chọn giải pháp không đạm bò và khám bác sĩ."};
  if(has("Không dung nạp Lactose"))return{title:"Chống chỉ định — Bất dung nạp Lactose",b:"Bất dung nạp Lactose (phổ biến ở người châu Á): lactose lên men gây đầy hơi, tiêu chảy. Không tư vấn SKU chứa lactose (cả 8 SKU); hướng dẫn khách chọn giải pháp phù hợp."};
@@ -1950,7 +1959,7 @@ function progHead(){var seg='';for(var i=1;i<=4;i++)seg+='<div class="'+(S.step>
  var side=S.step===4?'<div class="done-chip">'+ic('check_circle')+'Hoàn thành</div>':'<div class="prog-num">'+S.step+'<span>/4</span></div>';
  return '<div class="prog-h"><div class="prog-top"><div class="prog-ic">'+ic(SICS[S.step-1])+'</div><div class="prog-tx"><div class="lab">Quy trình tư vấn</div><h1>'+STEPTT[S.step-1]+'</h1><div class="prog-sub">'+SSUB[S.step-1]+'</div></div>'+side+'</div><div class="step">'+seg+'</div></div>';}
 /* Đổi đối tượng giữa chừng = xoá số đo / nhu cầu / thông tin bé của đối tượng cũ (từng còn nguyên: người lớn hiện "Bo · sinh non 6T · 60kg", huy hiệu nhu cầu cũ). */
-function setObj(v){var old=S.user.obj;S.user.obj=v;if(v!=="tre_0_12"&&v!=="tre_1_10")S.user.preterm="";if(old&&old!==v){S.m={};S.needs=[];S._gSaved=false;S._gBabyId="";if(v!=="tre_0_12"&&v!=="tre_1_10"){S.user.dob="";S.user.consent=null;S.user.phone="";S.user.name="";}else if(S.user.dob){syncKidAge();}}draw();}
+function setObj(v){var old=S.user.obj;S.user.obj=v;if(v!=="tre_0_12"&&v!=="tre_1_10")S.user.preterm="";if(old&&old!==v){S.m={};S.needs=[];S.user.hist=["Không có"];S._gSaved=false;S._gBabyId="";if(v!=="tre_0_12"&&v!=="tre_1_10"){S.user.dob="";S.user.consent=null;S.user.phone="";S.user.name="";}else if(S.user.dob){syncKidAge();}}draw();}
 function toggleHist(v){var u=S.user;if(v==="Không có"){u.hist=["Không có"];}else{u.hist=u.hist.filter(function(x){return x!=="Không có";});var i=u.hist.indexOf(v);if(i<0)u.hist.push(v);else u.hist.splice(i,1);}draw();}
 function chip(on,txt,click){return '<div class="chip'+(on?' on':'')+'" onclick="'+click+'">'+txt+'</div>';}
 function chk(on,txt,click){return '<div class="chk'+(on?' on':'')+'" onclick="'+click+'"><span class="bx">'+(on?ic('check'):'')+'</span>'+txt+'</div>';}
@@ -1963,7 +1972,7 @@ function tvStep1(){var u=S.user,dyn='';
   if(u.obj==="pregnant")dyn+='<label>Tình trạng</label><div class="chips gsex">'+[["Đang mang thai",false],["Sau sinh / cho con bú",true]].map(function(x){return chip(!!u.postpartum===x[1],x[0],"S.user.postpartum="+x[1]+";draw()");}).join('')+'</div>';
   if(u.obj==="tre_0_12"||u.obj==="tre_1_10")dyn+='<label>Sinh non? Số TUẦN SINH SỚM so với 40 tuần (trống nếu đủ tháng'+(u.obj==="tre_1_10"?"; chỉ áp dụng khi bé dưới 2 tuổi":"")+')</label><input type="number" inputmode="numeric" min="0" max="16" value="'+esc(u.preterm)+'" onchange="setPreterm(this)" oninput="S.user.preterm=this.value" placeholder="VD: 4 (sinh lúc 36 tuần = sớm 4 tuần)">';
   if(u.obj==="tre_0_12"||u.obj==="tre_1_10")dyn+=kidBlock();
-  dyn+='<label>Tiền sử bệnh lý</label>'+HISTS.map(function(hh){var dg=HDNG[hh]?1:0;var tx=dg?'<span style="color:var(--red-d)">'+ic('warning')+' '+esc(hh)+'</span>':esc(hh);return '<div class="'+(dg?'hi-dng':'')+'">'+chk(u.hist.indexOf(hh)>=0,tx,"toggleHist(\'"+hh.replace(/'/g,"\\'")+"\')")+'</div>';}).join('');
+  dyn+='<label>Tiền sử bệnh lý</label>'+histsFor(u.obj).map(function(hh){var dg=HDNG[hh]?1:0;var tx=dg?'<span style="color:var(--red-d)">'+ic('warning')+' '+esc(hh)+'</span>':esc(hh);return '<div class="'+(dg?'hi-dng':'')+'">'+chk(u.hist.indexOf(hh)>=0,tx,"toggleHist(\'"+hh.replace(/'/g,"\\'")+"\')")+'</div>';}).join('');
   dyn+='<label>Sản phẩm đang dùng (nếu có)</label><input value="'+esc(u.cur)+'" oninput="S.user.cur=this.value" placeholder="Tên sữa đang dùng...">';}
  return '<div class="card"><div class="sec-l" style="margin-bottom:11px"><div class="sec-ic">'+ic('person')+'</div><div><h3>Đối tượng sử dụng</h3><div class="sub">Chọn nhóm phù hợp với khách</div></div></div>'+cards+dyn+'</div>'
   +'<button class="btn btnN press" style="margin-top:14px" onclick="next1()">Tiếp tục'+ic('chevron_right')+'</button>';}
