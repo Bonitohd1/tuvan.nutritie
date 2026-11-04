@@ -1909,16 +1909,37 @@ function consultSaveGrowth(){
   saveMeasures(ms);}
  S._gBabyId=b.id;try{growthFlush();}catch(e){}
  return b;}
+function nowISOd(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+/* #7 (phan hoi 4.11): chua co NGAY SINH nhung da nhap TUOI + can nang -> dung ho so bé TAM (khong luu)
+   de ve bieu do 1 diem theo tuoi da nhap. Ngay sinh suy ra = now - tuoiThang*MS_MONTH, snt=0 (babyAgeC
+   khong hieu chinh sinh non 2 lan; da tru o day cho be <24 thang, dung logic babyAgeC). */
+function consultTempBaby(){
+ var u=S.user,w=num("w");if(w==null||w<1||w>150)return null;
+ var h0=num("h");if(h0!=null&&(h0<40||h0>220))h0=null;
+ var am;if(u.obj==="tre_0_12"){am=num("months");if(am==null||am<0||am>13)return null;}
+ else{var ag=num("age");if(ag==null||ag<1||ag>17)return null;am=ag*12;}
+ var pw=(u.obj==="tre_0_12")?pretermWeeks():0;if(pw>0&&pw<=16&&am<24)am=Math.max(0,am-pw/4.345);
+ var dob=nowISOd(new Date(Date.now()-am*MS_MONTH));
+ var b={id:"__tmp__",ten:(u.name||"").trim()||"Bé",ngaySinh:dob,gioiTinh:(u.gender==="Nữ")?"Gái":"Trai",snt:0};
+ var ms=[{id:"__tmpm__",babyId:"__tmp__",ngayDo:nowISO(),canNang:Math.round(w*10)/10,chieuCao:(h0!=null?Math.round(h0*10)/10:null)}];
+ return {b:b,ms:ms};}
 function consultGrowthCard(){if(!kidChild())return "";
- var b=consultSaveGrowth();
- if(!b)return kidDobOK()?"":'<div class="card" style="font-size:12.5px;line-height:1.55;color:var(--on-var)">Chưa vẽ được biểu đồ tăng trưởng vì buổi tư vấn này không có ngày sinh của bé. Lần sau nhập ngày sinh ở bước 1 để app tự vẽ và nhớ các lần đo.</div>';
+ var b=consultSaveGrowth(),synth=false,ms;
+ if(b){ms=babyMeasures(b.id);}
+ else{var t=consultTempBaby();
+  if(!t)return kidDobOK()?"":'<div class="card" style="font-size:12.5px;line-height:1.55;color:var(--on-var)">Nhập <b>cân nặng</b> (và số tuổi/tháng) của bé ở bước 2 để app vẽ biểu đồ tăng trưởng ngay. Nhập thêm <b>ngày sinh</b> ở bước 1 để lưu hồ sơ và nối các lần đo.</div>';
+  b=t.b;ms=t.ms;synth=true;}
  if(!S.growth)S.growth={};
- var ms=babyMeasures(b.id),nowA=babyAgeC(b,nowISO()),tabv=(nowA!=null&&nowA>60)?"b":"w";
- var plot=ms.filter(function(m){var a=babyAgeC(b,m.ngayDo);return tabv==="b"?(+m.canNang>0&&+m.chieuCao>0&&a!=null&&a>60):(m.canNang!=null);});
- var h='<div class="card"><div class="sec-l" style="margin-bottom:6px"><div class="sec-ic">'+ic('trending_up')+'</div><div><h3 style="font-size:15px">Tăng trưởng của '+esc(b.ten||"bé")+'</h3><div class="sub">'+(ms.length>1?(ms.length+" lần đo · lần đầu "+fmtDate(ms[0].ngayDo)):"Lần đo đầu tiên — từ lần sau biểu đồ nối thành đường")+'</div></div></div>';
- if(!plot.length)h+='<div style="text-align:center;color:var(--on-var);font-size:12.5px;padding:18px 8px">'+(tabv==="b"?"Chưa tính được BMI: cần có cả cân nặng và chiều cao.":"Chưa có số đo cân nặng để vẽ biểu đồ.")+'</div>';
- else h+=(tabv==="b"?'<div style="font-size:12px;font-weight:700;color:var(--on-var);margin:2px 2px 6px">BMI theo tuổi · '+(b.gioiTinh==="Gái"?"Bé gái":"Bé trai")+' · WHO 2007 (5–19 tuổi)</div>':'')+growthChart(b,ms,tabv)+growthLegend(tabv);
- h+='</div>'+growthAssess(b,ms)+growthSyncBlock(b)
+ var nowA=babyAgeC(b,nowISO()),tabv=S.growth.tab==="h"?"h":((nowA!=null&&nowA>60)?"b":"w");
+ /* #3 (phan hoi 4.11): them tab Chieu cao cho ca card tu van (truoc chi ve can nang/BMI) */
+ var plot=ms.filter(function(m){var a=babyAgeC(b,m.ngayDo);if(a==null||a<0)return false;if(tabv==="b")return +m.canNang>0&&+m.chieuCao>0&&a>60;if(tabv==="h")return +m.chieuCao>0;return m.canNang!=null;});
+ var tabs='<div class="gv-tabs" style="margin-bottom:8px"><div class="gv-tab'+(tabv!=="h"?" on":"")+'" onclick="S.growth.tab=\'w\';draw()">'+ic('monitor_weight')+(tabv==="b"?"BMI":"Cân nặng")+'</div><div class="gv-tab'+(tabv==="h"?" on":"")+'" onclick="S.growth.tab=\'h\';draw()">'+ic('straighten')+'Chiều cao</div></div>';
+ var h='<div class="card"><div class="sec-l" style="margin-bottom:6px"><div class="sec-ic">'+ic('trending_up')+'</div><div><h3 style="font-size:15px">Tăng trưởng của '+esc(b.ten||"bé")+'</h3><div class="sub">'+(synth?"Theo tuổi đã nhập":(ms.length>1?(ms.length+" lần đo · lần đầu "+fmtDate(ms[0].ngayDo)):"Lần đo đầu tiên — từ lần sau biểu đồ nối thành đường"))+'</div></div></div>'+tabs;
+ if(synth)h+='<div style="font-size:11.5px;color:#9A5B13;line-height:1.5;margin:0 2px 8px">'+ic('info')+' Chưa có ngày sinh — biểu đồ vẽ theo <b>tuổi đã nhập</b>, chưa lưu. Nhập ngày sinh ở bước 1 để lưu và nối các lần đo.</div>';
+ if(!plot.length)h+='<div style="text-align:center;color:var(--on-var);font-size:12.5px;padding:18px 8px">'+(tabv==="b"?"Chưa tính được BMI: cần có cả cân nặng và chiều cao.":tabv==="h"?"Chưa có số đo chiều cao để vẽ biểu đồ.":"Chưa có số đo cân nặng để vẽ biểu đồ.")+'</div>';
+ else h+=(tabv==="b"?'<div style="font-size:12px;font-weight:700;color:var(--on-var);margin:2px 2px 6px">BMI theo tuổi · '+(b.gioiTinh==="Gái"?"Bé gái":"Bé trai")+' · WHO 2007 (5–19 tuổi)</div>':tabv==="h"?'<div style="font-size:12px;font-weight:700;color:var(--on-var);margin:2px 2px 6px">Chiều cao theo tuổi · '+(b.gioiTinh==="Gái"?"Bé gái":"Bé trai")+'</div>':'')+growthChart(b,ms,tabv)+growthLegend(tabv);
+ h+='</div>';
+ if(!synth)h+=growthAssess(b,ms)+growthSyncBlock(b)
   +'<button class="btn btnO" onclick="S.growth.baby=\''+b.id+'\';go(\'growth\')">'+ic('trending_up')+'Xem đầy đủ lịch sử đo của bé</button>';
  return h;}
 function startTV(){clearSess();S.step=1;S._cMarked=false;S._gSaved=false;S._gBabyId="";S._sessId="s"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);S._sessSent=false;S.user={obj:"",gender:"",senior:false,postpartum:false,preterm:"",hist:[],cur:"",name:"",dob:"",consent:null,phone:""};S.m={};S.cls=null;S.needs=[];go('tuvan');}
