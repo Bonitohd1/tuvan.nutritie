@@ -1743,9 +1743,10 @@ function recommend(){var o=S.user.obj,c=S.cls,n=S.needs,low=c&&c.status==="low",
    if(n.indexOf("Hay ốm / miễn dịch kém")>=0){ids.push("colostrum");why.push("Bé hay ốm → kết hợp Colostrum DHA (pha sẵn, sữa non giàu kháng thể).");}
  } else if(o==="adult"){
    if(hasDiabetes()){ids=["glupro"];why.push("Khách tiểu đường / tiền tiểu đường → Nutritie Glupro: dinh dưỡng cân bằng, hệ bột đường GI thấp (Isomalt + Isomaltulose) hấp thu chậm, tỷ lệ dưỡng chất theo ADA/EASD. HỖ TRỢ dinh dưỡng, KHÔNG thay thế thuốc điều trị — khách vẫn cần theo chỉ định bác sĩ và tự theo dõi đường huyết.");}
-   else if(!low&&n.indexOf("Loãng xương")<0&&((c&&c.status==="high")||n.indexOf("Ăn kiêng / kiểm soát cân nặng")>=0)){ids=[];why.push("BMI trên chuẩn / khách muốn kiểm soát cân nặng → Nutritie chưa có SKU phù hợp (Canxi Pro A+ không phải sản phẩm giảm cân). Chỉ tư vấn Canxi Pro A+ khi khách cần canxi cho xương khớp (chọn nhu cầu Loãng xương).");}
+   else if(!low&&(c&&c.status==="high")){ids=[];why.push(n.indexOf("Loãng xương")>=0?"BMI trên chuẩn (thừa cân/béo phì) → KHÔNG tư vấn Nutritie Canxi Pro A+ vì đây là sữa CAO NĂNG LƯỢNG (1.0 kcal/ml), thêm năng lượng không phù hợp khi đang thừa cân. Nhu cầu canxi / xương khớp: bổ sung qua chế độ ăn giàu canxi, vận động và khám chuyên gia dinh dưỡng / cơ xương khớp.":"BMI trên chuẩn / khách muốn kiểm soát cân nặng → Nutritie chưa có SKU phù hợp (Canxi Pro A+ là sữa cao năng lượng, không phải sản phẩm giảm cân). Hướng dẫn cân đối khẩu phần, vận động và gặp chuyên gia dinh dưỡng.");}
+   else if(!low&&n.indexOf("Ăn kiêng / kiểm soát cân nặng")>=0){ids=[];why.push("Khách muốn kiểm soát cân nặng → Nutritie chưa có SKU GI thấp / giảm cân phù hợp (Canxi Pro A+ là sữa cao năng lượng). Hướng dẫn cân đối khẩu phần, vận động và gặp chuyên gia dinh dưỡng.");}
    else if(low){ids=["canxipro"];why.push("Người lớn BMI thấp cần tăng cân/phục hồi → Canxi Pro A+ (1.0 kcal/ml).");}
-   else{ids=["canxipro"];why.push("Loãng xương/xương khớp → Canxi Pro A+ (Canxi Nano 688mg + MK-7 + Glucosamine).");}
+   else{ids=["canxipro"];why.push("Loãng xương/xương khớp (BMI đạt chuẩn) → Canxi Pro A+ (Canxi Nano 688mg + MK-7 + Glucosamine).");}
  } else {
    ids=["mama"];why.push("Mẹ bầu/sau sinh → Mama A+ (Axit Folic, Sắt, DHA, Canxi + MK-7, Lactium hỗ trợ ngủ ngon).");
    if(S.user.postpartum&&(n.indexOf("Chuột rút / đau xương khớp")>=0||low)){ids.push("canxipro");why.push("Mẹ sau sinh bị chuột rút / đau xương khớp hoặc cần phục hồi thể trạng → kết hợp thêm Canxi Pro A+ (cách Sắt/Kẽm liều cao ≥ 2 giờ).");}
