@@ -177,6 +177,11 @@ with sync_playwright() as p:
         pg.evaluate("go('stock');draw()"); pg.wait_for_timeout(300)
         stx = pg.evaluate("document.getElementById('view').innerText")
         check(T('tab Tồn kho: liệt kê từng quy cách của mỗi SKU'), 'Lon 800g' in stx and 'Lon 400g' in stx and 'Thùng 12 lon x 800g' in stx and 'Lốc 110ml' in stx, stx[:60])
+        # ---- #F 05/11 (khách): quy cách 400g+800g cho Baby/Pedia/Mama/Bio; Grow IQ/Canxi Pro/Glupro chỉ 800g ----
+        pk = pg.evaluate("""(()=>{var o={};['baby','pedia','mama','bio','growiq','canxipro','glupro'].forEach(function(id){o[id]=packs(id);});return o;})()""")
+        has400 = lambda i: any('400g' in x for x in pk[i])
+        check(T('#F: Baby/Pedia/Mama/Bio có quy cách 400g'), all(has400(i) for i in ['baby', 'pedia', 'mama', 'bio']), {k: pk[k] for k in ['baby', 'pedia', 'mama', 'bio']})
+        check(T('#F: Grow IQ/Canxi Pro/Glupro CHỈ 800g (không 400g)'), not any(has400(i) for i in ['growiq', 'canxipro', 'glupro']), {k: pk[k] for k in ['growiq', 'canxipro', 'glupro']})
         pg.evaluate("localStorage.removeItem('nt_stock')")
 
         # ---- số liệu pha theo NHÃN (bảng thành phần): Pedia 205ml/247kcal, Grow IQ 230ml
@@ -191,6 +196,11 @@ with sync_playwright() as p:
               return {n:s.querySelectorAll('.bul .b').length,ing:t.includes('THÀNH PHẦN NGUYÊN LIỆU')||t.includes('Thành phần nguyên liệu'),warn:s.querySelectorAll('.warn').length,t:t}}""", pid)
             check(T(f'{pid}: LỢI ÍCH ≥ 5 ý + có mục Thành phần nguyên liệu + không còn khối cảnh báo tư vấn'), pr['n'] >= 5 and pr['ing'] and pr['warn'] == 0, (pr['n'], pr['ing'], pr['warn']))
             if pid == 'baby':
+                # chờ ảnh BẢNG LƯỢNG ĂN tải xong (webkit tải chậm -> trước đây flaky đếm = 0)
+                try:
+                    pg.wait_for_function("[...document.querySelectorAll('#sheetin img')].some(i=>/luongan/i.test(i.getAttribute('src')||'')&&i.complete&&i.naturalWidth>0)", timeout=5000)
+                except Exception:
+                    pass
                 bb = pg.evaluate("[...document.querySelectorAll('#sheetin img')].filter(i=>/luongan/i.test(i.getAttribute('src')||'')&&i.complete&&i.naturalWidth>0).length")
                 check(T('Baby A+: có BẢNG LƯỢNG ĂN ĐỀ NGHỊ (ảnh) + đúng câu hướng dẫn pha'), bb == 1 and '1 muỗng gạt (tương đương 4,6g) pha với 30ml nước (50°C), pha với nước chín ấm.' in pr['t'] and 'Bảng lượng ăn đề nghị chỉ mang tính chất tham khảo, có thể điều chỉnh lượng ăn theo nhu cầu thực tế của mỗi bé.' in pr['t'], (bb, pr['t'][pr['t'].find('Cách dùng'):pr['t'].find('Cách dùng') + 200]))
             if pid == 'pedia':
