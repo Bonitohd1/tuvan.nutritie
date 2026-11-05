@@ -120,8 +120,8 @@ with sync_playwright() as p:
         pg.evaluate("startTV();S.tab='tuvan';S.user.obj='tre_1_10';S.user.hist=['Không có'];S.m={age:4,w:16,h:100};S.cls=classify();S.step=4;draw()")
         rv = pg.evaluate("document.getElementById('view').textContent")
         check(T('thẻ sản phẩm ghi "Gợi ý ưu tiên", không còn "Ưu tiên số 1" (bộ luật QC cấm "số 1")'), 'Ưu tiên số 1' not in rv, rv[:80])
-        check(T('ảnh nhân vật đã thu nhỏ (WebP): splash dùng nhanvat.webp, mascot dolphin.webp; tệp ≤ 80KB'),
-              pg.evaluate("document.querySelector('.sp-girl').getAttribute('src')") == 'nhanvat.webp' and pg.evaluate("MASCOT") == 'dolphin.webp'
+        check(T('ảnh nhân vật (WebP): splash + mascot quét dùng nhanvat.webp (FAB chat giữ dolphin); tệp ≤ 80KB — #4 04/11'),
+              pg.evaluate("document.querySelector('.sp-girl').getAttribute('src')") == 'nhanvat.webp' and pg.evaluate("MASCOT") == 'nhanvat.webp'
               and all(os.path.getsize(os.path.join(d, f)) < 80 * 1024 for f in ('nhanvat.webp', 'dolphin.webp')))
         run = pg.evaluate("(()=>{const a=document.querySelectorAll('#splash *');let r=0;a.forEach(e=>{if(getComputedStyle(e).animationName!=='none'&&getComputedStyle(e).animationPlayState==='running')r++});return [a.length,r,document.getElementById('splash').classList.contains('hide')]})()")
         check(T('splash đã ẩn: KHÔNG còn animation nào đang chạy ngầm (trước: hàng trăm lần layout / 10 giây)'), run[2] and run[1] == 0, run)

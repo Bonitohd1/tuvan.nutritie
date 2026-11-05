@@ -92,7 +92,7 @@ with sync_playwright() as p:
         r = result(pg, 'adult', {'w': 95, 'h': 165}, ['Ăn kiêng / kiểm soát cân nặng'])
         check(T('người lớn BMI 34,9 + ăn kiêng: không "Người lớn gầy / tăng cân", không đẩy Canxi Pro'), r['ids'] == [] and 'gầy' not in r['sci'] and 'BMI trên chuẩn' in r['sci'] and not r['order'], (r['ids'], r['sci'][:80]))
         r = result(pg, 'adult', {'w': 95, 'h': 165}, ['Loãng xương'])
-        check(T('người lớn thừa cân nhưng khách chọn Loãng xương: vẫn Canxi Pro (nhu cầu thật)'), r['ids'] == ['canxipro'], r['ids'])
+        check(T('người lớn thừa cân + Loãng xương: KHÔNG đẩy Canxi Pro (sữa cao năng lượng), không cho lên đơn — #1 04/11'), r['ids'] == [] and not r['order'], (r['ids'], r['sci'][:80]))
         r = result(pg, 'adult', {'w': 45, 'h': 165})
         check(T('người lớn gầy (BMI 16,5): vẫn Canxi Pro + lời khuyên tăng cân'), r['ids'] == ['canxipro'] and 'gầy' in r['sci'], (r['ids'], r['sci'][:60]))
         r = result(pg, 'adult', {'w': 58, 'h': 165})
@@ -101,7 +101,7 @@ with sync_playwright() as p:
         # ---- kiểm khoảng tuổi / số đo / ngày sinh ----
         def try_next2(obj, m):
             return pg.evaluate("""([o,m])=>{startTV();S.user.obj=o;S.user.hist=['Không có'];S.m=m;S.step=2;draw();window.__t=[];next2();return [S.step,__t.length?__t[__t.length-1]:'']}""", [obj, m])
-        for lbl, obj, m, key in [('trẻ 25 tuổi', 'tre_1_10', {'age': 25, 'w': 20, 'h': 110}, '1 đến 10 tuổi'), ('trẻ -3 tuổi', 'tre_1_10', {'age': -3, 'w': 20, 'h': 110}, '1 đến 10 tuổi'),
+        for lbl, obj, m, key in [('trẻ 25 tuổi', 'tre_1_10', {'age': 25, 'w': 20, 'h': 110}, '1 đến dưới 18 tuổi'), ('trẻ -3 tuổi', 'tre_1_10', {'age': -3, 'w': 20, 'h': 110}, '1 đến dưới 18 tuổi'),
                                  ('bé 30 tháng ở nhóm 0–12', 'tre_0_12', {'months': 30, 'w': 8}, '0 đến 12 tháng'), ('bé -2 tháng', 'tre_0_12', {'months': -2, 'w': 8}, '0 đến 12 tháng'),
                                  ('mẹ bầu pw 0', 'pregnant', {'pw': 0, 'h': 0}, '30–200'), ('người lớn cao 500', 'adult', {'w': 60, 'h': 500}, 'phải trong khoảng')]:
             st = try_next2(obj, m)

@@ -156,7 +156,7 @@ with sync_playwright() as p:
         pg.evaluate("S.needs=['Tăng cân'];S.step=4;draw()")
         pg.wait_for_timeout(250)
         st = store(pg)
-        check(T('không ngày sinh: KHÔNG lưu hồ sơ nào, có lời nhắc nhập ngày sinh'), len(st['b']) == 0 and len(st['m']) == 0 and 'không có ngày sinh' in txt(pg))
+        check(T('không ngày sinh + nhập tuổi: vẽ biểu đồ tạm theo tuổi, KHÔNG lưu hồ sơ — #7 04/11'), len(st['b']) == 0 and len(st['m']) == 0 and 'tuổi đã nhập' in txt(pg) and 'chưa lưu' in txt(pg))
 
         # ===== E. ca chống chỉ định vẫn có biểu đồ =====
         pg = fresh(ctx, errs)

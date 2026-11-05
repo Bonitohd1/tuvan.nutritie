@@ -40,7 +40,7 @@
   header{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.9);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);border-bottom:1px solid rgba(31,45,107,.06);box-shadow:0 1px 10px rgba(38,50,122,.05);padding-top:env(safe-area-inset-top)}
   .hdr{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 var(--pad-screen);max-width:640px;margin:0 auto}
   .hdr-l{display:flex;align-items:center;gap:9px;min-width:0}
-  .icobtn{width:40px;height:40px;border:0;background:none;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--navy);cursor:pointer;font-size:22px;flex-shrink:0;transition:background var(--t) var(--ease),transform var(--t) var(--ease)}
+  .icobtn{width:44px;height:44px;border:0;background:none;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--navy);cursor:pointer;font-size:22px;flex-shrink:0;transition:background var(--t) var(--ease),transform var(--t) var(--ease)}
   .icobtn:active{background:var(--sc);transform:scale(.94)}
   .logo-chip{height:34px;display:flex;align-items:center;background:#fff;border:1px solid var(--line);border-radius:9px;padding:3px 9px;flex-shrink:0}
   .logo-chip img{height:24px;width:auto;object-fit:contain;display:block}
@@ -1237,19 +1237,19 @@
 <input type="checkbox" id="dtog">
 <label class="backdrop" for="dtog"></label>
 <aside class="drawer">
-  <div class="dh"><div class="logo-chip" style="border:0;padding:0"><img id="dlogo" alt="Nutritie"></div><label class="icobtn" for="dtog"><span class="ic" data-ic="close"></span></label></div>
+  <div class="dh"><div class="logo-chip" style="border:0;padding:0"><img id="dlogo" alt="Nutritie"></div><label class="icobtn" for="dtog" aria-label="Đóng menu"><span class="ic" data-ic="close"></span></label></div>
   <nav id="drawernav"></nav>
 </aside>
 
 <div class="app">
   <header><div class="hdr">
-    <div class="hdr-l"><label class="icobtn" for="dtog"><span class="ic" data-ic="menu"></span></label>
+    <div class="hdr-l"><label class="icobtn" for="dtog" aria-label="Mở menu"><span class="ic" data-ic="menu"></span></label>
       <div class="logo-chip"><img id="hdlogo" alt="Nutritie" onerror="this.parentNode.textContent='🍼'"></div>
       <div class="hdr-tt"><b>Trợ lý tư vấn</b><span>Đúng nhu cầu · chuẩn công bố</span></div>
     </div>
     <div style="display:flex;align-items:center;gap:6px">
-      <button id="notib" onclick="openNoti()" style="position:relative;width:40px;height:40px;border:0;background:none;border-radius:50%;color:var(--navy);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px"><span class="ic" data-ic="notifications"></span><span id="notin" style="position:absolute;top:2px;right:2px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center">0</span></button>
-      <button id="cartb" onclick="go('makeorder')" style="display:none;position:relative;width:40px;height:40px;border:0;background:none;border-radius:50%;color:var(--navy);cursor:pointer;align-items:center;justify-content:center;font-size:22px"><span class="ic" data-ic="add_shopping_cart"></span><span id="cartn" style="position:absolute;top:2px;right:2px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">0</span></button>
+      <button id="notib" onclick="openNoti()" aria-label="Thông báo" style="position:relative;width:44px;height:44px;border:0;background:none;border-radius:50%;color:var(--navy);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px"><span class="ic" data-ic="notifications"></span><span id="notin" style="position:absolute;top:2px;right:2px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center">0</span></button>
+      <button id="cartb" onclick="go('makeorder')" aria-label="Giỏ hàng" style="display:none;position:relative;width:44px;height:44px;border:0;background:none;border-radius:50%;color:var(--navy);cursor:pointer;align-items:center;justify-content:center;font-size:22px"><span class="ic" data-ic="add_shopping_cart"></span><span id="cartn" style="position:absolute;top:2px;right:2px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;background:var(--red);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">0</span></button>
       <img class="avatar" id="hdav" alt="" onerror="this.style.display='none'">
     </div>
   </div></header>
