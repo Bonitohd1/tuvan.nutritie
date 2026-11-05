@@ -108,11 +108,31 @@ with sync_playwright() as p:
             check(T(f'{lbl}: bị chặn ở bước 2 kèm lời giải thích'), st[0] == 2 and key in st[1], st)
         st = try_next2('pregnant', {'pw': 55, 'h': 160})
         check(T('mẹ bầu số liệu hợp lý: qua bước 3'), st[0] == 3, st)
+        # ---- #A 05/11 (khách báo): bước 1 theo NGÀY SINH cho trẻ 1-17 (next1), không chỉ đường nhập tuổi ----
+        def next1_dob_y(obj, years):
+            return pg.evaluate("""([o,y])=>{startTV();var d=new Date();d.setFullYear(d.getFullYear()-y);var dob=d.toISOString().slice(0,10);
+              S.user={obj:o,gender:'Trai',dob:dob,consent:false,phone:'',hist:['Không có'],preterm:''};S.step=1;window.__t=[];next1();return [S.step,__t.length?__t[__t.length-1]:'']}""", [obj, years])
+        def next1_dob_mo(obj, months):
+            return pg.evaluate("""([o,mo])=>{startTV();var d=new Date();d.setMonth(d.getMonth()-mo);var dob=d.toISOString().slice(0,10);
+              S.user={obj:o,gender:'Trai',dob:dob,consent:false,phone:'',hist:['Không có'],preterm:''};S.step=1;window.__t=[];next1();return [S.step,__t.length?__t[__t.length-1]:'']}""", [obj, months])
+        st = next1_dob_y('tre_1_10', 13)
+        check(T('trẻ 13 tuổi nhập NGÀY SINH: QUA bước 2 (trước đây chặn "trẻ 1-10 tuổi")'), st[0] == 2, st)
+        st = next1_dob_y('tre_1_10', 17)
+        check(T('trẻ 17 tuổi nhập ngày sinh: QUA bước 2'), st[0] == 2, st)
+        st = next1_dob_y('tre_1_10', 19)
+        check(T('trẻ 19 tuổi nhập ngày sinh: chặn, hướng Người trưởng thành'), st[0] == 1 and '18 tuổi' in st[1], st)
+        st = next1_dob_mo('tre_1_10', 8)
+        check(T('8 tháng ở nhóm trên 1 tuổi (ngày sinh): chặn, hướng 0-12 tháng'), st[0] == 1 and 'chưa tròn 1 tuổi' in st[1], st)
+        # ---- #B 05/11 (khách báo): tư vấn sữa BỘT cho trẻ 1-17 LUÔN kèm sữa pha sẵn (Colostrum DHA) ----
+        r = result(pg, 'tre_1_10', {'age': 6, 'w': 20, 'h': 118}, ['Tăng chiều cao'])
+        check(T('trẻ chuẩn + chiều cao: Grow IQ (bột) KÈM Colostrum DHA (pha sẵn)'), 'growiq' in r['ids'] and 'colostrum' in r['ids'], r['ids'])
+        r = result(pg, 'tre_1_10', {'age': 5, 'w': 14, 'h': 108}, ['Tăng cân'])
+        check(T('trẻ + tăng cân: Pedia (bột) KÈM Colostrum DHA (pha sẵn)'), 'pedia' in r['ids'] and 'colostrum' in r['ids'], r['ids'])
         quet = pg.evaluate("""(()=>{var bad=[];[['tre_1_10',{age:6,w:20,h:0}],['adult',{w:0,h:170}],['pregnant',{pw:0,h:0}],['tre_0_12',{months:8,w:0}]].forEach(function(x){startTV();S.user.obj=x[0];S.user.hist=['Không có'];S.m=x[1];S.step=2;next2();if(S.step!==2)bad.push(x[0])});return bad})()""")
         check(T('không còn đường nào ra "Infinity" / "NaN" từ số đo vô lý'), quet == [], quet)
 
         # ngày sinh lệch nhóm
-        for obj, mo, key in [('tre_0_12', 36, 'Trẻ trên 1 tuổi'), ('tre_1_10', 4, 'chưa tròn 1 tuổi'), ('tre_1_10', 15 * 12, 'trên 11 tuổi')]:
+        for obj, mo, key in [('tre_0_12', 36, 'Trẻ trên 1 tuổi'), ('tre_1_10', 4, 'chưa tròn 1 tuổi'), ('tre_1_10', 19 * 12, '18 tuổi')]:
             dob = pg.evaluate(ISOM, mo)
             st = pg.evaluate("""([o,dob])=>{startTV();S.user.obj=o;S.user.gender='Nam';S.user.dob=dob;S.user.consent=false;S.user.hist=['Không có'];S.step=1;window.__t=[];next1();return [S.step,__t.length?__t[__t.length-1]:'']}""", [obj, dob])
             check(T(f'{obj}, ngày sinh cách {mo} tháng: chặn ở bước 1 ("{key}")'), st[0] == 1 and key in st[1], st)

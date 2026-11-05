@@ -78,7 +78,7 @@ with sync_playwright() as p:
         r = result(pg, 'tre_1_10', {'age': 2, 'w': 16, 'h': 85}, needs=['Tiêu hóa kém'])
         check(T('A3: bé 2 tuổi THỪA CÂN + tiêu hóa kém -> KHÔNG gợi BioA+ đậm độ cao hơn'), 'bio' not in r['ids'] and 'chuẩn' in (r['cls'] or '') and 'cao hơn' in (r['cls'] or '').lower(), (r['cls'], r['ids']))
         r = result(pg, 'tre_1_10', {'age': 2, 'w': 11.5, 'h': 87}, needs=['Tiêu hóa kém'])
-        check(T('A3: bé 2 tuổi bình thường + tiêu hóa kém -> VẪN BioA+ (giữ đúng)'), r['ids'] == ['bio'], (r['cls'], r['ids']))
+        check(T('A3: bé 2 tuổi bình thường + tiêu hóa kém -> BioA+ + kèm Colostrum pha sẵn — #B 05/11'), r['ids'] == ['bio', 'colostrum'], (r['cls'], r['ids']))
         # A1 tiền sản giật
         r = result(pg, 'pregnant', {'pw': 55, 'h': 160}, hist=['Tiền sản giật'], gender='Nữ')
         check(T('A1: tiền sản giật -> hiện cảnh báo khám bác sĩ chuyên khoa sản'), 'Tiền sản giật' in r['t'] and 'khám bác sĩ' in r['t'], r['t'][:120])

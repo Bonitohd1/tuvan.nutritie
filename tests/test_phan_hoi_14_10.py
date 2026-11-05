@@ -154,9 +154,9 @@ with sync_playwright() as p:
         r = result(pg, 'tre_1_10', {'age': 2, 'w': 9.0, 'h': 82}, needs=['Hay ốm / miễn dịch kém'])
         check(T('bé 2 tuổi nhẹ cân + hay ốm: Pedia + BioA+ + Colostrum, cả 3 hiện thành thẻ'), r['ids'] == ['pedia', 'bio', 'colostrum'] and 'Colostrum DHA' in r['t'], r['ids'])
         r = result(pg, 'tre_1_10', {'age': 4, 'w': 12.0, 'h': 98})
-        check(T('bé 4 tuổi nhẹ cân: chỉ Pedia A+ (BioA+ chỉ đến 36 tháng)'), r['ids'] == ['pedia'], r['ids'])
+        check(T('bé 4 tuổi nhẹ cân: Pedia A+ (không BioA+ vì >36 tháng) + kèm Colostrum pha sẵn — #B 05/11'), r['ids'] == ['pedia', 'colostrum'], r['ids'])
         r = result(pg, 'tre_1_10', {'age': 2, 'w': 12.4, 'h': 87}, needs=['Tiêu hóa kém'])
-        check(T('bé 2 tuổi bình thường + tiêu hóa kém: BioA+ (giữ như cũ)'), r['ids'] == ['bio'], r['ids'])
+        check(T('bé 2 tuổi bình thường + tiêu hóa kém: BioA+ + kèm Colostrum pha sẵn — #B 05/11'), r['ids'] == ['bio', 'colostrum'], r['ids'])
 
         # ---- tồn kho theo TỪNG quy cách (khách 19/9: link tồn kho real từng tab)
         pg.evaluate("localStorage.removeItem('nt_stock')")
