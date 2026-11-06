@@ -1601,7 +1601,10 @@ function sendOrder(o){
  if(!url){ /* MÔ PHỎNG */ return Promise.resolve({ok:true,ref:"SIM-"+o.id}); }
  var payload={localId:o.id,pg:o.pg,phone:o.phone,note:o.note,ctkm:o.ctkm,at:o.at,
    items:o.items.map(function(it){return {sku:it.sku,qty:it.qty,pack:it.pack};})};
- return fetch(url,{method:"POST",headers:(typeof ntHeaders==="function")?ntHeaders():{"Content-Type":"application/json"},body:JSON.stringify(payload)})
+ var _h=(typeof ntHeaders==="function")?ntHeaders():{"Content-Type":"application/json"};
+ var _tk=(typeof nppToken==="function")?nppToken():"";
+ if(_tk)_h["X-Npp-Token"]=_tk;   /* DMS Slice 2 (05/11): co ma NPP -> may chu gan don vao dung NPP (nhu Wintop); chua co ma -> luu "nutritie" nhu cu */
+ return fetch(url,{method:"POST",headers:_h,body:JSON.stringify(payload)})
    .then(function(r){
      if(!r.ok)return {ok:false,err:"HTTP "+r.status};
      return r.json().then(function(d){return {ok:true,ref:(d&&(d.kiotvietId||d.ref))||null};},function(){return {ok:false,err:"Máy chủ trả dữ liệu không hợp lệ"};});
