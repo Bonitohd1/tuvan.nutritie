@@ -492,7 +492,8 @@
   .bul .b .ic{color:var(--red);font-size:17px;flex-shrink:0;margin-top:1px}
   .dis{font-size:11px;color:#5B6473;text-align:center;margin-top:12px}
   /* ==== Chi tiết SP (premium) ==== */
-  .phero{position:relative;height:200px;border-radius:16px;overflow:hidden;margin-bottom:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 14px 34px -14px rgba(38,50,122,.42)}
+  /* 07/11 (chị Yến): ảnh SP là ảnh VUÔNG có nền hoa -> khung chi tiết để VUÔNG cho lon hiện đủ (trước height:200px + cover cắt mất đầu/đáy lon). */
+  .phero{position:relative;aspect-ratio:1/1;max-height:360px;border-radius:16px;overflow:hidden;margin-bottom:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 14px 34px -14px rgba(38,50,122,.42)}
   .phero .emo{font-size:92px;filter:drop-shadow(0 8px 14px rgba(0,0,0,.18))}
   .phero .hero-cut{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0}
   .phero .scr{position:absolute;inset:0;background:linear-gradient(to top,rgba(20,32,79,.3),transparent 46%);pointer-events:none;z-index:1}
@@ -1681,6 +1682,14 @@ function corrMonths(){var mo=num("months");if(mo==null)return null;var c=mo-pret
 function corrTxt(c){return String(c.toFixed(1)).replace(".",",");}
 function hfaZof(months,h){ if(months==null||h==null)return null; var z=whoZ("h",months,h); return isFinite(z)?z:null; }
 function markStunt(c,months,h){ if(!c)return c; var z=hfaZof(months,h); if(z!=null){ c.hfaZ=z; if(z<-2)c.stunt=true; } return c; }
+/* Vạch BMI người lớn trên thanh 5 MÀU (đỏ|vàng|xanh lá|teal|cam): khớp RANH GIỚI vùng với mốc BMI 17/18.5/25/30.
+   Chị Yến 07/11: BMI 25–30 (thừa cân) PHẢI nằm vùng teal, chỉ ≥30 (béo phì) mới sang cam. Thanh chia 16.6/16.6/33.4/16.6/16.8. */
+function bmiGaugePct(ba){
+  var P=[[13,4],[17,16.6],[18.5,33.2],[25,66.6],[30,83.2],[40,96]];
+  if(ba<=P[0][0])return 4;
+  for(var i=1;i<P.length;i++){if(ba<=P[i][0]){var a=P[i-1],b=P[i];return a[1]+(ba-a[0])/(b[0]-a[0])*(b[1]-a[1]);}}
+  return 96;
+}
 function classify(){var o=S.user.obj,w=num("w"),h=num("h");
  /* 13/10/2026 (agent test): thước đo tư vấn từng dùng bảng thô + SD = 12% trung vị + ngưỡng BMI cứng 15/20 -> lệch biểu đồ WHO ngay dưới nó (nhãn trái ngược ở ~8% ca; bé 6 tuổi BMI 19 "Bình thường" trong khi WHO "Béo phì").
     Nay cả hai dùng CÙNG bảng WHO LMS (whoZ). */
@@ -1692,8 +1701,7 @@ function classify(){var o=S.user.obj,w=num("w"),h=num("h");
   if(ba<16){st="low";lb="Gầy độ III";}else if(ba<17){st="low";lb="Gầy độ II";}else if(ba<18.5){st="low";lb="Gầy độ I";}
   else if(ba<25){st="normal";lb="Bình thường";}else if(ba<30){st="high";lb="Thừa cân";}
   else if(ba<35){st="high";lb="Béo phì độ I";}else if(ba<40){st="high";lb="Béo phì độ II";}else{st="high";lb="Béo phì độ III";}
-  /* Vạch khớp vùng màu thước đo: 18.5 -> 33.2% (vào xanh "Chuẩn"), 25 -> 66.6% (ra teal "Thừa") */
-  return {status:st,label:lb,metric:"BMI = "+ba.toFixed(1),pct:Math.max(4,Math.min(96,33.2+(ba-18.5)/6.5*33.4))};}
+  return {status:st,label:lb,metric:"BMI = "+ba.toFixed(1),pct:Math.max(4,Math.min(96,bmiGaugePct(ba)))};}
  if(S.user.postpartum){if(w==null||h==null)return null;var bp=w/Math.pow(h/100,2);return {status:bp<18.5?"low":bp<23?"normal":"high",label:"Mẹ sau sinh — BMI "+bp.toFixed(1),metric:"BMI = "+bp.toFixed(1),pct:Math.max(4,Math.min(96,(bp-14)/(32-14)*100)),postpartum:true};}
  var pw=num("pw");if(pw==null||h==null)return null;var pb=pw/Math.pow(h/100,2);return {status:"pregnant",bmiSt:pb<18.5?"low":pb<23?"normal":"high",label:"BMI trước thai "+pb.toFixed(1),metric:pb<18.5?"Nên tăng 12.5–18 kg":pb<23?"Nên tăng 11.5–16 kg":"Nên tăng 7–11.5 kg",pct:Math.max(4,Math.min(96,(pb-14)/(32-14)*100))};}
 var SCI={
