@@ -1916,7 +1916,7 @@ function kidAgeBox(){syncKidAge();return '<div style="background:var(--sec-fx);b
 function kidBlock(){var u=S.user,ok=kidDobOK();
  var h='<label>Tên bé (không bắt buộc)</label><input value="'+esc(u.name||"")+'" oninput="S.user.name=this.value" placeholder="VD: Bé Bo">'
   +'<label>Ngày sinh của bé</label><input type="date" value="'+esc(u.dob||"")+'" max="'+nowISO()+'" oninput="S.user.dob=this.value" onblur="setKidDob(this.value)">'
-  +'<div style="font-size:12px;line-height:1.5;margin:-2px 0 9px;color:var(--on-var)">'+kidDobLine()+'</div>';
+  +'<div style="font-size:12px;line-height:1.5;margin:8px 0 10px;color:var(--on-var)">'+kidDobLine()+'</div>';/* 07/11: margin-top duong cho dong "Tuoi cua be" khong dinh sat o ngay sinh (truoc -2px bi de) */
  if(ok)h+='<div style="margin-top:6px;padding:11px 12px;border:1.5px solid var(--line);border-radius:14px;background:#F7F9FD">'
   +'<div style="font-size:12px;font-weight:700;color:var(--on-var);margin-bottom:5px">Đọc cho khách trước khi lưu SĐT</div>'
   +'<div style="font-size:12.5px;line-height:1.6;margin-bottom:9px">“'+CONSENT_TXT+'”</div>'
@@ -2528,8 +2528,13 @@ function growthChart(b,ms,tab){
  var pts=[];ms.forEach(function(m){var v;if(type==="b"){var w0=+m.canNang,h0=+m.chieuCao;if(!(w0>0)||!(h0>0))return;v=w0/((h0/100)*(h0/100));}else{v=isW?m.canNang:m.chieuCao;if(v==null||!isFinite(v))return;}var am=babyAgeC(b,m.ngayDo);if(am==null||am<0)return;if(type==="b"&&am<=60)return;if(am>XM)return;pts.push({am:am,v:v,id:m.id});});
  var nowA=babyAgeC(b,nowISO())||0;
  var maxA=pts.length?pts[pts.length-1].am:nowA;
- var x0=pts.length?Math.max(X0,Math.floor(pts[0].am)):X0;
- var x1=Math.min(XM,Math.ceil(Math.max(nowA,maxA))+3);if(x1<=x0)x1=Math.min(XM,x0+6);if(x1<=x0)x1=XM;
+ /* Cua so tuoi RONG de duong WHO co HINH DANG (truoc chi ~4 thang -> duong phang, nhieu khoang trong, xau).
+    Canh giua quanh tuoi be, toi thieu ~30 thang (baby can nang: 18 thang vi tang nhanh); kep trong [X0, XM]. */
+ var dataLo=pts.length?pts[0].am:nowA,dataHi=Math.max(nowA,maxA);
+ var MINSPAN=(isW&&nowA<24)?18:30,span=Math.max(MINSPAN,(dataHi-dataLo)+8),mid=(dataLo+dataHi)/2;
+ var x0=Math.max(X0,Math.round(mid-span/2)),x1=Math.min(XM,Math.round(mid+span/2));
+ if(x1-x0<MINSPAN){if(x0<=X0)x1=Math.min(XM,X0+MINSPAN);else x0=Math.max(X0,x1-MINSPAN);}
+ if(x1<=x0)x1=Math.min(XM,x0+MINSPAN);
  var xs=[];for(var mm=Math.ceil(x0);mm<x1;mm++)xs.push(mm);xs.unshift(x0);xs.push(x1);
  var ymin=Infinity,ymax=-Infinity;xs.forEach(function(mo){var lo=xAtZ(lmsAt(tbl,mo),-3),hi=xAtZ(lmsAt(tbl,mo),3);if(lo<ymin)ymin=lo;if(hi>ymax)ymax=hi;});
  pts.forEach(function(p){if(p.v<ymin)ymin=p.v;if(p.v>ymax)ymax=p.v;});
