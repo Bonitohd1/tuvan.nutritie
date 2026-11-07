@@ -99,9 +99,15 @@ with sync_playwright() as p:
         check(T('nút Back của điện thoại đóng trình đọc, không thoát app'), (not pg.evaluate("document.getElementById('docreader').classList.contains('open')")) and pg.url.startswith(URL))
         # (5) số trang đối chiếu Drive
         cnt = lambda f: pg.evaluate("(f)=>(DOCPG[f]||[]).length", f)
-        check(T('đối chiếu số trang với PDF gốc: HSCB Baby 4 · HSCB Bio 2 · KQ KN chung 8 · Pedia đào tạo 18'),
-              (cnt('Hồ sơ công bố/HS chỉnh sửa/HSCB_Nutritie Baby A+_2022-01.pdf'), cnt('Hồ sơ công bố/HS chỉnh sửa/HSCB_Nutritie BioA+_full_2024 (1).pdf'),
-               cnt('Kiểm Nghiệm/KQ KN SN Nutritie (NPP Colostrum VN).pdf'), cnt('Tài liệu Training/Nutritie Pedia A+.pdf')) == (4, 2, 8, 18))
+        # 07/11 (chị Yến): HSCB chỉ để TRANG ĐẦU (mẫu đăng ký không đổi, số liệu chi tiết không cần show) -> cả 8 HSCB = 1 trang. KN/đào tạo giữ nguyên.
+        _hscb = ['Hồ sơ công bố/HS chỉnh sửa/HSCB_Nutritie Baby A+_2022-01.pdf', 'Hồ sơ công bố/HS chỉnh sửa/HSCB_Nutritie BioA+_full_2024 (1).pdf',
+                 'Hồ sơ công bố/HS chỉnh sửa/HSCB_Nutritie Grow A+_2022-01.pdf', 'Hồ sơ công bố/HS chỉnh sửa/HSCB_Nutritie Mama A+_2022-01.pdf',
+                 'Hồ sơ công bố/HS chỉnh sửa/HSCB_Nutritie Pedia A+_2022-01.pdf', 'Hồ sơ công bố/HS chỉnh sửa/HS tu CB_Nutritie Canxi Pro A+_2022-01.pdf',
+                 'Hồ sơ công bố/HS chỉnh sửa/HSTCB_SBPS Nutriie Colostrum DHA.pdf', 'Hồ sơ công bố/HS chỉnh sửa/HSTCB - Nutritie Glupro.pdf']
+        check(T('cả 8 HSCB CHỈ 1 trang (chị Yến: chỉ để trang đầu); KN chung 8 · Pedia đào tạo 18 giữ nguyên'),
+              all(cnt(k) == 1 for k in _hscb)
+              and (cnt('Kiểm Nghiệm/KQ KN SN Nutritie (NPP Colostrum VN).pdf'), cnt('Tài liệu Training/Nutritie Pedia A+.pdf')) == (8, 18),
+              [cnt(k) for k in _hscb])
 
         # (3) hồ sơ trên 7 trang sản phẩm
         bad_p = []
