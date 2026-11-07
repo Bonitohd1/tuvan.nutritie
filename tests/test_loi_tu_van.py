@@ -93,6 +93,13 @@ with sync_playwright() as p:
         check(T('người lớn BMI 34,9 + ăn kiêng: không "Người lớn gầy / tăng cân", không đẩy Canxi Pro'), r['ids'] == [] and 'gầy' not in r['sci'] and 'BMI trên chuẩn' in r['sci'] and not r['order'], (r['ids'], r['sci'][:80]))
         r = result(pg, 'adult', {'w': 95, 'h': 165}, ['Loãng xương'])
         check(T('người lớn thừa cân + Loãng xương: KHÔNG đẩy Canxi Pro (sữa cao năng lượng), không cho lên đơn — #1 04/11'), r['ids'] == [] and not r['order'], (r['ids'], r['sci'][:80]))
+        # 07/11 (chị Yến): chuẩn WHO QUỐC TẾ — 25,x là THỪA CÂN (không phải béo phì); 18,5–25 bình thường; ≥30 mới béo phì
+        r = result(pg, 'adult', {'w': 69, 'h': 165})
+        check(T('người lớn BMI 25,3: "Thừa cân" (KHÔNG phải "Béo phì") — chuẩn WHO quốc tế'), r['cls']['label'] == 'Thừa cân' and r['cls']['status'] == 'high', r['cls'])
+        r = result(pg, 'adult', {'w': 65, 'h': 165})
+        check(T('người lớn BMI 23,9: "Bình thường" (WHO 18,5–25; trước ngưỡng Á gọi nhầm "Thừa cân")'), r['cls']['label'] == 'Bình thường' and r['cls']['status'] == 'normal', r['cls'])
+        r = result(pg, 'adult', {'w': 87, 'h': 165})
+        check(T('người lớn BMI 32,0: "Béo phì độ I" (≥30 mới béo phì)'), r['cls']['label'] == 'Béo phì độ I' and r['cls']['status'] == 'high', r['cls'])
         r = result(pg, 'adult', {'w': 45, 'h': 165})
         check(T('người lớn gầy (BMI 16,5): vẫn Canxi Pro + lời khuyên tăng cân'), r['ids'] == ['canxipro'] and 'gầy' in r['sci'], (r['ids'], r['sci'][:60]))
         r = result(pg, 'adult', {'w': 58, 'h': 165})
