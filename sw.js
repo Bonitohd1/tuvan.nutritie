@@ -1,7 +1,7 @@
 /* Nutritie — Service Worker (online-first + cache offline).
    NHÂN từ app Wintop (sw.js, đã chạy thật): network-first CÓ TIMEOUT -> không bao giờ kẹt bản cũ khi còn mạng,
    chỉ dùng cache khi mạng treo/mất. ĐỔI 'nutritie-vN' mỗi lần deploy để dọn cache cũ. */
-var CACHE = "nutritie-v5";
+var CACHE = "nutritie-v6";
 var CORE = ["./", "./index.html", "./assets/icon-192.png", "./assets/icon-512.png",
   "./fonts/bvp-400.woff2", "./fonts/bvp-500.woff2", "./fonts/bvp-600.woff2", "./fonts/bvp-700.woff2", "./fonts/bvp-800.woff2"];
 self.addEventListener("install", function(e){ self.skipWaiting(); e.waitUntil(caches.open(CACHE).then(function(c){ return c.addAll(CORE).catch(function(){}); })); });
