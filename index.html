@@ -3781,17 +3781,81 @@ var ASST_URL="https://api.wintop.vn/api/wintop/nutritie-assistant";
 var asstOpen=false;
 var asstLog=(function(){ try{ var a=lsGet('nt_asst',[]); return Array.isArray(a)?a.slice(-40):[]; }catch(e){ return []; } })();
 function saveAsst(){ try{ lsSet('nt_asst', asstLog.slice(-40)); }catch(e){} }
+/* ===== HỒ SƠ BÉ ĐANG TƯ VẤN (bộ nhớ BỀN qua cả phiên) =====
+   VÌ SAO: cửa sổ 8 lượt chỉ giữ ngữ cảnh gần đây — khách hỏi rồi MỘT LÚC SAU mới hỏi tiếp thì thông tin
+   (tuổi/cân/cao/nhu cầu) trôi mất -> trợ lý "như quên" (phản hồi khách 10/11). Hồ sơ này lưu BỀN (localStorage),
+   TIÊM LẠI mỗi lượt, KHÔNG hết hạn theo thời gian. Chỉ xoá khi bấm "Khách mới". */
+var asstHo=(function(){ try{ var h=lsGet('nt_asst_ho',null); return (h&&typeof h==='object')?h:{needs:[],prods:[]}; }catch(e){ return {needs:[],prods:[]}; } })();
+if(!asstHo.needs)asstHo.needs=[]; if(!asstHo.prods)asstHo.prods=[];
+function saveHo(){ try{ lsSet('nt_asst_ho', asstHo); }catch(e){} }
+function hoAgeLabel(m){ if(m==null)return ''; if(m<24)return m+' tháng'; var y=Math.floor(m/12),r=m%12; return y+' tuổi'+(r?(' '+r+' tháng'):''); }
+/* Rút thông tin bền từ CÂU KHÁCH VỪA GÕ. Dùng chung regex với asstAge + bộ nhận nhu cầu của trợ lý offline. */
+function asstExtract(raw){ var d=asstNorm(raw), ch=false;
+ var age=(typeof asstAge==='function')?asstAge(d):null; if(age!=null){ asstHo.ageMo=age; ch=true; }
+ var mw=d.match(/(\d{1,2}(?:[.,]\d)?)\s*(?:kg|ky|ki|kilo|kilogam)\b/); if(mw){ var kg=parseFloat(mw[1].replace(',','.')); if(kg>=1&&kg<=60){ asstHo.kg=kg; ch=true; } }
+ var mh=d.match(/(?:cao|chieu cao|dai)\s*(\d{2,3})(?:\s*cm)?|(\d{2,3})\s*cm\b/); if(mh){ var cm=parseInt(mh[1]||mh[2],10); if(cm>=30&&cm<=200){ asstHo.cm=cm; ch=true; } }
+ if(/\b(be trai|con trai|chau trai|thang be|boy)\b/.test(d)){ asstHo.sex='trai'; ch=true; }
+ else if(/\b(be gai|con gai|chau gai|girl)\b/.test(d)){ asstHo.sex='gái'; ch=true; }
+ var NEED=[[/(bieng an|luoi an|nhe can|suy dinh duong|cham tang can|cham lon|thap coi|coi coc|tang can)/,'biếng ăn / nhẹ cân'],
+           [/(tao bon|tieu hoa|day hoi|doi sua|chuyen sua|di ngoai|hap thu kem)/,'tiêu hoá / táo bón'],
+           [/(chieu cao|tang chieu cao|cao lon|cao them)/,'tăng chiều cao'],
+           [/(tri nao|thong minh|dha|hoc tap|ghi nho|tap trung)/,'trí não'],
+           [/(mien dich|hay om|de khang|om vat|hay benh)/,'đề kháng'],
+           [/(loang xuong|xuong khop)/,'xương khớp'],
+           [/(me bau|mang thai|thai ky|sau sinh|cho con bu)/,'mẹ bầu / sau sinh']];
+ for(var i=0;i<NEED.length;i++){ if(NEED[i][0].test(d)&&asstHo.needs.indexOf(NEED[i][1])<0){ asstHo.needs.push(NEED[i][1]); ch=true; } }
+ if(asstHo.needs.length>4)asstHo.needs=asstHo.needs.slice(-4);
+ var p=(typeof asstFindProd==='function')?asstFindProd(d):null; if(p&&asstHo.prods.indexOf(p.name)<0){ asstHo.prods.push(p.name); ch=true; if(asstHo.prods.length>3)asstHo.prods=asstHo.prods.slice(-3); }
+ if(ch){ asstHo.updatedAt=Date.now(); saveHo(); }
+ return ch;
+}
+/* Dòng hồ sơ gọn, gửi kèm backend (ho_so_be) và hiện ở đầu trợ lý. Rỗng khi chưa có gì. */
+function hoSoText(){ var p=[], head='bé';
+ if(asstHo.sex)head+=' '+asstHo.sex;
+ if(asstHo.ageMo!=null)head+=' '+hoAgeLabel(asstHo.ageMo);
+ if(head!=='bé')p.push(head);
+ if(asstHo.kg!=null)p.push(String(asstHo.kg).replace('.',',')+' kg');
+ if(asstHo.cm!=null)p.push(asstHo.cm+' cm');
+ if(asstHo.needs&&asstHo.needs.length)p.push('nhu cầu: '+asstHo.needs.join(', '));
+ if(asstHo.prods&&asstHo.prods.length)p.push('quan tâm: '+asstHo.prods.join(', '));
+ return p.join(' · ');
+}
+/* KHÁCH MỚI: cách reset DUY NHẤT (không tự xoá theo thời gian). Xoá cả hội thoại lẫn hồ sơ bé. */
+function asstNew(){ if((hoSoText()||asstLog.length>1)&&!confirm('Bắt đầu tư vấn KHÁCH MỚI?\nHội thoại và hồ sơ bé hiện tại sẽ được xoá.'))return;
+ asstHo={needs:[],prods:[]}; try{localStorage.removeItem('nt_asst_ho');}catch(e){}
+ asstLog=[]; asstLog.push({r:'a',t:asstGreet()}); saveAsst(); renderAsst(); }
+/* Dải hồ sơ bé ở đầu trợ lý — nhắc PG luôn thấy đang tư vấn cho ai (không bao giờ tự quên theo thời gian). */
+var HOBAR_STY='display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 12px;background:#FFF1E6;border-bottom:1px solid #f0d9c6;font-size:13px;color:#5a2f12;line-height:1.35';
+function hoBarInner(hs){ return '<span>👶 <b>Đang tư vấn:</b> '+esc(hs)+'</span><button onclick="asstNew()" aria-label="Bắt đầu khách mới" style="margin-left:auto;border:1px solid #d98a4e;background:#fff;color:#ad1b1a;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:700;min-height:36px;cursor:pointer">🔄 Khách mới</button>'; }
+/* Cập nhật dải hồ sơ TẠI CHỖ (không render lại cả bảng -> không mất ô đang gõ / chỉ báo đang trả lời). */
+function renderHoBar(){ var p=document.querySelector('#asst .as-panel'); if(!p)return; var bar=document.getElementById('ashobar'); var hs=hoSoText();
+ if(!hs){ if(bar&&bar.parentNode)bar.parentNode.removeChild(bar); return; }
+ if(bar){ bar.innerHTML=hoBarInner(hs); return; }
+ var head=p.querySelector('.as-head'); if(!head)return; bar=document.createElement('div'); bar.id='ashobar'; bar.setAttribute('style',HOBAR_STY); bar.innerHTML=hoBarInner(hs); head.parentNode.insertBefore(bar, head.nextSibling); }
 function asstNorm(s){ try{ return String(s==null?'':s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d'); }catch(e){ return String(s==null?'':s).toLowerCase(); } }
 function asstMd(t){ var h=esc(t); h=h.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>'); h=h.replace(/\n/g,'<br>'); return h; }
 function asstGreet(){ var hr=new Date().getHours(), g=hr<11?'Chào buổi sáng':hr<18?'Chào buổi chiều':'Chào buổi tối'; return g+'! Mình là **Trợ lý Nutritie**. Mình giúp bạn tra cứu nhanh sản phẩm, đơn hàng, tồn kho và gợi ý dinh dưỡng. Bạn cần hỏi gì nào?'; }
-function openAsst(prefill){ asstOpen=true; if(!asstLog.length){ asstLog.push({r:'a',t:asstGreet()}); saveAsst(); } var o=document.getElementById('asst'); if(o)o.className='open'; document.body.style.overflow='hidden'; renderAsst(); if(prefill){ var inp=document.getElementById('asstin'); if(inp){ inp.value=prefill; inp.focus(); } } }
+function openAsst(prefill){ asstOpen=true;
+ if(!asstLog.length){ asstLog.push({r:'a',t:asstGreet()}); saveAsst(); }
+ else { /* Khoảng lặng dài + đang có hồ sơ -> NHẮC NHẸ (không tự xoá): vẫn khách cũ thì hỏi tiếp, khách mới thì bấm "Khách mới". */
+   var hs=hoSoText();
+   if(hs && asstHo.updatedAt && (Date.now()-asstHo.updatedAt>3*3600*1000)){
+     var nudge='↩️ Bạn đang tư vấn cho **'+hs+'**. Vẫn khách này thì cứ hỏi tiếp nhé — nếu là **khách mới**, bấm nút 🔄 "Khách mới" ở trên.';
+     var last=asstLog[asstLog.length-1];
+     if(!last||last.t!==nudge){ asstLog.push({r:'a',t:nudge}); saveAsst(); }
+   }
+ }
+ var o=document.getElementById('asst'); if(o)o.className='open'; document.body.style.overflow='hidden'; renderAsst(); if(prefill){ var inp=document.getElementById('asstin'); if(inp){ inp.value=prefill; inp.focus(); } } }
 function closeAsst(){ asstOpen=false; var o=document.getElementById('asst'); if(o){ o.className=''; o.innerHTML=''; } document.body.style.overflow=''; }
-function clearAsst(){ asstLog=[]; asstLog.push({r:'a',t:asstGreet()}); saveAsst(); renderAsst(); }
+function clearAsst(){ asstNew(); }  /* nút 🔄 trên đầu = Khách mới (xoá cả hồ sơ, có hỏi lại) */
 function renderAsst(){ var o=document.getElementById('asst'); if(!o)return; if(!asstOpen){ o.className=''; o.innerHTML=''; return; }
  var sugg=[{t:'💡 Mẹo bán hàng',c:'tip'},{t:'📦 Tình trạng đơn',c:'orders'},{t:'📊 Kiểm tồn kho',c:'stock'},{t:'❓ Hỏi thường gặp',c:'qa'},{t:'🔗 Chia sẻ',c:'share'}];
  var quick=['Trẻ biếng ăn dùng gì?','Mẹ bầu nên uống gì?','Nutritie Pedia A+ là gì?','Còn hàng Grow IQ không?','Trẻ táo bón xử lý sao?'];
+ var hs0=hoSoText();
+ var hoBar=hs0?('<div id="ashobar" style="'+HOBAR_STY+'">'+hoBarInner(hs0)+'</div>'):'';
  o.innerHTML='<div class="as-bg" onclick="closeAsst()"></div><div class="as-panel">'
-  +'<div class="as-head"><div class="as-av"><img src="'+MASCOT+'" alt="" onerror="this.style.display=\'none\'"></div><div class="as-tt"><b>Trợ lý Nutritie</b><span>Sản phẩm · đơn hàng · tồn kho · dinh dưỡng</span></div><button class="as-x" onclick="clearAsst()" title="Làm mới hội thoại">'+ic('refresh')+'</button><button class="as-x" onclick="closeAsst()" title="Đóng">'+ic('close')+'</button></div>'
+  +'<div class="as-head"><div class="as-av"><img src="'+MASCOT+'" alt="" onerror="this.style.display=\'none\'"></div><div class="as-tt"><b>Trợ lý Nutritie</b><span>Sản phẩm · đơn hàng · tồn kho · dinh dưỡng</span></div><button class="as-x" onclick="asstNew()" title="Khách mới — xoá hội thoại &amp; hồ sơ bé">'+ic('refresh')+'</button><button class="as-x" onclick="closeAsst()" title="Đóng">'+ic('close')+'</button></div>'
+  +hoBar
   +'<div class="as-log" id="asstlog">'+asstLog.map(function(m){ return '<div class="as-bub '+(m.r==='u'?'u':'a')+'">'+((m.r==='a')?asstMd(m.t):esc(m.t).replace(/\n/g,'<br>'))+'</div>'; }).join('')+'</div>'
   +'<div class="as-chips">'+sugg.map(function(s){ return '<button class="as-chip" onclick="asstChip(\''+s.c+'\')">'+s.t+'</button>'; }).join('')+'</div>'
   +'<div class="as-chips as-quick">'+quick.map(function(q){ return '<button class="as-chip alt" onclick="asstSend(\''+q.replace(/'/g,"\\'")+'\')">'+esc(q)+'</button>'; }).join('')+'</div>'
@@ -3801,14 +3865,14 @@ function renderAsst(){ var o=document.getElementById('asst'); if(!o)return; if(!
 }
 function asstAppend(r,t){ var l=document.getElementById('asstlog'); if(!l)return; var d=document.createElement('div'); d.className='as-bub '+(r==='u'?'u':'a')+(r==='a'?' fadein':''); d.innerHTML=(r==='a')?asstMd(t):esc(t).replace(/\n/g,'<br>'); l.appendChild(d); l.scrollTop=l.scrollHeight; }
 function asstTyping(){ var l=document.getElementById('asstlog'); if(!l)return null; var d=document.createElement('div'); d.className='as-bub a as-typing'; d.innerHTML='<span></span><span></span><span></span>'; l.appendChild(d); l.scrollTop=l.scrollHeight; return d; }
-function asstSend(t){ t=(t||'').trim(); if(!t)return; asstLog.push({r:'u',t:t}); asstAppend('u',t); saveAsst();
+function asstSend(t){ t=(t||'').trim(); if(!t)return; asstLog.push({r:'u',t:t}); asstExtract(t); asstAppend('u',t); saveAsst(); renderHoBar();
  var inp=document.getElementById('asstin'); if(inp)inp.value='';
  var typ=asstTyping();
  function finish(ans){ if(typ&&typ.parentNode)typ.parentNode.removeChild(typ); asstLog.push({r:'a',t:ans}); asstAppend('a',ans); saveAsst(); var l=document.getElementById('asstlog'); if(l)l.scrollTop=l.scrollHeight; }
  if(ASST_URL && navigator.onLine){
    var done=false, to=setTimeout(function(){ if(done)return; done=true; finish(asstReply(t)); },30000);
    try{
-     fetch(ASST_URL,{method:'POST',headers:ntHeaders(),body:JSON.stringify({q:t,context:{pg:S.pg,tab:S.tab,lich_su:asstLog.slice(0,-1).slice(-6).map(function(m){return (m.r==='u'?'PG: ':'Trợ lý: ')+String(m.t||'').replace(/\n/g,' ').slice(0,300);})}})})
+     fetch(ASST_URL,{method:'POST',headers:ntHeaders(),body:JSON.stringify({q:t,context:{pg:S.pg,tab:S.tab,ho_so_be:hoSoText(),lich_su:asstLog.slice(0,-1).slice(-8).map(function(m){return (m.r==='u'?'PG: ':'Trợ lý: ')+String(m.t||'').replace(/\n/g,' ').slice(0,300);})}})})
       .then(function(r){ return r.ok?r.json():Promise.reject(new Error('http')); })
       .then(function(d){ if(done)return; done=true; clearTimeout(to); finish((d&&(d.answer||d.reply))?(d.answer||d.reply):asstReply(t)); })
       .catch(function(){ if(done)return; done=true; clearTimeout(to); finish(asstReply(t)); });
