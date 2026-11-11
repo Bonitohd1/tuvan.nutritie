@@ -1703,7 +1703,10 @@ function classify(){var o=S.user.obj,w=num("w"),h=num("h");
   else if(ba<35){st="high";lb="Béo phì độ I";}else if(ba<40){st="high";lb="Béo phì độ II";}else{st="high";lb="Béo phì độ III";}
   return {status:st,label:lb,metric:"BMI = "+ba.toFixed(1),pct:Math.max(4,Math.min(96,bmiGaugePct(ba)))};}
  if(S.user.postpartum){if(w==null||h==null)return null;var bp=w/Math.pow(h/100,2);return {status:bp<18.5?"low":bp<23?"normal":"high",label:"Mẹ sau sinh — BMI "+bp.toFixed(1),metric:"BMI = "+bp.toFixed(1),pct:Math.max(4,Math.min(96,(bp-14)/(32-14)*100)),postpartum:true};}
- var pw=num("pw");if(pw==null||h==null)return null;var pb=pw/Math.pow(h/100,2);return {status:"pregnant",bmiSt:pb<18.5?"low":pb<23?"normal":"high",label:"BMI trước thai "+pb.toFixed(1),metric:pb<18.5?"Nên tăng 12.5–18 kg":pb<23?"Nên tăng 11.5–16 kg":"Nên tăng 7–11.5 kg",pct:Math.max(4,Math.min(96,(pb-14)/(32-14)*100))};}
+ /* BMI truoc thai theo chuan IOM / WHO quoc te (khop bang Phap che + chi Yen 11/11/2026): 18.5-25 binh thuong, 25-30 thua can, >=30 beo phi.
+    TUNG SAI: dung nguong A (>=23 thua can) -> me BMI 24 bi khuyen "tang 7-11.5 kg" (muc thua can) va bi chan sua som hon chuan.
+    val = BMI tho de recommend()/sciAdvice() xet nguong 25 (>=25 KHONG tu van sua bau, huong dan hoi bac si san khoa). */
+ var pw=num("pw");if(pw==null||h==null)return null;var pb=pw/Math.pow(h/100,2);return {status:"pregnant",val:pb,bmiSt:pb<18.5?"low":pb<25?"normal":"high",label:"BMI trước thai "+pb.toFixed(1),metric:pb<18.5?"Nên tăng 12.5–18 kg":pb<25?"Nên tăng 11.5–16 kg":pb<30?"Nên tăng 7–11.5 kg":"Nên tăng 5–9 kg",pct:Math.max(4,Math.min(96,(pb-14)/(32-14)*100))};}
 var SCI={
  energy:"Thâm hụt năng lượng là gốc rễ — cần thặng dư 300–500 kcal/ngày để phục hồi thể trọng. Ưu tiên đậm độ năng lượng cao (1.2 kcal/ml), dễ hấp thu, phù hợp tiêu hóa kém; chia5–6 bữa/ngày; men tiêu hóa tăng hấp thu.",
  infant:"Trẻ 0–12 tháng: Sữa mẹ là thức ăn tốt nhất cho sức khỏe và sự phát triển toàn diện của trẻ nhỏ; khi dùng công thức hãy chọn đúng độ tuổi và pha đúng hướng dẫn trên nhãn. Ưu tiên DHA + ARA cân đối cho não bộ & thị giác; 2'-FL HMO hỗ trợ hệ vi sinh; Sữa non giàu kháng thể hỗ trợ miễn dịch bẩm sinh; Choline/Taurine cho thần kinh.",
@@ -1719,6 +1722,7 @@ var SCI={
  postpartumBone:"Chuột rút / đau xương khớp sau sinh: cần bổ sung Canxi + Vitamin D3 + MK-7 (K2) để đưa canxi vào xương; có thể kết hợp Canxi Pro A+ (uống sau ăn, cách Sắt/Kẽm liều cao ít nhất 2 giờ).",
  postpartumChild:"Nhớ hỏi thêm về bé để tư vấn kết hợp: bé 0–6 tháng → Baby A+; bé 6–12 tháng → Baby A+ hoặc BioA+ (kèm khuyến cáo: Sữa mẹ là thức ăn tốt nhất cho sức khỏe và sự phát triển toàn diện của trẻ nhỏ).",
  pregnant:"Mẹ mang thai / cho con bú: DHA cho não & võng mạc thai nhi; Axit Folic cần cho giai đoạn đầu thai kỳ; Sắt hỗ trợ tạo máu; Canxi + D3 + MK-7 hỗ trợ xương; Lactium hỗ trợ thư giãn, ngủ ngon.",
+ pregnantHigh:"Mẹ có BMI TRƯỚC mang thai trên chuẩn (≥ 25 — thừa cân/béo phì): KHÔNG tư vấn sữa bầu. Mẹ thừa cân khi mang thai có nguy cơ cao hơn về tiểu đường thai kỳ, tăng huyết áp — việc dùng sữa bổ sung năng lượng cần theo chỉ định chuyên môn. Hướng dẫn khách chụp lại bảng thông tin dinh dưỡng & thành phần sản phẩm để tham khảo ý kiến bác sĩ sản khoa hoặc chuyên gia dinh dưỡng, lựa chọn & sử dụng sản phẩm phù hợp với tình trạng sức khỏe. Ưu tiên chế độ ăn cân đối, đủ chất; mức tăng cân khuyến nghị thấp hơn các mẹ có cân nặng bình thường.",
  adultBase:"Người lớn đã đạt BMI chuẩn: Canxi Pro A+ dùng để BỔ SUNG canxi + D3/K2 cho xương khớp, không nhằm tăng cân. Khuyến khích vận động và ăn đủ đạm.",
  adultHigh:"BMI trên chuẩn: không cần bổ sung năng lượng. Nutritie chưa có sản phẩm kiểm soát cân nặng — hướng dẫn khách cân đối khẩu phần, vận động và gặp chuyên gia dinh dưỡng. Chỉ khi khách cần canxi cho xương khớp mới cân nhắc Canxi Pro A+.",
  diabetNo:"Nhóm này (trẻ em / mẹ bầu) chưa có SKU GI thấp phù hợp — Nutritie Glupro chỉ dành cho người trưởng thành. KHÔNG dùng SKU thường thay điều trị — hướng dẫn khách khám bác sĩ/chuyên gia dinh dưỡng.",
@@ -1731,7 +1735,7 @@ function sciAdvice(){var o=S.user.obj,c=S.cls,n=S.needs,parts=[],low=c&&c.status
  if(o==="tre_0_12"){parts.push(SCI.infant);}
  else if(o==="tre_1_10"){if(n.indexOf("Tiêu hóa kém")>=0)parts.push(SCI.digest);if(!low&&n.indexOf("Tăng chiều cao")>=0)parts.push(SCI.height);if(n.indexOf("Phát triển trí não")>=0)parts.push(SCI.brain);if(n.indexOf("Hay ốm / miễn dịch kém")>=0)parts.push(SCI.immune);if(!parts.length)parts.push(SCI.childBase);}
  else if(o==="adult"){var dietNeed=n.indexOf("Ăn kiêng / kiểm soát cân nặng")>=0,hi=(c&&c.status==="high")||dietNeed;if(n.indexOf("Loãng xương")>=0)parts.push(SCI.bone);else if(hi)parts.push(SCI.adultHigh);else if(low||n.indexOf("Tăng cân / tăng cơ")>=0||n.indexOf("Phục hồi sau ốm/phẫu thuật")>=0)parts.push(SCI.gain);else parts.push(SCI.adultBase);}
- else if(o==="pregnant"){if(S.user.postpartum){parts.push(SCI.postpartum);if(n.indexOf("Lợi sữa")>=0)parts.push(SCI.postpartumMilk);if(n.indexOf("Chuột rút / đau xương khớp")>=0||n.indexOf("Bổ sung Canxi")>=0)parts.push(SCI.postpartumBone);parts.push(SCI.postpartumChild);}else parts.push(SCI.pregnant);}
+ else if(o==="pregnant"){if(S.user.postpartum){parts.push(SCI.postpartum);if(n.indexOf("Lợi sữa")>=0)parts.push(SCI.postpartumMilk);if(n.indexOf("Chuột rút / đau xương khớp")>=0||n.indexOf("Bổ sung Canxi")>=0)parts.push(SCI.postpartumBone);parts.push(SCI.postpartumChild);}else if(c&&c.status==="pregnant"&&c.val!=null&&c.val>=25)parts.push(SCI.pregnantHigh);else parts.push(SCI.pregnant);}
  if(!parts.length)parts.push(SCI.childBase);
  return parts.join("\n\n");}
 var HISTS=["Không có","Dị ứng đạm bò","Không dung nạp Lactose","Đang bị tiêu chảy cấp / Viêm ruột cấp","Viêm loét dạ dày - tá tràng","Hội chứng ruột kích thích (IBS)","Tiểu đường","Loãng xương","Vừa phẫu thuật/ốm dậy","Tiền sản giật","Bệnh thận / sỏi thận","Đang dùng thuốc chống đông","Khác"];
@@ -1774,8 +1778,15 @@ function recommend(){var o=S.user.obj,c=S.cls,n=S.needs,low=c&&c.status==="low",
    else if(low){ids=["canxipro"];why.push("Người lớn BMI thấp cần tăng cân/phục hồi → Canxi Pro A+ (1.0 kcal/ml).");}
    else{ids=["canxipro"];why.push("Loãng xương/xương khớp (BMI đạt chuẩn) → Canxi Pro A+ (Canxi Nano 688mg/100g + MK-7 + Glucosamine).");}
  } else {
-   ids=["mama"];why.push("Mẹ bầu/sau sinh → Mama A+ (Axit Folic, Sắt, DHA, Canxi + MK-7, Lactium hỗ trợ ngủ ngon).");
-   if(S.user.postpartum&&(n.indexOf("Chuột rút / đau xương khớp")>=0||low)){ids.push("canxipro");why.push("Mẹ sau sinh bị chuột rút / đau xương khớp hoặc cần phục hồi thể trạng → kết hợp thêm Canxi Pro A+ (cách Sắt/Kẽm liều cao ≥ 2 giờ).");}
+   /* Me bau (dang mang thai, chua sinh) co BMI TRUOC thai >= 25 (thua can/beo phi): KHONG tu van sua bau.
+      Chi Yen 11/11/2026: huong dan khach chup bang thanh phan/dinh duong SP de hoi bac si san khoa / chuyen gia
+      dinh duong chon san pham phu hop. Me sau sinh / cho con bu KHONG ap (van can phuc hoi + loi sua). */
+   if(!S.user.postpartum&&c&&c.status==="pregnant"&&c.val!=null&&c.val>=25){
+     ids=[];why.push("Mẹ có BMI trước mang thai trên chuẩn (≥ 25 — thừa cân/béo phì) → KHÔNG tư vấn sữa bầu. Hướng dẫn khách chụp lại bảng thông tin dinh dưỡng & thành phần sản phẩm để tham khảo ý kiến bác sĩ sản khoa hoặc chuyên gia dinh dưỡng, lựa chọn & sử dụng sản phẩm phù hợp với tình trạng sức khỏe.");
+   } else {
+     ids=["mama"];why.push("Mẹ bầu/sau sinh → Mama A+ (Axit Folic, Sắt, DHA, Canxi + MK-7, Lactium hỗ trợ ngủ ngon).");
+     if(S.user.postpartum&&(n.indexOf("Chuột rút / đau xương khớp")>=0||low)){ids.push("canxipro");why.push("Mẹ sau sinh bị chuột rút / đau xương khớp hoặc cần phục hồi thể trạng → kết hợp thêm Canxi Pro A+ (cách Sắt/Kẽm liều cao ≥ 2 giờ).");}
+   }
  }
  return {ids:ids,why:why};}
 
@@ -3905,7 +3916,7 @@ function asstNutri(d){
  if(/(tri nao|thong minh|dha|hoc tap|ghi nho|tap trung)/.test(d)) return '🧠 Phát triển trí não: '+SCI.brain+'\n👉 Chọn dòng giàu DHA như **Grow IQ A+** hoặc **Colostrum DHA**.';
  if(/(mien dich|hay om|de khang|om vat|kem mien dich|hay benh)/.test(d)) return '🛡️ Tăng đề kháng: '+SCI.immune+'\n👉 Ưu tiên sản phẩm có Sữa non giàu kháng thể + 2\'-FL HMO (Baby A+, Colostrum DHA).';
  if(/(loang xuong|xuong khop|nguoi lon|nguoi gia|cao tuoi)/.test(d)) return '🦴 Xương khớp / người lớn: '+SCI.bone+'\n👉 **Nutritie Canxi Pro A+** (Canxi Nano 688mg/100g + MK-7 + Glucosamine).';
- if(/(me bau|mang thai|thai ky|cho con bu|sau sinh|bau bi)/.test(d)) return '🤰 Mẹ bầu & sau sinh: '+SCI.pregnant+'\n👉 **Nutritie Mama A+** (DHA + Axit Folic + Sắt + Canxi/MK-7 + Lactium).\n\n💛 Lưu ý: Sữa mẹ là thức ăn tốt nhất cho sức khỏe và sự phát triển toàn diện của trẻ nhỏ.';
+ if(/(me bau|mang thai|thai ky|cho con bu|sau sinh|bau bi)/.test(d)) return '🤰 Mẹ bầu & sau sinh: '+SCI.pregnant+'\n👉 **Nutritie Mama A+** (DHA + Axit Folic + Sắt + Canxi/MK-7 + Lactium).\n\n⚠️ Mẹ ĐANG mang thai mà BMI TRƯỚC thai ≥ 25 (thừa cân/béo phì): KHÔNG tư vấn sữa bầu — hướng dẫn khách chụp bảng thành phần/dinh dưỡng sản phẩm để hỏi bác sĩ sản khoa hoặc chuyên gia dinh dưỡng chọn sản phẩm phù hợp.\n\n💛 Lưu ý: Sữa mẹ là thức ăn tốt nhất cho sức khỏe và sự phát triển toàn diện của trẻ nhỏ.';
  if(/(so sinh|tre 0|0.?12 thang|em be moi sinh|tre duoi 1)/.test(d)) return '👶 Trẻ 0–12 tháng: '+SCI.infant+'\n👉 **Nutritie Baby A+** là nền tảng dinh dưỡng đầu đời.\n\n💛 Lưu ý: Sữa mẹ là thức ăn tốt nhất cho sức khỏe và sự phát triển toàn diện của trẻ nhỏ.';
  if(/(tieu duong|duong huyet|gi thap)/.test(d)) return '⚕️ Về tiểu đường: '+SCI.diabetAdult+'\n(Trẻ em / mẹ bầu: chưa có SKU phù hợp — hướng dẫn khám bác sĩ.)';
  if(/(mk.?7|vitamin k2|k2)/.test(d)) return '💡 MK-7 (Vitamin K2) giúp đưa Canxi vào xương thay vì lắng ở mạch máu — nên đi cùng Canxi + Vitamin D3. Có trong Grow IQ A+, Canxi Pro A+, Mama A+.';
