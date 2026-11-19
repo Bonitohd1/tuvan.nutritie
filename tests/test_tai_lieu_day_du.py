@@ -104,10 +104,33 @@ with sync_playwright() as p:
                  'Hồ sơ công bố/HS chỉnh sửa/HSCB_Nutritie Grow A+_2022-01.pdf', 'Hồ sơ công bố/HS chỉnh sửa/HSCB_Nutritie Mama A+_2022-01.pdf',
                  'Hồ sơ công bố/HS chỉnh sửa/HSCB_Nutritie Pedia A+_2022-01.pdf', 'Hồ sơ công bố/HS chỉnh sửa/HS tu CB_Nutritie Canxi Pro A+_2022-01.pdf',
                  'Hồ sơ công bố/HS chỉnh sửa/HSTCB_SBPS Nutriie Colostrum DHA.pdf', 'Hồ sơ công bố/HS chỉnh sửa/HSTCB - Nutritie Glupro.pdf']
-        check(T('cả 8 HSCB CHỈ 1 trang (chị Yến: chỉ để trang đầu); KN chung 8 · Pedia đào tạo 18 giữ nguyên'),
-              all(cnt(k) == 1 for k in _hscb)
+        # 20/11 (chị Thúy): bản tự công bố MỚI của Canxi Pro A+ và SBPS Colostrum DHA (Drive marketing@, 09/11) chỉ có 2 trang và trang 2
+        # là cơ sở sản xuất + CHỮ KÝ / DẤU -> hiện ĐỦ 2 trang. 6 SP còn lại vẫn 1 trang như ý chị Yến.
+        _hai_trang = {'Hồ sơ công bố/HS chỉnh sửa/HS tu CB_Nutritie Canxi Pro A+_2022-01.pdf', 'Hồ sơ công bố/HS chỉnh sửa/HSTCB_SBPS Nutriie Colostrum DHA.pdf'}
+        check(T('HSCB: Canxi Pro + Colostrum DHA đủ 2 trang (chị Thúy 20/11), 6 SP còn lại 1 trang; KN chung 8 · Pedia đào tạo 18 giữ nguyên'),
+              all(cnt(k) == (2 if k in _hai_trang else 1) for k in _hscb)
               and (cnt('Kiểm Nghiệm/KQ KN SN Nutritie (NPP Colostrum VN).pdf'), cnt('Tài liệu Training/Nutritie Pedia A+.pdf')) == (8, 18),
               [cnt(k) for k in _hscb])
+        # Bấm đúng dòng "Hồ sơ công bố" ở trang SP và ở Trình khách: trình đọc phải ra 2 ảnh, cả 2 giải mã được (trang 2 có thật, không vỡ)
+        bad_hs = []
+        for pid in ('canxipro', 'colostrum'):
+            for mode in ('sp', 'trinh_khach'):
+                if mode == 'sp':
+                    pg.evaluate("(i)=>openP(i)", pid); pg.wait_for_timeout(200)
+                    pg.evaluate("[...document.querySelectorAll('#sheetin .doss-row')].find(r=>r.textContent.indexOf('Hồ sơ công bố')>=0).click()")
+                else:
+                    pg.evaluate("openPresent()"); pg.wait_for_timeout(300)
+                    pg.evaluate("(i)=>presProduct(i)", pid); pg.wait_for_timeout(300)
+                    pg.evaluate("[...document.querySelectorAll('#present .pr-doss')].find(r=>r.textContent.indexOf('Giấy công bố')>=0).click()")
+                pg.wait_for_timeout(250)
+                pg.evaluate("document.querySelectorAll('#docreader img.dr-img').forEach(i=>i.loading='eager')")
+                pg.wait_for_function("[...document.querySelectorAll('#docreader img.dr-img')].every(i=>i.complete)", timeout=8000)
+                r = pg.evaluate("[...document.querySelectorAll('#docreader img.dr-img')].map(i=>[i.getAttribute('src'),i.naturalWidth])")
+                foot = pg.evaluate("document.querySelector('#docreader .dr-foot').textContent")
+                pg.evaluate("closeDocNow();try{closeP()}catch(e){};try{closePresent()}catch(e){}"); pg.wait_for_timeout(150)
+                if len(r) != 2 or any(w < 1000 for _, w in r) or not r[1][0].endswith('/02.jpg') or '2 trang' not in foot:
+                    bad_hs.append((pid, mode, r, foot))
+        check(T('Canxi Pro + Colostrum: bấm Hồ sơ công bố (trang SP + Trình khách) -> 2 trang, ảnh tải được, chân ghi "2 trang"'), not bad_hs, bad_hs)
 
         # (3) hồ sơ trên 7 trang sản phẩm
         bad_p = []
