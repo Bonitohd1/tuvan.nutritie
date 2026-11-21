@@ -1,5 +1,6 @@
-const cors = require('./_cors'); const store = require('./_store');
+const cors = require('./_cors');
 module.exports = (req, res) => {
   if (cors(req, res)) return;
-  res.status(200).json({ ok: true, name: 'Nutritie API', env: 'demo (in-memory)', orders: store.orders.length, time: Date.now() });
+  // Không còn kho RAM (api/_store.js đã gỡ 21/11/2026) -> không báo số đơn.
+  res.status(200).json({ ok: true, name: 'Nutritie API', orders_api: 'off (410)', stock_api: 'off (410)', time: Date.now() });
 };

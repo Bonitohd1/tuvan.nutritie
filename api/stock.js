@@ -1,11 +1,4 @@
-const cors = require('./_cors'); const store = require('./_store');
-const DEFAULT = { baby: 48, bio: 36, growiq: 24, colostrum: 12, canxipro: 30, mama: 20 };
-module.exports = (req, res) => {
-  if (cors(req, res)) return;
-  if (req.method === 'POST') { // cập nhật tồn (demo)
-    let b = req.body; if (typeof b === 'string') { try { b = JSON.parse(b); } catch (e) { b = {}; } }
-    if (b && b.items) store.stock = Object.assign({}, store.stock, b.items);
-    return res.status(200).json({ ok: true });
-  }
-  res.status(200).json({ ok: true, items: Object.assign({}, DEFAULT, store.stock), area: 'Kho demo Nutritie', at: Date.now() });
-};
+// Đã tắt — xem api/_gone.js (QA NT-01/NT-02, 21/11/2026). Số tồn DEMO cũ ({baby:48,…}) từng GHI ĐÈ số thật trên máy PG
+// khi bấm "Đồng bộ tồn kho ngay" kèm câu "Đã đồng bộ tồn kho từ hệ thống" — số giả. Nay tồn kho lưu tại máy cho tới khi nối kho thật.
+module.exports = require('./_gone')('API tồn kho',
+  'Tồn kho đang lưu tại máy PG; nối kho thật ở Khu quản trị > Kết nối kho & Tích hợp.');

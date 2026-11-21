@@ -1,19 +1,3 @@
-const cors = require('./_cors'); const store = require('./_store');
-module.exports = (req, res) => {
-  if (cors(req, res)) return;
-  if (req.method === 'POST') {
-    let b = req.body; if (typeof b === 'string') { try { b = JSON.parse(b); } catch (e) { b = {}; } }
-    b = b || {};
-    const o = Object.assign({}, b, {
-      serverId: 'NT' + Date.now().toString(36).toUpperCase(),
-      tenant: req.headers['x-tenant'] || 'nutritie',
-      receivedAt: Date.now(), status: 'received'
-    });
-    store.orders.push(o);
-    return res.status(200).json({ ok: true, ref: o.serverId, kiotvietId: o.serverId });
-  }
-  if (req.method === 'GET') {
-    return res.status(200).json({ ok: true, count: store.orders.length, orders: store.orders });
-  }
-  return res.status(405).json({ ok: false, err: 'method_not_allowed' });
-};
+// Đã tắt — xem api/_gone.js (QA NT-01/NT-02, 21/11/2026).
+module.exports = require('./_gone')('API đơn hàng',
+  'Đơn từ app gửi thẳng máy chủ Isopharma: https://api.wintop.vn/api/wintop/nutritie-order (cần mã NPP / tenant).');

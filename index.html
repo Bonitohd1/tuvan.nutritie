@@ -1598,7 +1598,7 @@ var MAX_TRIES=3;        // số lần thử tối đa trước khi chuyển 'loi
 /* Gửi 1 đơn. Luôn trả Promise -> {ok:true, ref?} hoặc {ok:false, err?}. Không tự đổi trạng thái. */
 function sendOrder(o){
  var _ib=(typeof integBase==="function")?integBase():"";           /* đầu chờ tích hợp (đa nền tảng) do Quản trị cấu hình */
- var url=_ib?(_ib+NT_DEF.order):SYNC_URL;                           /* bật tích hợp → baseUrl+/orders; ngược lại dùng SYNC_URL (mặc định /api/orders khi deploy) */
+ var url=_ib?(_ib+NT_DEF.order):SYNC_URL;                           /* bật tích hợp → baseUrl+/api/orders của KHO NGOÀI; ngược lại SYNC_URL (api.wintop.vn). /api/orders của chính app ĐÃ TẮT 21/11 (410) */
  if(!url){ /* MÔ PHỎNG */ return Promise.resolve({ok:true,ref:"SIM-"+o.id}); }
  var payload={localId:o.id,pg:o.pg,phone:o.phone,note:o.note,ctkm:o.ctkm,at:o.at,
    items:o.items.map(function(it){return {sku:it.sku,qty:it.qty,pack:it.pack};})};
@@ -2241,7 +2241,7 @@ function openP(id){var p=P(id);if(!p)return;
  var pdtSize='<div class="szlbl">Chọn quy cách</div><div class="szsel">'+packs(p.id).map(function(q){return '<div class="sz'+(selPack===q?' on':'')+'" onclick="setDetailPack(\''+p.id+'\',\''+q.replace(/'/g,"\\'")+'\')">'+esc(q)+'</div>';}).join('')+'</div>';
  sheetin.innerHTML='<div class="ph"><div style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;background:'+p.grad+'">'+p.e+'</div><div><div style="font-family:var(--fd);font-weight:700;font-size:15px">'+esc(p.name)+'</div><div style="font-size:11px;color:var(--navy);font-weight:600">'+esc(p.tag)+'</div></div><button class="x" onclick="closeP()">'+ic('close')+'</button></div>'
   +'<div class="pb">'+hero+pdtHead+pdtSize+chipset
-  +(function(){var sb=stockBadge(p.id,selPack,true),q=stockLevel(p.id,selPack);return '<div class="plbl">'+ic('monitor_weight')+'Tồn kho tại quầy · '+esc(selPack)+'</div><div class="insight" style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">'+(sb?sb+'<span style="color:var(--on-var);font-size:12px">Còn '+q+' '+esc(selPack)+' tại máy'+(SYNC_URL||STOCK_URL?' · đã nối kho':' · mô phỏng')+'</span>':'<span style="color:var(--on-var);font-size:12px">Chưa thiết lập tồn kho cho sản phẩm này.</span>')+'</div>';})()
+  +(function(){var sb=stockBadge(p.id,selPack,true),q=stockLevel(p.id,selPack);return '<div class="plbl">'+ic('monitor_weight')+'Tồn kho tại quầy · '+esc(selPack)+'</div><div class="insight" style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">'+(sb?sb+'<span style="color:var(--on-var);font-size:12px">Còn '+q+' '+esc(selPack)+' tại máy'+(stockUrl()?' · đã nối kho':' · lưu tại máy')+'</span>':'<span style="color:var(--on-var);font-size:12px">Chưa thiết lập tồn kho cho sản phẩm này.</span>')+'</div>';})()
   +'<div class="plbl">'+ic('workspace_premium')+'Điểm vàng</div><div class="insight">'+esc(p.gold)+'</div>'
   +'<div class="plbl">'+ic('check_circle')+'LỢI ÍCH SẢN PHẨM</div><div class="bul">'+bul+'</div>'
   +specHtml
@@ -2734,7 +2734,7 @@ function syncCatalog(){ if(!SYNC_URL)return; try{ fetch(NT_DEF.catalog,{headers:
    STOCK_URL rỗng → MÔ PHỎNG (số tại máy). Có giá trị (hoặc SYNC_URL bật) → nối server kho thật.
    Hợp đồng: stockData / stockLevel(id) / stockBadge(id,big) / stockDec(id,qty) / syncStock(). */
 var STOCK_KEY="nt_stock";
-var STOCK_URL="/api/stock";        // ← điền endpoint tồn kho khi nối backend; rỗng = mô phỏng
+var STOCK_URL="";                  // ← điền endpoint tồn kho khi nối backend; rỗng = lưu tại máy. QA NT-01/02 (21/11/2026): TỪNG để "/api/stock" = API DEMO trả số giả {baby:48,…} GHI ĐÈ số thật trên máy PG; API đó đã tắt (410)
 var STOCK_LOW=5;         // ngưỡng "sắp hết" (đồng nhất Wintop)
 var STOCK_SEED={
  baby:{"Lon 800g":24,"Lon 400g":12,"Thùng 12 lon x 800g":3,"Thùng 24 lon x 400g":1},
@@ -2746,7 +2746,8 @@ var STOCK_SEED={
  mama:{"Lon 800g":15,"Lon 400g":8,"Thùng 12 lon x 800g":2,"Thùng 24 lon x 400g":1},
  glupro:{"Lon 800g":16,"Lon 400g":10,"Thùng 12 lon x 800g":2,"Thùng 24 lon x 400g":1}
 };/* tồn kho THEO TỪNG QUY CÁCH — lon 800g / 400g / thùng mỗi loại 1 số (như kho thật của điểm bán) */
-function stockUrl(){ var b=integBase(); if(b)return b+NT_DEF.stock; return STOCK_URL||(SYNC_URL?(NT_DEF.base+NT_DEF.stock):""); }
+/* KHÔNG rơi về NT_DEF.base+"/api/stock" khi có SYNC_URL: SYNC_URL trỏ api.wintop.vn (chỉ nhận ĐƠN), còn NT_DEF.base rỗng = /api/stock của chính app (đã tắt). */
+function stockUrl(){ var b=integBase(); if(b)return b+NT_DEF.stock; return STOCK_URL||""; }
 function stockData(){ var s=lsGet(STOCK_KEY,null); if(!s){ s={items:JSON.parse(JSON.stringify(STOCK_SEED)),at:Date.now()}; lsSet(STOCK_KEY,s); } if(!s.items)s.items={}; return s; }
 function packStock(id){ var s=stockData(),it=s.items[id]; if(it==null)return null;
  if(typeof it==="number"){ var o={}; o[packs(id)[0]]=it; return o; }  /* server/bản cũ trả SỐ phẳng -> gán vào quy cách đầu, các quy cách khác coi như chưa thiết lập */
@@ -2765,8 +2766,8 @@ function stockDec(id,qty,pack){ var s=stockData(),it=s.items[id]; if(it==null)re
 function syncStock(){ var url=stockUrl();
  if(url&&navigator.onLine){ try{
    fetch(url+"?tenant="+encodeURIComponent(ntTenant()),{headers:ntHeaders()})
-    .then(function(r){return r.ok?r.json():null;})
-    .then(function(d){ var s=stockData(); if(d&&d.items){ for(var k in d.items){ var dv=d.items[k]; if(typeof dv==="number"){ var cur=(s.items[k]&&typeof s.items[k]==="object")?s.items[k]:{}; cur[packs(k)[0]]=dv; s.items[k]=cur; } else s.items[k]=dv; } } s.at=Date.now(); lsSet(STOCK_KEY,s); toast("Đã đồng bộ tồn kho từ hệ thống."); draw(); })
+    .then(function(r){ if(!r.ok)throw new Error("HTTP "+r.status); return r.json(); })
+    .then(function(d){ if(!d||!d.items||typeof d.items!=="object")throw new Error("bad"); var s=stockData(); if(d&&d.items){ for(var k in d.items){ var dv=d.items[k]; if(typeof dv==="number"){ var cur=(s.items[k]&&typeof s.items[k]==="object")?s.items[k]:{}; cur[packs(k)[0]]=dv; s.items[k]=cur; } else s.items[k]=dv; } } s.at=Date.now(); lsSet(STOCK_KEY,s); toast("Đã đồng bộ tồn kho từ hệ thống."); draw(); })
     .catch(function(){ toast("Không kết nối được kho — giữ số liệu tại máy."); });
   }catch(e){ toast("Không kết nối được kho — giữ số liệu tại máy."); }
   return; }
@@ -2818,9 +2819,9 @@ function restockResend(id){ var a=restocks(),req=null; for(var i=0;i<a.length;i+
 /* ===== TÍCH HỢP KHO (chỉ Quản trị) — đọc/ghi cấu hình đầu chờ + kiểm tra kết nối ===== */
 function _igRead(){ var prov=document.getElementById('ig_prov'),base=document.getElementById('ig_base'),shop=document.getElementById('ig_shop'),key=document.getElementById('ig_key'),en=document.getElementById('ig_en');
  return { provider:prov?prov.value:'KiotViet', baseUrl:base?(base.value||'').trim():'', shopId:shop?(shop.value||'').trim():'', apiKey:key?(key.value||''):'', enabled:en?!!en.checked:false }; }
-function adminSaveInteg(){ if(!S.adminAuthed)return; saveInteg(_igRead()); toast('Đã lưu cấu hình kết nối kho.'); draw(); }
+function adminSaveInteg(){ if(!adminReady())return; saveInteg(_igRead()); toast('Đã lưu cấu hình kết nối kho.'); draw(); }
 function integStatus(){ var g=integ(); if(g.enabled&&g.baseUrl)return {t:'Đã bật · '+g.provider,bg:'var(--ok-s)',fg:'var(--ok-d)'}; if(g.baseUrl||g.shopId||g.apiKey)return {t:'Chưa cấu hình đầy đủ',bg:'var(--warn-s)',fg:'var(--warn-d)'}; return {t:'Mô phỏng',bg:'var(--sec-fx)',fg:'var(--on-sec-fx)'}; }
-function adminTestInteg(){ if(!S.adminAuthed)return; var g=saveInteg(_igRead());
+function adminTestInteg(){ if(!adminReady())return; var g=saveInteg(_igRead());
  if(!(g.enabled&&g.baseUrl)){ toast('Đang chạy chế độ mô phỏng — bật đồng bộ & nhập endpoint để nối kho thật.'); draw(); return; }
  if(!navigator.onLine){ toast('Đang offline — không kiểm tra được kết nối.'); draw(); return; }
  var base=g.baseUrl.replace(/\/+$/,'');
@@ -3587,29 +3588,85 @@ function _ntTourPaint(s,tgt){
 /* ===== KHU QUẢN TRỊ (ADMIN) — nhẹ, offline, localStorage =====
    Cổng PIN cho quản lý điểm bán: xem toàn bộ đơn/khách + xuất CSV.
    KHÔNG động vào order engine, NĐ100/contra, hay PG login. */
-var ADMIN_PIN_KEY="nt_admin_pin";
-var ADMIN_PIN_DEF="246810"; /* MÃ DEMO — BẮT BUỘC đổi khi go-live (adminChangePin hoặc set localStorage nt_admin_pin). */
+/* QA NT-03 (21/11/2026). App KHÔNG có máy chủ riêng: đơn + khách trên máy PG vốn nằm sẵn trong localStorage, ai mở DevTools cũng
+   đọc / sửa được (kể cả bật nt_admin_on) -> PIN chỉ là CỔNG GIAO DIỆN trên thiết bị, KHÔNG phải bảo mật thật. Làm tới mức hợp lý:
+   (1) KHÔNG lưu PIN chữ trơn: chỉ lưu băm SHA-256 + muối ngẫu nhiên (nt_admin_pin_h); PIN cũ chữ trơn (nt_admin_pin) tự chuyển + xoá.
+   (2) PIN mặc định không còn nguyên văn trong mã (chỉ giữ băm); vào bằng PIN mặc định -> BẮT đặt PIN mới trước khi dùng chức năng quản trị.
+   TỪNG SAI: PIN mặc định nằm nguyên văn trong mã tải về trình duyệt + localStorage giữ PIN chữ trơn. */
+var ADMIN_PIN_KEY="nt_admin_pin";           /* bản cũ: PIN chữ trơn — chỉ còn để chuyển đổi rồi xoá */
+var ADMIN_PINH_KEY="nt_admin_pin_h";        /* {s: muối hex, h: sha256hex(muối + ":" + PIN)} */
+var ADMIN_DEF_SALT="nt-def-2026", ADMIN_DEF_H="9abe06cee961baa99f482ec2c0f96ac2036099f4da9bd1e8664ac8f4ca97f835"; /* băm của PIN mặc định đã bàn giao */
 var ADMIN_ON_KEY="nt_admin_on";
-function adminPin(){return String(lsGet(ADMIN_PIN_KEY,ADMIN_PIN_DEF));}
+/* SHA-256 thuần JS (đồng bộ, chạy cả khi không có crypto.subtle — trang http / webview cũ). Phép thử so với hashlib. */
+function sha256Hex(str){var K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+ var b=unescape(encodeURIComponent(String(str))),n=b.length,w=[],i,j;for(i=0;i<n;i++)w[i>>2]|=(b.charCodeAt(i)&255)<<(24-(i%4)*8);
+ w[n>>2]|=0x80<<(24-(n%4)*8);var L=(((n+8)>>6)+1)*16;for(i=(n>>2)+1;i<L;i++)w[i]=w[i]|0;w[L-1]=n*8;
+ var H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19],W=[];
+ function r(x,k){return (x>>>k)|(x<<(32-k));}
+ for(i=0;i<L;i+=16){var a=H[0],c=H[1],d=H[2],e=H[3],f=H[4],g=H[5],h=H[6],k=H[7];
+  for(j=0;j<64;j++){if(j<16)W[j]=w[i+j]|0;else{var s0=r(W[j-15],7)^r(W[j-15],18)^(W[j-15]>>>3),s1=r(W[j-2],17)^r(W[j-2],19)^(W[j-2]>>>10);W[j]=(W[j-16]+s0+W[j-7]+s1)|0;}
+   var t1=(k+(r(f,6)^r(f,11)^r(f,25))+((f&g)^(~f&h))+K[j]+W[j])|0,t2=((r(a,2)^r(a,13)^r(a,22))+((a&c)^(a&d)^(c&d)))|0;
+   k=h;h=g;g=f;f=(e+t1)|0;e=d;d=c;c=a;a=(t1+t2)|0;}
+  H[0]=(H[0]+a)|0;H[1]=(H[1]+c)|0;H[2]=(H[2]+d)|0;H[3]=(H[3]+e)|0;H[4]=(H[4]+f)|0;H[5]=(H[5]+g)|0;H[6]=(H[6]+h)|0;H[7]=(H[7]+k)|0;}
+ return H.map(function(x){return ('00000000'+(x>>>0).toString(16)).slice(-8);}).join('');}
+function _pinH(salt,pin){return sha256Hex(salt+":"+pin);}
+function _rndHex(n){try{var a=new Uint8Array(n);crypto.getRandomValues(a);return Array.prototype.map.call(a,function(x){return ('0'+x.toString(16)).slice(-2);}).join('');}
+ catch(e){var t="";while(t.length<n*2)t+=Math.random().toString(16).slice(2);return t.slice(0,n*2);}}
+/* Đọc PIN chữ trơn bản cũ: lsSet ghi dạng JSON ("\"1357\""), người dùng có thể đặt tay dạng thô (chỉ chữ số) -> đọc cả hai. */
+function _oldPlainPin(){try{var v=localStorage.getItem(ADMIN_PIN_KEY);if(v==null)return null;try{var o=JSON.parse(v);if(typeof o==="string"||typeof o==="number")v=String(o);}catch(e){}return String(v).trim()||null;}catch(e){return null;}}
+function _dropOldPin(){try{localStorage.removeItem(ADMIN_PIN_KEY);}catch(e){}}
+/* Bản ghi PIN hiện hành; null = thiết bị CÒN PIN MẶC ĐỊNH. */
+function adminPinRec(){var r=lsGet(ADMIN_PINH_KEY,null);if(r&&typeof r==="object"&&r.s&&r.h)return r;
+ var old=_oldPlainPin();if(old==null)return null;
+ if(_pinH(ADMIN_DEF_SALT,old)===ADMIN_DEF_H){_dropOldPin();return null;}
+ var s=_rndHex(16);r={s:s,h:_pinH(s,old)};if(lsSet(ADMIN_PINH_KEY,r))_dropOldPin();return r;}
+function adminPinIsDefault(){return adminPinRec()===null;}
+function adminPinOk(v){v=String(v==null?"":v).trim();if(!v)return false;var r=adminPinRec();return r?(_pinH(r.s,v)===r.h):(_pinH(ADMIN_DEF_SALT,v)===ADMIN_DEF_H);}
+function adminReady(){return S.adminAuthed&&!adminPinIsDefault();}
+function adminPinWeak(p){if(p.length<6)return "Mã PIN mới cần tối thiểu 6 ký tự.";
+ if(_pinH(ADMIN_DEF_SALT,p)===ADMIN_DEF_H)return "Không dùng lại mã PIN mặc định.";
+ if(/^(.)\1+$/.test(p))return "Mã PIN không được lặp lại một ký tự.";
+ if("01234567890".indexOf(p)>=0||"09876543210".indexOf(p)>=0)return "Mã PIN không được là dãy số liên tiếp.";
+ return "";}
+function _adminSavePin(newP){var w=adminPinWeak(newP);if(w){toast(w);return false;}
+ var s=_rndHex(16);if(!lsSet(ADMIN_PINH_KEY,{s:s,h:_pinH(s,newP)})){toast(LS_FAIL);return false;}
+ _dropOldPin();toast("Đã lưu mã PIN quản trị mới.");return true;}
+adminPinRec(); /* chuyển PIN chữ trơn bản cũ sang băm ngay khi mở app */
 S.adminAuthed=lsGet(ADMIN_ON_KEY,false)===true; /* nhớ trong thiết bị, sống qua reload */
 function adminLogin(){var el=document.getElementById('adminpin');var v=((el&&el.value)||"").trim();
  if(!v){toast("Nhập mã PIN quản trị.");return;}
- if(v===adminPin()){S.adminAuthed=true;lsSet(ADMIN_ON_KEY,true);toast("Đã vào chế độ quản trị.");go('admin');}
+ if(adminPinOk(v)){S.adminAuthed=true;lsSet(ADMIN_ON_KEY,true);if(el)el.value="";
+  toast(adminPinIsDefault()?"Đang dùng mã PIN mặc định — hãy đặt mã PIN mới trước khi dùng khu quản trị.":"Đã vào chế độ quản trị.");go('admin');}
  else{if(el)el.value="";toast("Mã PIN không đúng.");}}
 function adminLogout(){S.adminAuthed=false;lsSet(ADMIN_ON_KEY,false);toast("Đã thoát chế độ quản trị.");go('home');}
 function adminChangePin(oldP,newP){oldP=(oldP||"").trim();newP=(newP||"").trim();
- if(oldP!==adminPin()){toast("Mã PIN hiện tại không đúng.");return false;}
- if(newP.length<4){toast("Mã PIN mới cần tối thiểu 4 số.");return false;}
- lsSet(ADMIN_PIN_KEY,newP);toast("Đã đổi mã PIN quản trị.");return true;}
+ if(!adminPinOk(oldP)){toast("Mã PIN hiện tại không đúng.");return false;}
+ return _adminSavePin(newP);}
 function adminChangePinUI(){var o=document.getElementById('admpin_old'),n=document.getElementById('admpin_new');
- if(adminChangePin(o?o.value:"",n?n.value:"")){if(o)o.value="";if(n)n.value="";}}
+ if(adminChangePin(o?o.value:"",n?n.value:"")){if(o)o.value="";if(n)n.value="";draw();}}
+/* Đặt PIN lần đầu (đang dùng PIN mặc định): không hỏi PIN hiện tại — mã mặc định vốn ai cũng biết, hỏi lại chỉ làm người
+   quản lý quên mã bị khoá ngoài. Bắt nhập 2 lần cho khỏi gõ nhầm. */
+function adminSetFirstPin(){if(!S.adminAuthed||!adminPinIsDefault())return;
+ var a=document.getElementById('admpin_first'),b=document.getElementById('admpin_first2');
+ var x=((a&&a.value)||"").trim(),y=((b&&b.value)||"").trim();
+ if(x!==y){toast("Hai lần nhập mã PIN mới không khớp.");return;}
+ if(_adminSavePin(x)){if(a)a.value="";if(b)b.value="";draw();}}
+function renderAdminFirstPin(){var inp='width:100%;height:50px;border:1.6px solid var(--line);border-radius:14px;padding:0 16px;font-size:17px;font-weight:700;letter-spacing:.2em;text-align:center;font-family:var(--fd);color:var(--on);background:var(--sc-low);outline:0;margin-bottom:10px';
+ return '<div class="sec" style="margin-bottom:12px"><div class="sec-l"><div class="sec-ic">'+ic('shield')+'</div><div><h3>Khu quản trị</h3><div class="sub">Bước bắt buộc trước khi dùng</div></div></div><button class="btn btnO press" style="width:auto;height:40px;padding:0 15px;font-size:12.5px" onclick="adminLogout()">'+ic('refresh')+'Đăng xuất</button></div>'
+  +'<div class="card" id="adm_firstpin" style="padding:22px 18px">'
+  +'<div class="posmsg" style="background:var(--warn-s);color:var(--warn-d);margin-bottom:14px">'+ic('lock')+'<div><b>Thiết bị này đang dùng mã PIN mặc định.</b> Mã mặc định ai cũng có thể biết, nên chưa mở được đơn hàng, khách hàng và xuất dữ liệu. Hãy đặt mã PIN riêng (tối thiểu 6 ký tự, không lặp một số, không dãy liên tiếp).</div></div>'
+  +'<input id="admpin_first" type="password" inputmode="numeric" autocomplete="new-password" placeholder="Mã PIN mới" style="'+inp+'">'
+  +'<input id="admpin_first2" type="password" inputmode="numeric" autocomplete="new-password" placeholder="Nhập lại mã PIN mới" onkeydown="if(event.key===\'Enter\')adminSetFirstPin()" style="'+inp+'">'
+  +'<button class="btn btnN press" onclick="adminSetFirstPin()">'+ic('check')+'Lưu mã PIN mới</button>'
+  +'<div style="font-size:11px;color:var(--on-var);margin-top:12px;line-height:1.5">Mã PIN chỉ bảo vệ màn hình quản trị trên CHÍNH máy này (máy không lưu mã gốc, chỉ lưu bản băm). Dữ liệu đơn và khách vẫn nằm trên máy — giữ máy cẩn thận.</div>'
+  +'</div>';}
 /* Tải Blob client-side (offline, không mạng) — người dùng tự xuất dữ liệu của mình. */
 function dlBlob(bytes,type,fname){try{var b=new Blob([bytes],{type:type});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=fname;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(u);},1500);}catch(e){toast("Không xuất được file.");}}
 function csvCell(v){v=(v==null?"":String(v));if(/[",\n\r;]/.test(v))v='"'+v.replace(/"/g,'""')+'"';return v;}
 function aoaToCsv(aoa){return "﻿"+aoa.map(function(row){return row.map(csvCell).join(",");}).join("\r\n");}
 function admYmd(){var d=new Date();return d.getFullYear()+('0'+(d.getMonth()+1)).slice(-2)+('0'+d.getDate()).slice(-2);}
 function admDMY(ms){if(!ms)return "";var d=new Date(ms);return ('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear();}
-function adminExportOrders(){var a=orders();
+function adminExportOrders(){if(!adminReady())return;var a=orders();
  var aoa=[["Mã đơn","PG","Ngày","Khách","SĐT","Địa chỉ","SP","Tổng","Trạng thái","Ghi chú"]];
  a.forEach(function(o){var d=new Date(o.at);var dt=('0'+d.getDate()).slice(-2)+'/'+('0'+(d.getMonth()+1)).slice(-2)+'/'+d.getFullYear()+' '+('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
   var sp=(o.items||[]).map(function(it){return (it.name||it.sku)+' ('+(it.pack||'')+') x'+it.qty;}).join('; ');
@@ -3617,7 +3674,7 @@ function adminExportOrders(){var a=orders();
   aoa.push([o.id,o.pg||"",dt,o.name||"",o.phone||"",o.addr||"",sp,(o.total!=null?o.total:""),st,o.note||""]);});
  dlBlob(aoaToCsv(aoa),"text/csv;charset=utf-8","nutritie_donhang_"+admYmd()+".csv");
  toast("Đã xuất "+a.length+" đơn hàng (CSV).");}
-function adminExportCustomers(){var a=crmCustomers();
+function adminExportCustomers(){if(!adminReady())return;var a=crmCustomers();
  var aoa=[["Tên","SĐT","Số đơn","Tổng chi","SKU","Lần cuối"]];
  a.forEach(function(c){aoa.push([c.name||"",c.phone||"",c.orders||0,(c.total!=null?c.total:0),c.skus||0,admDMY(c.last)]);});
  dlBlob(aoaToCsv(aoa),"text/csv;charset=utf-8","nutritie_khachhang_"+admYmd()+".csv");
@@ -3634,6 +3691,7 @@ function renderAdmin(){
     +'<div style="font-size:11px;color:var(--on-var);margin-top:14px;line-height:1.5">Tư vấn viên (PG) dùng mã PG ở màn đăng nhập chính — không cần vào đây.</div>'
    +'</div>';
  }
+ if(adminPinIsDefault())return renderAdminFirstPin();
  var c=ntCounters(),os=orders(),rev=0;os.forEach(function(o){rev+=(o.total||0);});
  var custs=crmCustomers();
  var sd=stockData(),low=0,out=0;PRODUCTS.forEach(function(p){packs(p.id).forEach(function(pk){var q=stockLevel(p.id,pk);if(q==null)return;if(q<=0)out++;else if(q<=STOCK_LOW)low++;});});
